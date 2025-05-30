@@ -16,6 +16,21 @@ from ui.themes.graph_styles import (
     actual_default_stylesheet_for_graph
 )
 
+# Try to import constants, with fallback
+try:
+    from config import REQUIRED_INTERNAL_COLUMNS
+except ImportError:
+    try:
+        from utils.constants import REQUIRED_INTERNAL_COLUMNS
+    except ImportError:
+        # Fallback constants
+        REQUIRED_INTERNAL_COLUMNS = {
+            'Timestamp': 'Timestamp (Event Time)',
+            'UserID': 'UserID (Person Identifier)',
+            'DoorID': 'DoorID (Device Name)',
+            'EventType': 'EventType (Access Result)'
+        }
+
 def create_main_layout(app_instance, main_logo_path, icon_upload_default, upload_component=None):
     """
     Creates the main application layout with proper mapping section
@@ -62,118 +77,11 @@ def create_interactive_setup_container_fixed():
         id='interactive-setup-container',
         style={'display': 'none'},
         children=[
-            # Mapping UI Section with complete structure
-            html.Div(
-                id='mapping-ui-section',
-                style={'display': 'none'},
-                children=[
-                    html.H4(
-                        "Step 1: Map CSV Headers", 
-                        className="text-center", 
-                        style={'color': COLORS['text_primary'], 'fontSize': '1.3rem', 'marginBottom': '1rem'}
-                    ),
-                    html.Div([
-                        html.P([
-                            "Map your CSV columns to the required fields. ",
-                            html.Strong("All four fields are required"), 
-                            " for the analysis to work properly."
-                        ], style={
-                            'color': COLORS['text_secondary'], 
-                            'fontSize': '0.85rem',
-                            'marginBottom': '8px'
-                        }),
-                        html.Details([
-                            html.Summary("What do these fields mean?", 
-                                       style={'color': COLORS['accent'], 'cursor': 'pointer', 'fontSize': '0.9rem'}),
-                            html.Ul([
-                                html.Li([html.Strong("Timestamp: "), "When the access event occurred"]),
-                                html.Li([html.Strong("UserID: "), "Person identifier (badge number, employee ID, etc.)"]),
-                                html.Li([html.Strong("DoorID: "), "Device or door identifier"]),
-                                html.Li([html.Strong("EventType: "), "Access result (granted, denied, etc.)"])
-                            ], style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'})
-                        ])
-                    ], style={'marginBottom': '12px'}),
-                    # This is the key element that was missing
-                    html.Div(id='dropdown-mapping-area'),
-                    html.Div(id='mapping-validation-message', style={'display': 'none'}),
-                    html.Button(
-                        'Confirm Header Mapping & Proceed',
-                        id='confirm-header-map-button',
-                        n_clicks=0,
-                        style={
-                            'marginTop': '15px',
-                            'padding': '8px 16px',
-                            'border': 'none',
-                            'borderRadius': '5px',
-                            'backgroundColor': COLORS['accent'],
-                            'color': 'white',
-                            'fontSize': '0.9rem',
-                            'fontWeight': 'bold',
-                            'cursor': 'pointer',
-                            'marginLeft': 'auto',
-                            'marginRight': 'auto',
-                            'display': 'none',
-                            'transition': 'background-color 0.3s ease'
-                        }
-                    )
-                ]
-            ),
+            # Mapping UI Section with complete structure - Use actual component
+            create_mapping_section_with_fallback(),
             
-            # Entrance Verification UI Section
-            html.Div(
-                id='entrance-verification-ui-section', 
-                style={'display': 'none'},
-                children=[
-                    # Facility Setup Card
-                    html.Div([
-                        html.H4("Step 2: Facility Setup", style={'color': COLORS['text_primary'], 'textAlign': 'center'}),
-                        html.Div([
-                            html.Label(
-                                "How many floors are in the facility?", 
-                                style={'color': COLORS['text_primary'], 'fontWeight': 'bold', 'marginBottom': '8px'}
-                            ),
-                            dcc.Dropdown(
-                                id="num-floors-input",
-                                options=[{"label": str(i), "value": i} for i in range(1, 11)],
-                                value=4,
-                                clearable=False,
-                                style={'marginBottom': '16px'}
-                            ),
-                            html.Label(
-                                "Enable Manual Door Classification?", 
-                                style={'color': COLORS['text_primary'], 'fontWeight': 'bold', 'marginBottom': '8px'}
-                            ),
-                            dcc.RadioItems(
-                                id='manual-map-toggle',
-                                options=[
-                                    {'label': 'Yes', 'value': 'yes'}, 
-                                    {'label': 'No', 'value': 'no'}
-                                ],
-                                value='yes', 
-                                inline=True,
-                                style={'marginBottom': '16px'}
-                            )
-                        ])
-                    ], style={
-                        'padding': '20px',
-                        'backgroundColor': COLORS['surface'],
-                        'borderRadius': '8px',
-                        'marginBottom': '20px',
-                        'border': f'1px solid {COLORS["border"]}'
-                    }),
-                    
-                    # Door Classification Table Container
-                    html.Div(
-                        id="door-classification-table-container",
-                        style={'display': 'none'},
-                        children=[
-                            html.H4("Step 3: Door Classification", style={'color': COLORS['text_primary'], 'textAlign': 'center'}),
-                            html.P("Assign a security level to each door below:", style={'color': COLORS['text_primary']}),
-                            html.Div(id="door-classification-table"),
-                        ]
-                    )
-                ]
-            ),
+            # Entrance Verification UI Section - Use actual classification component
+            create_classification_section(),
             
             # Generate Button
             html.Button(
@@ -300,6 +208,133 @@ def create_upload_section(upload_component):
     return html.Div([
         upload_component.create_upload_area(),
     ], style={'marginBottom': '20px'})
+
+def create_mapping_section_with_fallback():
+    """Creates the mapping section using the actual component with fallback"""
+    try:
+        from ui.components.mapping import create_mapping_component
+        mapping_component = create_mapping_component()
+        return mapping_component.create_mapping_section()
+    except ImportError:
+        # Fallback mapping section
+        return html.Div(
+            id='mapping-ui-section',
+            style={'display': 'none'},
+            children=[
+                html.H4(
+                    "Step 1: Map CSV Headers", 
+                    className="text-center", 
+                    style={'color': COLORS['text_primary'], 'fontSize': '1.3rem', 'marginBottom': '1rem'}
+                ),
+                html.Div([
+                    html.P([
+                        "Map your CSV columns to the required fields. ",
+                        html.Strong("All four fields are required"), 
+                        " for the analysis to work properly."
+                    ], style={
+                        'color': COLORS['text_secondary'], 
+                        'fontSize': '0.85rem',
+                        'marginBottom': '8px'
+                    }),
+                    html.Details([
+                        html.Summary("What do these fields mean?", 
+                                   style={'color': COLORS['accent'], 'cursor': 'pointer', 'fontSize': '0.9rem'}),
+                        html.Ul([
+                            html.Li([html.Strong("Timestamp: "), "When the access event occurred"]),
+                            html.Li([html.Strong("UserID: "), "Person identifier (badge number, employee ID, etc.)"]),
+                            html.Li([html.Strong("DoorID: "), "Device or door identifier"]),
+                            html.Li([html.Strong("EventType: "), "Access result (granted, denied, etc.)"])
+                        ], style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'})
+                    ])
+                ], style={'marginBottom': '12px'}),
+                # This is the key element that was missing
+                html.Div(id='dropdown-mapping-area'),
+                html.Div(id='mapping-validation-message', style={'display': 'none'}),
+                html.Button(
+                    'Confirm Header Mapping & Proceed',
+                    id='confirm-header-map-button',
+                    n_clicks=0,
+                    style={
+                        'marginTop': '15px',
+                        'padding': '8px 16px',
+                        'border': 'none',
+                        'borderRadius': '5px',
+                        'backgroundColor': COLORS['accent'],
+                        'color': 'white',
+                        'fontSize': '0.9rem',
+                        'fontWeight': 'bold',
+                        'cursor': 'pointer',
+                        'marginLeft': 'auto',
+                        'marginRight': 'auto',
+                        'display': 'none',
+                        'transition': 'background-color 0.3s ease'
+                    }
+                )
+            ]
+        )
+
+def create_classification_section():
+    """Creates the classification section using the actual component"""
+    try:
+        from ui.components.classification import create_classification_component
+        classification_component = create_classification_component()
+        return classification_component.create_entrance_verification_section()
+    except ImportError:
+        # Fallback classification section
+        return html.Div(
+            id='entrance-verification-ui-section', 
+            style={'display': 'none'},
+            children=[
+                # Facility Setup Card
+                html.Div([
+                    html.H4("Step 2: Facility Setup", style={'color': COLORS['text_primary'], 'textAlign': 'center'}),
+                    html.Div([
+                        html.Label(
+                            "How many floors are in the facility?", 
+                            style={'color': COLORS['text_primary'], 'fontWeight': 'bold', 'marginBottom': '8px'}
+                        ),
+                        dcc.Dropdown(
+                            id="num-floors-input",
+                            options=[{"label": str(i), "value": i} for i in range(1, 11)],
+                            value=4,
+                            clearable=False,
+                            style={'marginBottom': '16px'}
+                        ),
+                        html.Label(
+                            "Enable Manual Door Classification?", 
+                            style={'color': COLORS['text_primary'], 'fontWeight': 'bold', 'marginBottom': '8px'}
+                        ),
+                        dcc.RadioItems(
+                            id='manual-map-toggle',
+                            options=[
+                                {'label': 'Yes', 'value': 'yes'}, 
+                                {'label': 'No', 'value': 'no'}
+                            ],
+                            value='yes', 
+                            inline=True,
+                            style={'marginBottom': '16px'}
+                        )
+                    ])
+                ], style={
+                    'padding': '20px',
+                    'backgroundColor': COLORS['surface'],
+                    'borderRadius': '8px',
+                    'marginBottom': '20px',
+                    'border': f'1px solid {COLORS["border"]}'
+                }),
+                
+                # Door Classification Table Container
+                html.Div(
+                    id="door-classification-table-container",
+                    style={'display': 'none'},
+                    children=[
+                        html.H4("Step 3: Door Classification", style={'color': COLORS['text_primary'], 'textAlign': 'center'}),
+                        html.P("Assign a security level to each door below:", style={'color': COLORS['text_primary']}),
+                        html.Div(id="door-classification-table"),
+                    ]
+                )
+            ]
+        )
 
 def create_processing_status():
     """Creates the processing status indicator"""

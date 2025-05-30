@@ -1,6 +1,6 @@
-# layout/core_layout.py (FIXED IMPORTS)
+# layout/core_layout.py (FIXED LAYOUT)
 """
-Updated core layout with fixed imports for registry integration
+Updated core layout with properly included mapping and classification sections
 """
 
 from dash import html, dcc
@@ -18,7 +18,7 @@ from ui.themes.graph_styles import (
 
 def create_main_layout(app_instance, main_logo_path, icon_upload_default, upload_component=None):
     """
-    Creates the main application layout with optional registry component
+    Creates the main application layout with proper mapping section
     """
     
     # If no upload component provided, create legacy one with proper import handling
@@ -34,8 +34,8 @@ def create_main_layout(app_instance, main_logo_path, icon_upload_default, upload
         # Upload Section (using provided component)
         create_upload_section(upload_component),
         
-        # Interactive Setup Container (using provided component)
-        upload_component.create_interactive_setup_container(),
+        # Interactive Setup Container (using provided component) - FIXED
+        create_interactive_setup_container_fixed(),
         
         # Processing Status
         create_processing_status(),
@@ -56,106 +56,217 @@ def create_main_layout(app_instance, main_logo_path, icon_upload_default, upload
     
     return layout
 
-def _create_fallback_upload_component(app_instance, icon_upload_default):
-    """Create upload component with proper error handling"""
-    try:
-        # Method 1: Try importing from ui.components directly
-        from ui.components.upload import create_upload_component
-        
-        return create_upload_component(
-            icon_upload_default,
-            app_instance.get_asset_url('upload_file_csv_icon_success.png'),
-            app_instance.get_asset_url('upload_file_csv_icon_fail.png')
-        )
-        
-    except ImportError as e:
-        print(f"⚠️ Failed to import from ui.components.upload: {e}")
-        
-        try:
-            # Method 2: Try importing from ui.components package
-            from ui.components import create_upload_component
+def create_interactive_setup_container_fixed():
+    """Creates the interactive setup container with proper mapping section structure"""
+    return html.Div(
+        id='interactive-setup-container',
+        style={'display': 'none'},
+        children=[
+            # Mapping UI Section with complete structure
+            html.Div(
+                id='mapping-ui-section',
+                style={'display': 'none'},
+                children=[
+                    html.H4(
+                        "Step 1: Map CSV Headers", 
+                        className="text-center", 
+                        style={'color': COLORS['text_primary'], 'fontSize': '1.3rem', 'marginBottom': '1rem'}
+                    ),
+                    html.Div([
+                        html.P([
+                            "Map your CSV columns to the required fields. ",
+                            html.Strong("All four fields are required"), 
+                            " for the analysis to work properly."
+                        ], style={
+                            'color': COLORS['text_secondary'], 
+                            'fontSize': '0.85rem',
+                            'marginBottom': '8px'
+                        }),
+                        html.Details([
+                            html.Summary("What do these fields mean?", 
+                                       style={'color': COLORS['accent'], 'cursor': 'pointer', 'fontSize': '0.9rem'}),
+                            html.Ul([
+                                html.Li([html.Strong("Timestamp: "), "When the access event occurred"]),
+                                html.Li([html.Strong("UserID: "), "Person identifier (badge number, employee ID, etc.)"]),
+                                html.Li([html.Strong("DoorID: "), "Device or door identifier"]),
+                                html.Li([html.Strong("EventType: "), "Access result (granted, denied, etc.)"])
+                            ], style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'})
+                        ])
+                    ], style={'marginBottom': '12px'}),
+                    # This is the key element that was missing
+                    html.Div(id='dropdown-mapping-area'),
+                    html.Div(id='mapping-validation-message', style={'display': 'none'}),
+                    html.Button(
+                        'Confirm Header Mapping & Proceed',
+                        id='confirm-header-map-button',
+                        n_clicks=0,
+                        style={
+                            'marginTop': '15px',
+                            'padding': '8px 16px',
+                            'border': 'none',
+                            'borderRadius': '5px',
+                            'backgroundColor': COLORS['accent'],
+                            'color': 'white',
+                            'fontSize': '0.9rem',
+                            'fontWeight': 'bold',
+                            'cursor': 'pointer',
+                            'marginLeft': 'auto',
+                            'marginRight': 'auto',
+                            'display': 'none',
+                            'transition': 'background-color 0.3s ease'
+                        }
+                    )
+                ]
+            ),
             
-            return create_upload_component(
-                icon_upload_default,
-                app_instance.get_asset_url('upload_file_csv_icon_success.png'),
-                app_instance.get_asset_url('upload_file_csv_icon_fail.png')
+            # Entrance Verification UI Section
+            html.Div(
+                id='entrance-verification-ui-section', 
+                style={'display': 'none'},
+                children=[
+                    # Facility Setup Card
+                    html.Div([
+                        html.H4("Step 2: Facility Setup", style={'color': COLORS['text_primary'], 'textAlign': 'center'}),
+                        html.Div([
+                            html.Label(
+                                "How many floors are in the facility?", 
+                                style={'color': COLORS['text_primary'], 'fontWeight': 'bold', 'marginBottom': '8px'}
+                            ),
+                            dcc.Dropdown(
+                                id="num-floors-input",
+                                options=[{"label": str(i), "value": i} for i in range(1, 11)],
+                                value=4,
+                                clearable=False,
+                                style={'marginBottom': '16px'}
+                            ),
+                            html.Label(
+                                "Enable Manual Door Classification?", 
+                                style={'color': COLORS['text_primary'], 'fontWeight': 'bold', 'marginBottom': '8px'}
+                            ),
+                            dcc.RadioItems(
+                                id='manual-map-toggle',
+                                options=[
+                                    {'label': 'Yes', 'value': 'yes'}, 
+                                    {'label': 'No', 'value': 'no'}
+                                ],
+                                value='yes', 
+                                inline=True,
+                                style={'marginBottom': '16px'}
+                            )
+                        ])
+                    ], style={
+                        'padding': '20px',
+                        'backgroundColor': COLORS['surface'],
+                        'borderRadius': '8px',
+                        'marginBottom': '20px',
+                        'border': f'1px solid {COLORS["border"]}'
+                    }),
+                    
+                    # Door Classification Table Container
+                    html.Div(
+                        id="door-classification-table-container",
+                        style={'display': 'none'},
+                        children=[
+                            html.H4("Step 3: Door Classification", style={'color': COLORS['text_primary'], 'textAlign': 'center'}),
+                            html.P("Assign a security level to each door below:", style={'color': COLORS['text_primary']}),
+                            html.Div(id="door-classification-table"),
+                        ]
+                    )
+                ]
+            ),
+            
+            # Generate Button
+            html.Button(
+                'Confirm Selections & Generate Onion Model',
+                id='confirm-and-generate-button',
+                n_clicks=0,
+                style={
+                    'marginTop': '20px', 
+                    'width': '100%',
+                    'padding': '12px',
+                    'backgroundColor': COLORS['accent'],
+                    'color': 'white',
+                    'border': 'none',
+                    'borderRadius': '5px',
+                    'fontSize': '1rem',
+                    'fontWeight': 'bold',
+                    'cursor': 'pointer'
+                }
             )
-            
-        except ImportError as e2:
-            print(f"⚠️ Failed to import from ui.components package: {e2}")
-            
-            try:
-                # Method 3: Direct import from the original file
-                import sys
-                import os
-                sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-                
-                from ui.components.upload import EnhancedUploadComponent, ComponentConfig
-                from config.unified_settings import get_settings
-                
-                config = ComponentConfig(
-                    icons={
-                        'default': icon_upload_default,
-                        'success': app_instance.get_asset_url('upload_file_csv_icon_success.png'),
-                        'fail': app_instance.get_asset_url('upload_file_csv_icon_fail.png')
-                    },
-                    theme=get_settings(),
-                    settings=get_settings()
-                )
-                
-                return EnhancedUploadComponent(config)
-                
-            except Exception as e3:
-                print(f"⚠️ All import methods failed: {e3}")
-                
-                # Method 4: Ultra-fallback - create a minimal upload component
-                return _create_minimal_upload_component(icon_upload_default)
+        ]
+    )
 
-def _create_minimal_upload_component(icon_upload_default):
-    """Create a minimal upload component as last resort"""
-    class MinimalUploadComponent:
-        def __init__(self, icon):
-            self.icon = icon
+def _create_fallback_upload_component(app_instance, icon_upload_default):
+    """Create upload component with simplified fallback"""
+    class SimpleUploadComponent:
+        def __init__(self, default_icon, success_icon, fail_icon):
+            self.default_icon = default_icon
+            self.success_icon = success_icon
+            self.fail_icon = fail_icon
         
         def create_upload_area(self):
             return dcc.Upload(
                 id='upload-data',
                 children=html.Div([
-                    html.Img(src=self.icon, style={'width': '64px', 'height': '64px'}),
-                    html.H3("Drop CSV file here")
+                    html.Img(
+                        id='upload-icon',
+                        src=self.default_icon, 
+                        style={'width': '96px', 'height': '96px', 'marginBottom': '15px'}
+                    ),
+                    html.H3("Drop your CSV file here", style={
+                        'margin': '0',
+                        'fontSize': '1.125rem',
+                        'fontWeight': '600',
+                        'color': COLORS['text_primary'],
+                        'marginBottom': '5px'
+                    }),
+                    html.P("or click to browse", style={
+                        'margin': '0',
+                        'fontSize': '0.875rem',
+                        'color': COLORS['text_secondary'],
+                    }),
                 ], style={'textAlign': 'center', 'padding': '20px'}),
                 style={
                     'width': '70%',
-                    'height': '150px',
-                    'lineHeight': '150px',
-                    'borderWidth': '2px',
-                    'borderStyle': 'dashed',
-                    'borderColor': '#2D3748',
-                    'borderRadius': '5px',
+                    'maxWidth': '600px',
+                    'minHeight': '180px',
+                    'borderRadius': '12px',
                     'textAlign': 'center',
-                    'margin': '10px auto',
-                    'cursor': 'pointer'
+                    'margin': '16px auto',
+                    'display': 'flex',
+                    'alignItems': 'center',
+                    'justifyContent': 'center',
+                    'cursor': 'pointer',
+                    'transition': 'all 0.3s',
+                    'border': f'2px dashed {COLORS["border"]}',
+                    'backgroundColor': COLORS['surface'],
                 },
                 multiple=False,
                 accept='.csv'
             )
         
-        def create_interactive_setup_container(self):
-            return html.Div(
-                id='interactive-setup-container',
-                style={'display': 'none'},
-                children=[
-                    html.Div(id='mapping-ui-section', style={'display': 'none'}),
-                    html.Div(id='entrance-verification-ui-section', style={'display': 'none'}),
-                    html.Button(
-                        'Generate Model',
-                        id='confirm-and-generate-button',
-                        style={'marginTop': '20px', 'width': '100%'}
-                    )
-                ]
-            )
+        def get_upload_styles(self):
+            """Returns styles for different states"""
+            return {
+                'initial': {
+                    'border': f'2px dashed {COLORS["border"]}',
+                    'backgroundColor': COLORS['surface'],
+                },
+                'success': {
+                    'border': f'2px solid {COLORS["success"]}',
+                    'backgroundColor': f"{COLORS['success']}10",
+                },
+                'error': {
+                    'border': f'2px solid {COLORS["critical"]}',
+                    'backgroundColor': f"{COLORS['critical']}10",
+                }
+            }
     
-    return MinimalUploadComponent(icon_upload_default)
+    return SimpleUploadComponent(
+        icon_upload_default,
+        app_instance.get_asset_url('upload_file_csv_icon_success.png'),
+        app_instance.get_asset_url('upload_file_csv_icon_fail.png')
+    )
 
 def create_main_header(main_logo_path):
     """Creates the main application header"""

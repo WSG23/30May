@@ -30,7 +30,7 @@ import numpy as np
 from typing import Dict, List, Tuple, Any, Optional
 import logging
 
-from constants.constants import REQUIRED_INTERNAL_COLUMNS
+from utils.constants import REQUIRED_INTERNAL_COLUMNS
 from core.exceptions import DataProcessingError
 
 logger = logging.getLogger(__name__)

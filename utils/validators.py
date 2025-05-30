@@ -9,7 +9,7 @@ import json
 import re
 from datetime import datetime
 
-from ..core.exceptions import ValidationError
+from core.exceptions import ValidationError
 from utils.constants import REQUIRED_INTERNAL_COLUMNS, FILE_LIMITS
 
 class CSVValidator:

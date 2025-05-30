@@ -15,12 +15,12 @@ from ui.components.stats import create_stats_component, create_stats_data_proces
 from ui.components.classification import create_classification_component  # type: ignore
 
 # Import processing modules
-from processing.onion_model import run_onion_model_processing
-from processing.cytoscape_prep import prepare_cytoscape_elements
-from processing.graph_config import GRAPH_PROCESSING_CONFIG, UI_STYLES
-from constants.constants import REQUIRED_INTERNAL_COLUMNS
-from data_io.file_utils import decode_uploaded_csv
-from data_io.csv_loader import load_csv_event_log
+from services.onion_model import run_onion_model_processing
+from services.cytoscape_prep import prepare_cytoscape_elements
+from services.graph_config import GRAPH_PROCESSING_CONFIG, UI_STYLES
+from utils.constants import REQUIRED_INTERNAL_COLUMNS
+from services.file_utils import decode_uploaded_csv
+from services.csv_loader import load_csv_event_log
 
 
 class GraphHandlers:

@@ -1,10 +1,42 @@
 # config/unified_settings.py
 """
-Unified configuration - Single source of truth
+Unified configuration - Single source of truth - ENHANCED
 """
 from dataclasses import dataclass, field
 from typing import Dict, List, Any, Optional
 import os
+
+# SINGLE SOURCE OF TRUTH - Required CSV columns mapping
+REQUIRED_INTERNAL_COLUMNS = {
+    'Timestamp': 'Timestamp (Event Time)',
+    'UserID': 'UserID (Person Identifier)',
+    'DoorID': 'DoorID (Device Name)',
+    'EventType': 'EventType (Access Result)'
+}
+
+# Security level definitions
+SECURITY_LEVELS = {
+    0: {"label": "⬜️ Unclassified", "color": "#2D3748", "value": "unclassified"},
+    1: {"label": "🟢 Green (Public)", "color": "#2DBE6C", "value": "green"},
+    2: {"label": "🟠 Orange (Semi-Restricted)", "color": "#FFB020", "value": "yellow"},
+    3: {"label": "🔴 Red (Restricted)", "color": "#E02020", "value": "red"},
+}
+
+# File processing limits
+FILE_LIMITS = {
+    'max_file_size': 10 * 1024 * 1024,  # 10MB
+    'max_rows': 1_000_000,
+    'allowed_extensions': ['.csv'],
+    'encoding': 'utf-8'
+}
+
+# Default icon paths
+DEFAULT_ICONS = {
+    'upload_default': '/assets/upload_file_csv_icon.png',
+    'upload_success': '/assets/upload_file_csv_icon_success.png',
+    'upload_fail': '/assets/upload_file_csv_icon_fail.png',
+    'main_logo': '/assets/logo_white.png'
+}
 
 @dataclass
 class DatabaseConfig:
@@ -50,7 +82,6 @@ class ProcessingConfig:
     num_floors: int = 1
     top_n_heuristic_entrances: int = 5
     primary_positive_indicator: str = "ACCESS GRANTED"
-    # FIXED: Use field(default_factory) for list defaults
     invalid_phrases_exact: List[str] = field(default_factory=lambda: ["INVALID ACCESS LEVEL"])
     invalid_phrases_contain: List[str] = field(default_factory=lambda: ["NO ENTRY MADE"])
     same_door_scan_threshold_seconds: int = 10
@@ -64,29 +95,32 @@ class AppSettings:
     host: str = field(default_factory=lambda: os.getenv('HOST', '127.0.0.1'))
     
     # Required columns - SINGLE SOURCE OF TRUTH
-    required_columns: Dict[str, str] = field(default_factory=lambda: {
-        'Timestamp': 'Timestamp (Event Time)',
-        'UserID': 'UserID (Person Identifier)',
-        'DoorID': 'DoorID (Device Name)',
-        'EventType': 'EventType (Access Result)'
-    })
+    required_columns: Dict[str, str] = field(default_factory=lambda: REQUIRED_INTERNAL_COLUMNS)
     
-    # ADDED: Default icons configuration
-    default_icons: Dict[str, str] = field(default_factory=lambda: {
-        'upload_default': '/assets/upload_file_csv_icon.png',
-        'upload_success': '/assets/upload_file_csv_icon_success.png',
-        'upload_fail': '/assets/upload_file_csv_icon_fail.png',
-        'main_logo': '/assets/logo_white.png'
-    })
+    # Default icons configuration
+    default_icons: Dict[str, str] = field(default_factory=lambda: DEFAULT_ICONS)
     
     # Sub-configurations
     database: DatabaseConfig = field(default_factory=DatabaseConfig)
     files: FileConfig = field(default_factory=FileConfig)
     ui: UIConfig = field(default_factory=UIConfig)
     processing: ProcessingConfig = field(default_factory=ProcessingConfig)
+
 # Global settings instance
 settings = AppSettings()
 
 def get_settings() -> AppSettings:
     """Get application settings"""
     return settings
+
+# Export constants for easy import
+__all__ = [
+    'get_settings', 
+    'AppSettings',
+    'REQUIRED_INTERNAL_COLUMNS',
+    'SECURITY_LEVELS', 
+    'FILE_LIMITS',
+    'DEFAULT_ICONS'
+]
+
+print(f"🔧 Unified settings loaded: {len(REQUIRED_INTERNAL_COLUMNS)} required columns")

@@ -3,7 +3,7 @@ import numpy as np
 
 # Assuming you have a constants file for display names as well
 # Make sure this import path is correct relative to your project structure
-from constants import REQUIRED_INTERNAL_COLUMNS 
+from utils.constants import REQUIRED_INTERNAL_COLUMNS 
 
 # Define display names for clarity and consistency
 DOORID_COL_DISPLAY = REQUIRED_INTERNAL_COLUMNS['DoorID']        # 'DoorID (Device Name)'

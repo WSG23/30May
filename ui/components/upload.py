@@ -1,21 +1,25 @@
 # ui/components/upload.py
 """
-Upload component - Refactored to remove circular dependencies
+Upload component - Fixed for actual directory structure
 """
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 from typing import Dict, Any, Optional
-from config.unified_settings import get_settings
-from ui.registry import ComponentConfig
+
+# Import from actual structure
+from utils.constants import DEFAULT_ICONS
+from ui.themes.style_config import COLORS, SPACING, BORDER_RADIUS, SHADOWS, TYPOGRAPHY
+
 
 class EnhancedUploadComponent:
-    """Enhanced upload component without circular dependencies"""
+    """Enhanced upload component for actual directory structure"""
     
-    def __init__(self, config: ComponentConfig):
-        self.config = config
-        self.settings = get_settings()
-        self.icons = config.icons
-        self.theme = config.theme
+    def __init__(self, icon_default: str, icon_success: str, icon_fail: str):
+        self.icons = {
+            'default': icon_default,
+            'success': icon_success, 
+            'fail': icon_fail
+        }
     
     def create_upload_area(self):
         """Creates upload area"""
@@ -34,29 +38,29 @@ class EnhancedUploadComponent:
             html.Div([
                 html.Img(
                     id='upload-icon',
-                    src=self.icons.get('default', ''),
+                    src=self.icons['default'],
                     style={
                         'width': '120px',
                         'height': '120px',
-                        'marginBottom': self.theme['spacing']['base'],
+                        'marginBottom': SPACING['base'],
                         'opacity': '0.8',
-                        'transition': f'all {self.theme["animations"]["normal"]}',
+                        'transition': f'all 0.3s ease',
                     }
                 )
             ], style={'textAlign': 'center'}),
             
             html.H3("Drop your CSV file here", style={
                 'margin': '0',
-                'fontSize': self.theme['typography']['text_lg'],
-                'fontWeight': self.theme['typography']['font_semibold'],
-                'color': self.theme['colors']['text_primary'],
-                'marginBottom': self.theme['spacing']['xs']
+                'fontSize': TYPOGRAPHY['text_lg'],
+                'fontWeight': TYPOGRAPHY['font_semibold'],
+                'color': COLORS['text_primary'],
+                'marginBottom': SPACING['xs']
             }),
             
             html.P("or click to browse", style={
                 'margin': '0',
-                'fontSize': self.theme['typography']['text_sm'],
-                'color': self.theme['colors']['text_secondary'],
+                'fontSize': TYPOGRAPHY['text_sm'],
+                'color': COLORS['text_secondary'],
             }),
         ], style={
             'display': 'flex',
@@ -64,40 +68,37 @@ class EnhancedUploadComponent:
             'alignItems': 'center',
             'justifyContent': 'center',
             'height': '100%',
-            'padding': self.theme['spacing']['base']
+            'padding': SPACING['base']
         })
     
     def get_upload_style(self, state="initial"):
         """Get upload styles based on state"""
-        colors = self.theme['colors']
-        spacing = self.theme['spacing']
-        
         base_style = {
             'width': '70%',
             'maxWidth': '600px',
             'minHeight': '180px',
-            'borderRadius': self.theme['border_radius']['lg'],
+            'borderRadius': BORDER_RADIUS['lg'],
             'textAlign': 'center',
-            'margin': f"{spacing['base']} auto",
+            'margin': f"{SPACING['base']} auto",
             'display': 'flex',
             'alignItems': 'center',
             'justifyContent': 'center',
             'cursor': 'pointer',
-            'transition': f'all {self.theme["animations"]["normal"]}',
+            'transition': 'all 0.3s ease',
         }
         
         state_styles = {
             "initial": {
-                'border': f'2px dashed {colors["border"]}',
-                'backgroundColor': colors['surface'],
+                'border': f'2px dashed {COLORS["border"]}',
+                'backgroundColor': COLORS['surface'],
             },
             "success": {
-                'border': f'2px solid {colors["success"]}',
-                'backgroundColor': f"{colors['success']}10",
+                'border': f'2px solid {COLORS["success"]}',
+                'backgroundColor': f"{COLORS['success']}10",
             },
             "error": {
-                'border': f'2px solid {colors["critical"]}',
-                'backgroundColor': f"{colors['critical']}10",
+                'border': f'2px solid {COLORS["critical"]}',
+                'backgroundColor': f"{COLORS['critical']}10",
             }
         }
         
@@ -112,25 +113,27 @@ class EnhancedUploadComponent:
         }
     
     def create_interactive_setup_container(self):
-        """Creates setup container - delegates to registry"""
-        from ui.registry import get_registry
-        registry = get_registry()
-        
+        """Creates setup container"""
         return html.Div(
             id='interactive-setup-container',
             style={
                 'display': 'none',
-                'padding': self.theme['spacing']['lg'],
-                'backgroundColor': self.theme['colors']['surface'],
-                'borderRadius': self.theme['border_radius']['lg'],
-                'margin': f"{self.theme['spacing']['lg']} auto",
+                'padding': SPACING['lg'],
+                'backgroundColor': COLORS['surface'],
+                'borderRadius': BORDER_RADIUS['lg'],
+                'margin': f"{SPACING['lg']} auto",
                 'width': '85%',
                 'maxWidth': '1000px',
-                'border': f"1px solid {self.theme['colors']['border']}",
+                'border': f"1px solid {COLORS['border']}",
             },
             children=[
-                html.Div(id='mapping-section-placeholder'),
-                html.Div(id='classification-section-placeholder'), 
+                # Mapping section placeholder
+                html.Div(id='mapping-ui-section', style={'display': 'none'}),
+                
+                # Classification section placeholder  
+                html.Div(id='entrance-verification-ui-section', style={'display': 'none'}),
+                
+                # Generate button
                 self.create_generate_button()
             ]
         )
@@ -145,11 +148,51 @@ class EnhancedUploadComponent:
             size='lg',
             className='w-100',
             style={
-                'marginTop': self.theme['spacing']['lg'],
+                'marginTop': SPACING['lg'],
             }
         )
+    
+    def _get_interactive_setup_style(self, visible=False):
+        """Get interactive setup container style"""
+        base_style = {
+            'padding': SPACING['lg'],
+            'backgroundColor': COLORS['surface'],
+            'borderRadius': BORDER_RADIUS['lg'],
+            'margin': f"{SPACING['lg']} auto",
+            'width': '85%',
+            'maxWidth': '1000px',
+            'border': f"1px solid {COLORS['border']}",
+        }
+        
+        if visible:
+            base_style['display'] = 'block'
+        else:
+            base_style['display'] = 'none'
+            
+        return base_style
+    
+    def _get_button_style(self, variant='primary'):
+        """Get button style"""
+        return {
+            'backgroundColor': COLORS['accent'],
+            'border': 'none',
+            'color': 'white',
+            'padding': f"{SPACING['sm']} {SPACING['lg']}",
+            'borderRadius': BORDER_RADIUS['md'],
+            'cursor': 'pointer',
+            'fontWeight': TYPOGRAPHY['font_semibold'],
+        }
 
-# Factory function
-def create_enhanced_upload_component(config: ComponentConfig):
-    """Factory function"""
-    return EnhancedUploadComponent(config)
+
+# Factory functions for easy component creation
+def create_enhanced_upload_component(icon_default: str, icon_success: str, icon_fail: str):
+    """Factory function to create enhanced upload component"""
+    return EnhancedUploadComponent(icon_default, icon_success, icon_fail)
+
+def create_upload_component(icon_default: str, icon_success: str, icon_fail: str):
+    """Alias for backward compatibility"""
+    return create_enhanced_upload_component(icon_default, icon_success, icon_fail)
+
+def create_simple_upload_component(icon_path: str):
+    """Create simple upload component with single icon"""
+    return EnhancedUploadComponent(icon_path, icon_path, icon_path)

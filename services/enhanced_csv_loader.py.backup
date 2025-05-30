@@ -78,11 +78,11 @@ class EnhancedCSVLoader:
             
         except (ValidationError, CSVProcessingError) as e:
             logger.error(f"CSV processing failed: {str(e)}")
-            print(f"Error: {str(e)}")  # Keep print for compatibility with existing code
+           logger.info(f"Error: {str(e)}")  # Keep print for compatibility with existing code
             return None
         except Exception as e:
             logger.error(f"Unexpected error in CSV processing: {str(e)}")
-            print(f"Unexpected error: {str(e)}")
+           logger.info(f"Unexpected error: {str(e)}")
             traceback.print_exc()
             return None
     
@@ -201,7 +201,7 @@ class EnhancedCSVLoader:
             
             if invalid_timestamps > 0:
                 logger.warning(f"Removed {invalid_timestamps} rows with invalid timestamps")
-                print(f"Warning: Removed {invalid_timestamps} rows with invalid timestamps")
+               logger.info(f"Warning: Removed {invalid_timestamps} rows with invalid timestamps")
             
             # Validate timestamp range
             min_date = df_clean[timestamp_col].min()
@@ -241,7 +241,7 @@ class EnhancedCSVLoader:
                     if empty_mask.any():
                         empty_count = empty_mask.sum()
                         logger.warning(f"Removing {empty_count} rows with empty {col_name} values")
-                        print(f"Warning: Removing {empty_count} rows with empty {col_name} values")
+                       logger.info(f"Warning: Removing {empty_count} rows with empty {col_name} values")
                         df = df[~empty_mask].copy()
             
             # Remove duplicate rows
@@ -250,7 +250,7 @@ class EnhancedCSVLoader:
             if len(df) < initial_count:
                 removed_count = initial_count - len(df)
                 logger.info(f"Removed {removed_count} duplicate rows")
-                print(f"Info: Removed {removed_count} duplicate rows")
+               logger.info(f"Info: Removed {removed_count} duplicate rows")
             
             # Final validation
             if len(df) == 0:

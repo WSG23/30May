@@ -312,25 +312,25 @@ def test_error_handling():
     
     # Test successful execution
     result1 = test_function(False)
-    print("Success result:", result1)
+   logger.info("Success result:", result1)
     
     # Test error handling
     result2 = test_function(True)
-    print("Error result:", result2)
+   logger.info("Error result:", result2)
     
     # Test function logging
     result3 = logged_function(5, 3)
-    print("Logged function result:", result3)
+   logger.info("Logged function result:", result3)
     
     # Test context manager
     try:
         with ErrorContext("test_operation"):
             # This would be your actual operation
-            print("Performing operation...")
+           logger.info("Performing operation...")
     except Exception:
         pass
     
-    print("✅ Error handling tests completed")
+   logger.info("✅ Error handling tests completed")
 
 if __name__ == "__main__":
     test_error_handling()

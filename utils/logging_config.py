@@ -75,11 +75,14 @@ class ApplicationLogger:
         
     def setup_logging(self) -> None:
         """Setup comprehensive logging configuration"""
+        
+        # Create logs directory
+        logger = logging.getLogger(__name__)  # ← NEW (guarantees binding)
+
         try:
-            # Create logs directory
-            logs_dir = Path("logs")
-            logs_dir.mkdir(exist_ok=True)
-            
+            # ... all your existing setup code ...
+            logger.info(f"Logging initialized for {self.app_name}")
+
             # Configure root logger
             root_logger = logging.getLogger()
             
@@ -108,7 +111,7 @@ class ApplicationLogger:
                     root_logger.addHandler(error_handler)
                 except Exception as e:
                     # If file handlers fail, log to console
-                    print(f"Warning: Could not create file handlers: {e}")
+                   logger.info(f"Warning: Could not create file handlers: {e}")
             
             # Performance logger
             self._setup_performance_logger()
@@ -117,14 +120,13 @@ class ApplicationLogger:
             self._setup_security_logger()
             
             # Application startup log
-            logger = logging.getLogger(__name__)
             logger.info(f"Logging initialized for {self.app_name}")
             logger.info(f"Log level: {getattr(self.config, 'log_level', 'INFO')}")
             logger.info(f"Debug mode: {getattr(self.config, 'debug', False)}")
             
         except Exception as e:
             # Fallback to basic console logging
-            print(f"Error setting up logging: {e}")
+            logger.info(f"Error setting up logging: {e}")
             logging.basicConfig(level=logging.INFO)
     
     def _create_console_handler(self) -> logging.Handler:
@@ -203,8 +205,10 @@ class ApplicationLogger:
             perf_logger.propagate = False
             
             self.loggers['performance'] = perf_logger
-        except Exception as e:
-            print(f"Warning: Could not setup performance logger: {e}")
+        except Exception:
+           logging.getLogger(__name__).warning(
+               "setup_performance_logger_failed", exc_info=True
+              )
     
     def _setup_security_logger(self) -> None:
         """Setup dedicated security logger"""
@@ -227,8 +231,11 @@ class ApplicationLogger:
             sec_logger.propagate = False
             
             self.loggers['security'] = sec_logger
-        except Exception as e:
-            print(f"Warning: Could not setup security logger: {e}")
+        except Exception:
+            logging.getLogger(__name__).warning(
+                "setup_security_logger_failed", exc_info=True
+            )
+
     
     def get_logger(self, name: str) -> logging.Logger:
         """Get logger instance"""

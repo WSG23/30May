@@ -15,7 +15,8 @@ from dash import Input, Output, State, html, dcc
 from ui.components.upload import create_upload_component
 from ui.themes.graph_styles import upload_icon_img_style
 from utils.constants import REQUIRED_INTERNAL_COLUMNS
-
+from utils.logging_config import get_logger
+logger = get_logger(__name__)                 
 
 class UploadHandlers:
     """Handles all upload-related callbacks and business logic"""
@@ -80,7 +81,7 @@ class UploadHandlers:
                 return self._create_error_response(result, upload_styles, filename)
                 
         except Exception as e:
-            print(f"Error in handle_upload: {e}")
+            logger.info(f"Error in handle_upload: {e}")
             traceback.print_exc()
             error_result = {'error': str(e), 'success': False}
             return self._create_error_response(error_result, upload_styles, filename)
@@ -161,10 +162,10 @@ class UploadHandlers:
         
         if DOORID_COL_DISPLAY in df_copy.columns:
             all_unique_doors = sorted(df_copy[DOORID_COL_DISPLAY].astype(str).unique().tolist())
-            print(f"DEBUG: Extracted {len(all_unique_doors)} unique doors for classification.")
+            logger.info(f"DEBUG: Extracted {len(all_unique_doors)} unique doors for classification.")
             return all_unique_doors
         else:
-            print(f"Warning: '{DOORID_COL_DISPLAY}' column not found after preliminary mapping.")
+            logger.info(f"Warning: '{DOORID_COL_DISPLAY}' column not found after preliminary mapping.")
             return []
     
     def _create_mapping_dropdowns(self, headers, mapping_result):

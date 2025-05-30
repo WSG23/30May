@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+from utils.logging_config import get_logger
+logger = get_logger(__name__)
 
 # Assuming you have a constants file for display names as well
 # Make sure this import path is correct relative to your project structure
@@ -15,9 +17,9 @@ EVENTTYPE_COL_DISPLAY = REQUIRED_INTERNAL_COLUMNS['EventType']  # 'EventType (Ac
 def prepare_path_visualization_data(all_paths_df, source_col='SourceDoor',
                                     target_col='TargetDoor', frequency_col='TransitionFrequency'):
     """ Prepares path data for visualization, calculating total width for undirected paths. """
-    print("\nPreparing Path Data for Visualization (in cytoscape_prep)...")
+    logger.info("\nPreparing Path Data for Visualization (in cytoscape_prep)...")
     if all_paths_df is None or all_paths_df.empty:
-        print("Warning: all_paths_df is empty for path visualization.")
+        logger.info("Warning: all_paths_df is empty for path visualization.")
         return pd.DataFrame(columns=['Door1', 'Door2', 'PathWidth'])
 
     temp_paths_df = all_paths_df.copy()
@@ -39,32 +41,32 @@ def prepare_path_visualization_data(all_paths_df, source_col='SourceDoor',
     else: # If path_widths_df became empty after groupby (e.g. no frequencies)
         path_widths_df = pd.DataFrame(columns=['Door1', 'Door2', 'PathWidth'])
         
-    print(f"Prepared {len(path_widths_df)} unique undirected paths with widths.")
+    logger.info(f"Prepared {len(path_widths_df)} unique undirected paths with widths.")
     return path_widths_df
 
 
 def prepare_cytoscape_elements(device_attributes_df, path_viz_data_df, all_paths_df=None, target_floor=None):
-    print("\nPreparing Cytoscape Elements (nodes and edges)...")
+    logger.info("\nPreparing Cytoscape Elements (nodes and edges)...")
     nodes, edges = [], []
     
     if device_attributes_df is None or device_attributes_df.empty:
-        print("DEBUG: device_attributes_df empty in prepare_cytoscape_elements. Cannot create nodes.")
+        logger.info("DEBUG: device_attributes_df empty in prepare_cytoscape_elements. Cannot create nodes.")
         return [], []
 
-    print(f"DEBUG: device_attributes_df columns: {device_attributes_df.columns.tolist()}")
+    logger.info(f"DEBUG: device_attributes_df columns: {device_attributes_df.columns.tolist()}")
     
     # Use simple 'DoorID' column name (not the display name)
     doorid_col = 'DoorID'
     
     # Check if the device_attributes_df has the correct column name
     if doorid_col not in device_attributes_df.columns:
-        print(f"Error: '{doorid_col}' column not found in device_attributes_df.")
-        print(f"Available columns: {device_attributes_df.columns.tolist()}")
+        logger.info(f"Error: '{doorid_col}' column not found in device_attributes_df.")
+        logger.info(f"Available columns: {device_attributes_df.columns.tolist()}")
         return [], []
 
     # Use the simple column name consistently
     current_device_ids = set(device_attributes_df[doorid_col].astype(str).unique())
-    print(f"DEBUG: Found {len(current_device_ids)} unique devices for nodes.")
+    logger.info(f"DEBUG: Found {len(current_device_ids)} unique devices for nodes.")
 
     dev_layers = {}
     if doorid_col in device_attributes_df.columns and 'FinalGlobalDeviceDepth' in device_attributes_df.columns:
@@ -150,5 +152,5 @@ def prepare_cytoscape_elements(device_attributes_df, path_viz_data_df, all_paths
                     }
                 })
     
-    print(f"DEBUG: Cytoscape Prep: Prepared {len(nodes)} nodes, {len(edges)} edges.")
+    logger.info(f"DEBUG: Cytoscape Prep: Prepared {len(nodes)} nodes, {len(edges)} edges.")
     return nodes, edges

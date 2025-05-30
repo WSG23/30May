@@ -10,6 +10,8 @@ from dash.dependencies import ALL
 
 # Import UI components - type: ignore to suppress Pylance warnings
 from ui.components.classification import create_classification_component  # type: ignore
+from utils.logging_config import get_logger
+logger = get_logger(__name__)
 
 
 class ClassificationHandlers:
@@ -45,8 +47,8 @@ class ClassificationHandlers:
         ):
             # Only generate if manual mapping is chosen and there are doors
             if manual_map_choice != 'yes' or not all_doors_from_store_data:
-                print("DEBUG: Not in manual mode or no doors available for classification table.")
-                return []
+               logger.info("DEBUG: Not in manual mode or no doors available for classification table.")
+            return []
                 
             return self._generate_classification_table(
                 all_doors_from_store_data,
@@ -127,11 +129,11 @@ class ClassificationHandlers:
                 num_floors=num_floors
             )
             
-            print(f"DEBUG: Generated scrollable classification table with {len(all_doors_data)} doors.")
+            logger.info(f"DEBUG: Generated scrollable classification table with {len(all_doors_data)} doors.")
             return table_content
             
         except Exception as e:
-            print(f"Error generating classification table: {e}")
+            logger.info(f"Error generating classification table: {e}")
             return [html.P(f"Error generating classification table: {str(e)}", 
                           style={'color': 'red', 'textAlign': 'center'})]
     

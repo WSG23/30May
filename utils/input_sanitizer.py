@@ -403,20 +403,20 @@ def test_sanitizers():
     
     # Test string sanitization
     test_string = "<script>alert('xss')</script>Hello World!"
-    print("Original:", test_string)
-    print("Sanitized:", sanitizer.sanitize_string(test_string))
+   logger.info("Original:", test_string)
+   logger.info("Sanitized:", sanitizer.sanitize_string(test_string))
     
     # Test filename sanitization
     test_filename = "../../../etc/passwd.txt"
-    print("Original filename:", test_filename)
-    print("Sanitized filename:", sanitizer.sanitize_filename(test_filename))
+   logger.info("Original filename:", test_filename)
+   logger.info("Sanitized filename:", sanitizer.sanitize_filename(test_filename))
     
     # Test email sanitization
     test_email = "  USER@EXAMPLE.COM  "
-    print("Original email:", test_email)
-    print("Sanitized email:", sanitizer.sanitize_email(test_email))
+   logger.info("Original email:", test_email)
+   logger.info("Sanitized email:", sanitizer.sanitize_email(test_email))
     
-    print("✅ Sanitizer tests completed")
+   logger.info("✅ Sanitizer tests completed")
 
 if __name__ == "__main__":
     test_sanitizers()

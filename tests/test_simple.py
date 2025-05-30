@@ -7,4 +7,4 @@ def test_fixtures_work(valid_column_mapping):
     """Test that our corrected fixtures work"""
     assert 'Timestamp' in valid_column_mapping
     assert valid_column_mapping['Timestamp'] == 'Timestamp (Event Time)'
-    print("✅ Fixtures working correctly!")
+   logger.info("✅ Fixtures working correctly!")

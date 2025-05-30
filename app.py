@@ -22,6 +22,13 @@ from ui.pages.main_page import create_main_layout
 # Import constants from actual location
 from utils.constants import DEFAULT_ICONS
 
+# --- logging bootstrap -----------------------------------------------
+from utils.logging_config import setup_application_logging, get_logger
+
+setup_application_logging()          # initialise the logging system
+logger = get_logger(__name__)        # module-level logger everyone can use
+# ----------------------------------------------------------------------
+
 app = dash.Dash(
     __name__,
     suppress_callback_exceptions=True,
@@ -61,29 +68,29 @@ def register_all_callbacks():
             'fail': ICON_UPLOAD_FAIL
         })
         upload_handlers.register_callbacks()
-        print("✅ Upload handlers registered")
+        logger.info("✅ Upload handlers registered")
         
         # Mapping handlers
         mapping_component = create_mapping_component()
         mapping_handlers = create_mapping_handlers(app, mapping_component)
         mapping_handlers.register_callbacks()
-        print("✅ Mapping handlers registered")
+        logger.info("✅ Mapping handlers registered")
         
         # Classification handlers
         classification_component = create_classification_component()
         classification_handlers = create_classification_handlers(app, classification_component)
         classification_handlers.register_callbacks()
-        print("✅ Classification handlers registered")
+        logger.info("✅ Classification handlers registered")
         
         # Graph handlers
         graph_handlers = create_graph_handlers(app)
         graph_handlers.register_callbacks()
-        print("✅ Graph handlers registered")
+        logger.info("✅ Graph handlers registered")
         
-        print("🎉 All callbacks registered successfully!")
+        logger.info("🎉 All callbacks registered successfully!")
         
     except Exception as e:
-        print(f"❌ Error registering callbacks: {e}")
+        logger.info(f"❌ Error registering callbacks: {e}")
         import traceback
         traceback.print_exc()
 
@@ -91,5 +98,5 @@ def register_all_callbacks():
 register_all_callbacks()
 
 if __name__ == "__main__":
-    print("🚀 Starting Yōsai Intel Dashboard...")
+    logger.info("🚀 Starting Yōsai Intel Dashboard...")
     app.run(debug=True, host='127.0.0.1', port=8050)

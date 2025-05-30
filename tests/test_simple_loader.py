@@ -25,31 +25,31 @@ def test_loader_debug():
         'EventType': 'EventType (Access Result)'
     }
     
-    print("🔍 Constants:", REQUIRED_INTERNAL_COLUMNS)
-    print("🔍 Mapping:", column_mapping)
+   logger.info("🔍 Constants:", REQUIRED_INTERNAL_COLUMNS)
+   logger.info("🔍 Mapping:", column_mapping)
     
     csv_io = io.StringIO(csv_content)
     result = loader.load_csv_event_log(csv_io, column_mapping)
     
-    print("🔍 Result type:", type(result))
-    print("🔍 Result:", result)
+   logger.info("🔍 Result type:", type(result))
+   logger.info("🔍 Result:", result)
     
     if isinstance(result, dict):
-        print("🔍 Success:", result.get('success'))
+       logger.info("🔍 Success:", result.get('success'))
         if result.get('success'):
-            print("🔍 DataFrame shape:", result['result'].shape)
-            print("🔍 DataFrame columns:", list(result['result'].columns))
+           logger.info("🔍 DataFrame shape:", result['result'].shape)
+           logger.info("🔍 DataFrame columns:", list(result['result'].columns))
         else:
-            print("🔍 Error:", result.get('error'))
+           logger.info("🔍 Error:", result.get('error'))
     
     # This will always pass - we just want to see the debug output
     assert True
 
 def test_constants_check():
     """Check that constants are as expected"""
-    print("🔍 REQUIRED_INTERNAL_COLUMNS:")
+   logger.info("🔍 REQUIRED_INTERNAL_COLUMNS:")
     for key, value in REQUIRED_INTERNAL_COLUMNS.items():
-        print(f"  {key} -> {value}")
+       logger.info(f"  {key} -> {value}")
     
     expected_values = {
         'Timestamp (Event Time)',
@@ -59,8 +59,8 @@ def test_constants_check():
     }
     
     actual_values = set(REQUIRED_INTERNAL_COLUMNS.values())
-    print("🔍 Expected values:", expected_values)
-    print("🔍 Actual values:", actual_values)
-    print("🔍 Match:", expected_values == actual_values)
+   logger.info("🔍 Expected values:", expected_values)
+   logger.info("🔍 Actual values:", actual_values)
+   logger.info("🔍 Match:", expected_values == actual_values)
     
     assert True  # Always pass, just want debug info

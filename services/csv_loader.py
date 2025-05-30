@@ -3,10 +3,12 @@ import pandas as pd
 import io
 import traceback
 from utils.constants import REQUIRED_INTERNAL_COLUMNS
+from utils.logging_config import get_logger
+logger = get_logger(__name__)
 
 def load_csv_event_log(csv_file_obj, column_mapping, timestamp_format=None):
     """Load CSV with column mapping"""
-    print("Loading CSV data...")
+    logger.info("Loading CSV data...")
     try:
         df = pd.read_csv(csv_file_obj, dtype=str)
         
@@ -24,9 +26,9 @@ def load_csv_event_log(csv_file_obj, column_mapping, timestamp_format=None):
             event_df[timestamp_col] = pd.to_datetime(event_df[timestamp_col], errors='coerce')
             event_df.dropna(subset=[timestamp_col], inplace=True)
         
-        print(f"Loaded {len(event_df)} events")
+        logger.info(f"Loaded {len(event_df)} events")
         return event_df
         
     except Exception as e:
-        print(f"Error loading CSV: {e}")
+        logger.info(f"Error loading CSV: {e}")
         return None

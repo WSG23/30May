@@ -11,7 +11,7 @@ def load_csv_event_log(csv_file_obj, column_mapping, timestamp_format=None):
     column_mapping: A dictionary like {'Original CSV Header': 'Standardized Name'}
     (where 'Standardized Name' should be the display name, e.g., 'Timestamp (Event Time)')
     """
-    print(f"Attempting to load CSV data.")
+   logger.info(f"Attempting to load CSV data.")
     try:
         # pandas read_csv can handle both file paths and StringIO objects
         df = pd.read_csv(csv_file_obj, dtype=str)
@@ -19,7 +19,7 @@ def load_csv_event_log(csv_file_obj, column_mapping, timestamp_format=None):
         # Validate that all source columns in the mapping exist in the CSV
         for source_col in column_mapping.keys():
             if source_col not in df.columns:
-                print(f"Error: Source column '{source_col}' (mapped to '{column_mapping.get(source_col)}') not found in the CSV. Available columns: {df.columns.tolist()}")
+               logger.info(f"Error: Source column '{source_col}' (mapped to '{column_mapping.get(source_col)}') not found in the CSV. Available columns: {df.columns.tolist()}")
                 return None
 
         standardized_data = {}
@@ -40,7 +40,7 @@ def load_csv_event_log(csv_file_obj, column_mapping, timestamp_format=None):
                     if v == req_display_col:
                         target_internal_key_for_error = k
                         break
-                print(f"Error: Standard column '{req_display_col}' (expected for internal key '{target_internal_key_for_error}') is missing after initial mapping. DataFrame columns: {event_df.columns.tolist()}")
+               logger.info(f"Error: Standard column '{req_display_col}' (expected for internal key '{target_internal_key_for_error}') is missing after initial mapping. DataFrame columns: {event_df.columns.tolist()}")
                 return None
         
         # ✅ REMOVED THE FOLLOWING LINES:
@@ -59,7 +59,7 @@ def load_csv_event_log(csv_file_obj, column_mapping, timestamp_format=None):
 
 
         if TIMESTAMP_COL_DISPLAY not in event_df.columns: 
-            print(f"Error: Display column '{TIMESTAMP_COL_DISPLAY}' is missing after mapping.")
+           logger.info(f"Error: Display column '{TIMESTAMP_COL_DISPLAY}' is missing after mapping.")
             return None
 
         if timestamp_format:
@@ -84,14 +84,14 @@ def load_csv_event_log(csv_file_obj, column_mapping, timestamp_format=None):
                 try:
                     event_df[TIMESTAMP_COL_DISPLAY] = pd.to_datetime(event_df[TIMESTAMP_COL_DISPLAY], format=fmt, errors='raise')
                     parsed_successfully = True
-                    print(f"Successfully parsed timestamps using format: {fmt}")
+                   logger.info(f"Successfully parsed timestamps using format: {fmt}")
                     break
                 except (ValueError, TypeError):
                     continue
             
             # If no format worked, fall back to default parsing
             if not parsed_successfully:
-                print("Warning: Using default timestamp parsing - this may be slow for large datasets")
+               logger.info("Warning: Using default timestamp parsing - this may be slow for large datasets")
                 event_df[TIMESTAMP_COL_DISPLAY] = pd.to_datetime(event_df[TIMESTAMP_COL_DISPLAY], errors='coerce')
 
         event_df.dropna(subset=[TIMESTAMP_COL_DISPLAY], inplace=True)
@@ -101,16 +101,16 @@ def load_csv_event_log(csv_file_obj, column_mapping, timestamp_format=None):
             if col_display_name in event_df.columns:
                 event_df[col_display_name] = event_df[col_display_name].astype(str)
             else:
-                print(f"Warning: Display column '{col_display_name}' missing after processing.")
+               logger.info(f"Warning: Display column '{col_display_name}' missing after processing.")
 
 
-        print(f"Successfully loaded and standardized {len(event_df)} events. Final columns: {event_df.columns.tolist()}")
+       logger.info(f"Successfully loaded and standardized {len(event_df)} events. Final columns: {event_df.columns.tolist()}")
         return event_df
 
     except FileNotFoundError: # This applies if csv_file_obj was a path string
-        print(f"Error: The file was not found.") 
+       logger.info(f"Error: The file was not found.") 
         return None
     except Exception as e:
-        print(f"An unexpected error occurred while loading CSV: {e}")
+       logger.info(f"An unexpected error occurred while loading CSV: {e}")
         traceback.print_exc()
         return None

@@ -53,8 +53,8 @@ class TestEnhancedCSVLoader:
         csv_io = io.StringIO(sample_csv_content)
         result = self.loader.load_csv_event_log(csv_io, valid_column_mapping)
         
-        print(f"DEBUG: Result type: {type(result)}")
-        print(f"DEBUG: Result: {result}")
+       logger.info(f"DEBUG: Result type: {type(result)}")
+       logger.info(f"DEBUG: Result: {result}")
         
         assert result is not None
         
@@ -72,7 +72,7 @@ class TestEnhancedCSVLoader:
         else:
             # If it failed, let's see why but don't fail the test yet (for debugging)
             error_msg = result.get('error', 'Unknown error') if isinstance(result, dict) else str(result)
-            print(f"DEBUG: Test failed with error: {error_msg}")
+           logger.info(f"DEBUG: Test failed with error: {error_msg}")
             # For now, let's make this test pass to see what's happening
             pytest.skip(f"Loader returned error: {error_msg}")
     
@@ -189,7 +189,7 @@ class TestSecureFileHandler:
         else:
             # Debug what went wrong
             error_msg = result.get('error', 'Unknown error')
-            print(f"DEBUG: File handler failed: {error_msg}")
+           logger.info(f"DEBUG: File handler failed: {error_msg}")
     
     def test_invalid_file_extension(self, sample_csv_base64):
         """Test handling of invalid file extension"""
@@ -261,7 +261,7 @@ class TestDataIntegration:
         file_handler = SecureFileHandler()
         file_result = file_handler.process_uploaded_file(sample_csv_base64, 'test.csv')
         
-        print(f"DEBUG: File result: {file_result}")
+       logger.info(f"DEBUG: File result: {file_result}")
         
         assert file_result is not None
         assert isinstance(file_result, dict)
@@ -281,7 +281,7 @@ class TestDataIntegration:
             
             load_result = loader.load_csv_event_log(csv_io, valid_column_mapping)
             
-            print(f"DEBUG: Load result: {load_result}")
+           logger.info(f"DEBUG: Load result: {load_result}")
             
             assert load_result is not None
             
@@ -312,13 +312,13 @@ class TestDebugHelpers:
         csv_io = io.StringIO(sample_csv_content)
         result = loader.load_csv_event_log(csv_io, valid_column_mapping)
         
-        print(f"DEBUG: Loader result type: {type(result)}")
-        print(f"DEBUG: Loader result: {result}")
+       logger.info(f"DEBUG: Loader result type: {type(result)}")
+       logger.info(f"DEBUG: Loader result: {result}")
         
         if isinstance(result, dict):
-            print(f"DEBUG: Dictionary keys: {list(result.keys())}")
+           logger.info(f"DEBUG: Dictionary keys: {list(result.keys())}")
             for key, value in result.items():
-                print(f"DEBUG: {key}: {type(value)} = {value}")
+               logger.info(f"DEBUG: {key}: {type(value)} = {value}")
         
         # This test always passes - it's just for debugging
         assert True
@@ -328,13 +328,13 @@ class TestDebugHelpers:
         handler = SecureFileHandler()
         result = handler.process_uploaded_file(sample_csv_base64, 'test.csv')
         
-        print(f"DEBUG: File handler result type: {type(result)}")
-        print(f"DEBUG: File handler result: {result}")
+       logger.info(f"DEBUG: File handler result type: {type(result)}")
+       logger.info(f"DEBUG: File handler result: {result}")
         
         if isinstance(result, dict):
-            print(f"DEBUG: Dictionary keys: {list(result.keys())}")
+           logger.info(f"DEBUG: Dictionary keys: {list(result.keys())}")
             for key, value in result.items():
-                print(f"DEBUG: {key}: {type(value)} = {value}")
+               logger.info(f"DEBUG: {key}: {type(value)} = {value}")
         
         # This test always passes - it's just for debugging
         assert True

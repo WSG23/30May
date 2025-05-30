@@ -19,7 +19,7 @@ from ui.components.classification_handlers import create_classification_handlers
 from ui.components.graph_handlers import create_graph_handlers  # type: ignore
 
 # Import existing modules (will be refactored in future phases)
-from layout.core_layout import create_main_layout
+from ui.pages.main_page import create_main_layout
 
 
 app = dash.Dash(

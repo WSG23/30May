@@ -1,0 +1,154 @@
+/* Yes/No Toggle Styles (Green for Yes, Red for No) */
+.yes-no-toggle .form-check-input {
+    display: none;
+}
+
+.yes-no-toggle .form-check-label {
+    background-color: #1A2332;
+    color: #E2E8F0;
+    border: 1px solid #2D3748;
+    border-radius: 9999px;
+    padding: 0.375rem 1rem;
+    margin-right: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-block;
+    user-select: none;
+}
+
+.yes-no-toggle .form-check-label:hover {
+    background-color: #2D3748;
+    border-color: #4A5568;
+}
+
+/* Yes option - Green when selected */
+.yes-no-toggle .form-check-input[value="yes"]:checked + .form-check-label {
+    background-color: #2DBE6C !important;
+    border-color: #2DBE6C !important;
+    color: white !important;
+}
+
+/* No option - Red when selected */
+.yes-no-toggle .form-check-input[value="no"]:checked + .form-check-label {
+    background-color: #E02020 !important;
+    border-color: #E02020 !important;
+    color: white !important;
+}
+
+/* Door Type Pills (Entry/Exit and Stairway) */
+.door-type-pill .form-check-input {
+    display: none;
+}
+
+.door-type-pill .form-check-label {
+    background-color: #1A2332;
+    color: #E2E8F0;
+    border: 1px solid #2D3748;
+    border-radius: 9999px;
+    padding: 0.375rem 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-block;
+    user-select: none;
+    width: 100%;
+    text-align: center;
+    font-size: 0.875rem;
+}
+
+.door-type-pill .form-check-label:hover {
+    background-color: #2D3748;
+    border-color: #4A5568;
+}
+
+.door-type-pill .form-check-input:checked + .form-check-label {
+    background-color: #2DBE6C !important;
+    border-color: #2DBE6C !important;
+    color: white !important;
+}
+
+/* Security Range Slider (0-10) */
+.security-range-slider .rc-slider-track {
+    background: linear-gradient(90deg, #2DBE6C 0%, #FFB020 50%, #E02020 100%);
+    height: 6px;
+}
+
+.security-range-slider .rc-slider-handle {
+    border: 2px solid #2196F3;
+    background-color: #2196F3;
+    width: 18px;
+    height: 18px;
+    margin-top: -6px;
+    box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
+}
+
+.security-range-slider .rc-slider-handle:hover,
+.security-range-slider .rc-slider-handle:focus {
+    border-color: #1976D2;
+    background-color: #1976D2;
+    box-shadow: 0 4px 10px rgba(33, 150, 243, 0.4);
+}
+
+.security-range-slider .rc-slider-rail {
+    background-color: #2D3748;
+    height: 6px;
+}
+
+.security-range-slider .rc-slider-mark {
+    top: 12px;
+}
+
+.security-range-slider .rc-slider-mark-text {
+    font-size: 12px;
+    color: #A0AEC0;
+}
+
+/* Door Classification Card Hover Effects */
+.door-classification-card:hover {
+    background-color: #2D3748 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Scrollable Door List */
+.door-list-scrollable::-webkit-scrollbar {
+    width: 8px;
+}
+
+.door-list-scrollable::-webkit-scrollbar-track {
+    background: #1A2332;
+    border-radius: 4px;
+}
+
+.door-list-scrollable::-webkit-scrollbar-thumb {
+    background: #2D3748;
+    border-radius: 4px;
+}
+
+.door-list-scrollable::-webkit-scrollbar-thumb:hover {
+    background: #4A5568;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .door-classification-card {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.75rem !important;
+    }
+    
+    .door-classification-card > div {
+        flex: none !important;
+        width: 100% !important;
+    }
+}
+
+/* Animation effects */
+.door-type-pill .form-check-label,
+.yes-no-toggle .form-check-label {
+    transition: all 0.2s ease-in-out;
+}
+
+.door-type-pill .form-check-label:active,
+.yes-no-toggle .form-check-label:active {
+    transform: scale(0.95);
+}

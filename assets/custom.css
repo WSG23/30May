@@ -1,0 +1,795 @@
+/* assets/custom.css - Enhanced UX Styles */
+
+/* Import Google Fonts for better typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+/* CSS Custom Properties for consistency */
+:root {
+  --color-primary: #1B2A47;
+  --color-accent: #2196F3;
+  --color-success: #2DBE6C;
+  --color-warning: #FFB020;
+  --color-critical: #E02020;
+  --color-background: #0F1419;
+  --color-surface: #1A2332;
+  --color-border: #2D3748;
+  --color-text-primary: #F7FAFC;
+  --color-text-secondary: #E2E8F0;
+  --color-text-tertiary: #A0AEC0;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  
+  --transition-fast: 0.15s ease-out;
+  --transition-normal: 0.3s ease-out;
+  --transition-slow: 0.5s ease-out;
+}
+
+/* Base styles */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
+  background-color: var(--color-background) !important;
+  color: var(--color-text-primary) !important;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes loading-dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+@keyframes progress-flow {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Loading shimmer effect */
+.loading-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Smooth focus transitions */
+*:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.4) !important;
+  transition: box-shadow var(--transition-fast);
+}
+
+/* Enhanced hover effects */
+.hover-lift {
+  transition: all var(--transition-fast);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hover-scale {
+  transition: transform var(--transition-fast);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(33, 150, 243, 0.3);
+  transition: box-shadow var(--transition-normal);
+}
+
+/* Upload area enhancements */
+.upload-area {
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.upload-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.1), transparent);
+  transition: left var(--transition-slow);
+}
+
+.upload-area:hover::before {
+  left: 100%;
+}
+
+.upload-area:hover {
+  border-color: var(--color-accent) !important;
+  background-color: rgba(33, 150, 243, 0.05) !important;
+}
+
+/* Button enhancements */
+.btn-enhanced {
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-fast);
+}
+
+.btn-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-enhanced:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Bootstrap button overrides */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-accent), #42A5F5) !important;
+  border-color: var(--color-accent) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #1976D2, var(--color-accent)) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md) !important;
+}
+
+.btn-secondary {
+  background: transparent !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-secondary) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-accent) !important;
+  color: var(--color-accent) !important;
+  background: rgba(33, 150, 243, 0.1) !important;
+}
+
+/* Card animations */
+.card-animate {
+  animation: slideUp var(--transition-normal);
+}
+
+.card-hover {
+  transition: all var(--transition-normal);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Bootstrap card overrides */
+.card {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-md) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.card-header {
+  background-color: var(--color-surface) !important;
+  border-bottom-color: var(--color-border) !important;
+}
+
+.card-body {
+  color: var(--color-text-primary) !important;
+}
+
+/* Loading states */
+.loading-dots::after {
+  content: '';
+  animation: loading-dots 1.5s infinite;
+}
+
+/* Progress bar enhancements */
+.progress-bar {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-border);
+  border-radius: 9999px;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, var(--color-accent), #42A5F5);
+  background-size: 200% 100%;
+  animation: progress-flow 2s ease-in-out infinite;
+  border-radius: 9999px;
+}
+
+/* Bootstrap progress overrides */
+.progress {
+  background-color: var(--color-border) !important;
+  border-radius: 9999px !important;
+}
+
+.progress .progress-bar {
+  background: linear-gradient(90deg, var(--color-accent), #42A5F5) !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+/* Form enhancements */
+.form-control {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.form-control:focus {
+  background-color: var(--color-background) !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.25) !important;
+}
+
+.form-control::placeholder {
+  color: var(--color-text-tertiary) !important;
+}
+
+.form-input {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  padding: 0.5rem 0.75rem;
+  transition: all var(--transition-fast);
+}
+
+.form-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  background: var(--color-background);
+}
+
+.form-input:invalid {
+  border-color: var(--color-critical);
+  box-shadow: 0 0 0 3px rgba(224, 32, 32, 0.1);
+}
+
+/* Dropdown enhancements */
+.dropdown-menu {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.dropdown-item {
+  color: var(--color-text-primary) !important;
+  transition: background var(--transition-fast) !important;
+}
+
+.dropdown-item:hover {
+  background-color: var(--color-accent) !important;
+  color: white !important;
+}
+
+/* Dash-specific dropdown overrides */
+.Select-control {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.Select-control:hover {
+  border-color: var(--color-accent) !important;
+}
+
+.Select-menu-outer {
+  background-color: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.Select-option {
+  background: transparent !important;
+  color: var(--color-text-primary) !important;
+  transition: background var(--transition-fast) !important;
+}
+
+.Select-option:hover {
+  background-color: var(--color-accent) !important;
+  color: white !important;
+}
+
+.Select-value-label {
+  color: var(--color-text-primary) !important;
+}
+
+.Select-input > input {
+  color: var(--color-text-primary) !important;
+}
+
+.Select-placeholder {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Modern dropdown component overrides */
+.dropdown .dropdown-toggle {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.dropdown .dropdown-menu {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+}
+
+.dropdown .dropdown-menu .dropdown-item {
+  color: var(--color-text-primary) !important;
+}
+
+.dropdown .dropdown-menu .dropdown-item:hover {
+  background-color: var(--color-accent) !important;
+  color: white !important;
+}
+
+/* Table enhancements */
+.table {
+  color: var(--color-text-primary) !important;
+}
+
+.table-enhanced {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.table-enhanced th {
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table-enhanced td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--transition-fast);
+}
+
+.table-enhanced tr:hover td {
+  background-color: rgba(33, 150, 243, 0.05);
+}
+
+/* Stats panel enhancements */
+.stats-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-success));
+}
+
+/* Graph container enhancements */
+.graph-container {
+  position: relative;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.graph-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(33, 150, 243, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Notification styles */
+.notification {
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border-left: 4px solid;
+  animation: slideDown var(--transition-normal);
+}
+
+.notification.success {
+  background: rgba(45, 190, 108, 0.1);
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.notification.error {
+  background: rgba(224, 32, 32, 0.1);
+  border-color: var(--color-critical);
+  color: var(--color-critical);
+}
+
+.notification.warning {
+  background: rgba(255, 176, 32, 0.1);
+  border-color: var(--color-warning);
+  color: var(--color-warning);
+}
+
+.notification.info {
+  background: rgba(33, 150, 243, 0.1);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Modal enhancements */
+.modal-content {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.modal-header {
+  border-bottom-color: var(--color-border) !important;
+}
+
+.modal-footer {
+  border-top-color: var(--color-border) !important;
+}
+
+/* Badge enhancements */
+.badge {
+  font-weight: 500 !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.badge-primary {
+  background-color: var(--color-accent) !important;
+}
+
+.badge-success {
+  background-color: var(--color-success) !important;
+}
+
+.badge-warning {
+  background-color: var(--color-warning) !important;
+}
+
+.badge-danger {
+  background-color: var(--color-critical) !important;
+}
+
+/* Step indicator styles */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all var(--transition-fast);
+}
+
+.step-circle.completed {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.step-circle.current {
+  background-color: var(--color-accent);
+  color: white;
+  box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.2);
+}
+
+.step-circle.pending {
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  color: var(--color-text-tertiary);
+}
+
+.step-label {
+  margin-top: 0.5rem;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  max-width: 80px;
+}
+
+.step-connector {
+  height: 2px;
+  background-color: var(--color-border);
+  flex: 1;
+  margin: 0 1rem;
+  position: relative;
+  top: -20px;
+}
+
+.step-connector.completed {
+  background-color: var(--color-success);
+}
+
+/* Custom input styles */
+input[type="file"] {
+  display: none;
+}
+
+.file-input-label {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-accent);
+  color: white;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.file-input-label:hover {
+  background-color: #1976D2;
+  transform: translateY(-1px);
+}
+
+/* Cytoscape container enhancements */
+#onion-graph {
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden;
+}
+
+/* Processing status enhancements */
+#processing-status {
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(33, 150, 243, 0.1);
+  border: 1px solid rgba(33, 150, 243, 0.3);
+  animation: fadeIn var(--transition-normal);
+}
+
+/* Upload icon enhancements */
+#upload-icon {
+  transition: all var(--transition-normal) !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+#upload-icon:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .stats-panels-container {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+  
+  .upload-area {
+    min-height: 150px !important;
+  }
+  
+  .interactive-setup-container {
+    padding: 1rem !important;
+    margin: 1rem !important;
+    width: calc(100% - 2rem) !important;
+  }
+  
+  .card {
+    margin-bottom: 1rem !important;
+  }
+  
+  .btn {
+    width: 100% !important;
+    margin-bottom: 0.5rem !important;
+  }
+}
+
+@media (max-width: 576px) {
+  body {
+    font-size: 14px !important;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-size: 1.2em !important;
+  }
+  
+  .upload-area {
+    min-height: 120px !important;
+    padding: 1rem !important;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border: #ffffff;
+    --color-text-secondary: #ffffff;
+  }
+}
+
+/* Dark mode refinements */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .card {
+    border: 1px solid #ccc !important;
+    break-inside: avoid;
+  }
+}
+
+/* Utility classes */
+.fade-in { animation: fadeIn var(--transition-normal); }
+.slide-up { animation: slideUp var(--transition-normal); }
+.slide-down { animation: slideDown var(--transition-normal); }
+.slide-in-left { animation: slideInLeft var(--transition-normal); }
+.slide-in-right { animation: slideInRight var(--transition-normal); }
+.scale-in { animation: scaleIn var(--transition-normal); }
+.pulse { animation: pulse 2s infinite; }
+.spin { animation: spin 1s linear infinite; }
+.bounce { animation: bounce 0.5s ease-in-out; }
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-success));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-effect {
+  background: rgba(26, 35, 50, 0.8) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.glow {
+  box-shadow: 0 0 20px rgba(33, 150, 243, 0.3) !important;
+}
+
+.border-gradient {
+  border: 1px solid;
+  border-image: linear-gradient(135deg, var(--color-accent), var(--color-success)) 1;
+}

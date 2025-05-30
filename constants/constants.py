@@ -1,10 +1,10 @@
-# yosai_intel_dashboard/constants.py
-REQUIRED_INTERNAL_COLUMNS = {
-    'Timestamp': 'Timestamp (Event Time)',
-    'UserID': 'UserID (Person Identifier)',
-    'DoorID': 'DoorID (Device Name)',
-    'EventType': 'EventType (Access Result)'
-}
+# constants/constants.py
+"""
+Constants - Import from unified settings
+"""
+from config.unified_settings import get_settings
 
-# Debug print to verify constants
-print(f"DEBUG: REQUIRED_INTERNAL_COLUMNS = {REQUIRED_INTERNAL_COLUMNS}")
+settings = get_settings()
+
+# Re-export for backward compatibility
+REQUIRED_INTERNAL_COLUMNS = settings.required_columns

@@ -1,9 +1,9 @@
 # config/processing_config.py
 """
-Data processing configuration
+Data processing configuration - FIXED TYPE ANNOTATIONS
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Dict, Any
 
 @dataclass
@@ -16,8 +16,9 @@ class ProcessingConfig:
     
     # Event filtering
     primary_positive_indicator: str = "ACCESS GRANTED"
-    invalid_phrases_exact: List[str] = None
-    invalid_phrases_contain: List[str] = None
+    # FIXED: Use field(default_factory) instead of None
+    invalid_phrases_exact: List[str] = field(default_factory=lambda: ["INVALID ACCESS LEVEL"])
+    invalid_phrases_contain: List[str] = field(default_factory=lambda: ["NO ENTRY MADE"])
     
     # Cleaning thresholds
     same_door_scan_threshold_seconds: int = 10
@@ -26,13 +27,6 @@ class ProcessingConfig:
     # Performance limits
     max_processing_time: int = 300  # 5 minutes
     chunk_size: int = 10000
-    
-    def __post_init__(self):
-        if self.invalid_phrases_exact is None:
-            self.invalid_phrases_exact = ["INVALID ACCESS LEVEL"]
-            
-        if self.invalid_phrases_contain is None:
-            self.invalid_phrases_contain = ["NO ENTRY MADE"]
 
 def get_processing_config() -> ProcessingConfig:
     """Get processing configuration"""

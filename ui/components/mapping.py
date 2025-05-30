@@ -7,7 +7,7 @@ Extracted from core_layout.py and mapping_callbacks.py with consistent reduced w
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 from styles.style_config import COLORS
-from constants import REQUIRED_INTERNAL_COLUMNS
+from constants.constants import REQUIRED_INTERNAL_COLUMNS
 
 
 class MappingComponent:

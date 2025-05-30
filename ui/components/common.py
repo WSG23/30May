@@ -6,7 +6,7 @@ Loading states, notifications, modals, etc.
 
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from styles.style_config import COLORS, ANIMATIONS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS
+from ui.themes.style_config import COLORS, ANIMATIONS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS
 
 
 class LoadingComponent:

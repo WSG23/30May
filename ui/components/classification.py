@@ -6,7 +6,7 @@ Extracted from core_layout.py and graph_callbacks.py
 
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from styles.style_config import COLORS, SPACING, BORDER_RADIUS, SHADOWS, TYPOGRAPHY
+from ui.themes.style_config import COLORS, SPACING, BORDER_RADIUS, SHADOWS, TYPOGRAPHY
 
 
 class ClassificationComponent:

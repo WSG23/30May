@@ -13,7 +13,7 @@ from dash import Input, Output, State, html, dcc
 
 # Import UI components
 from ui.components.upload import create_upload_component
-from styles.graph_styles import upload_icon_img_style
+from ui.themes.graph_styles import upload_icon_img_style
 from constants import REQUIRED_INTERNAL_COLUMNS
 
 

@@ -10,8 +10,8 @@ import mimetypes
 import hashlib
 import logging
 
-from shared.exceptions import FileProcessingError, ValidationError
-from shared.validators import CSVValidator
+from core.exceptions import FileProcessingError, ValidationError
+from utils.validators import CSVValidator
 from utils.error_handler import error_boundary
 from utils.input_sanitizer import InputSanitizer
 from config.constants import FILE_LIMITS

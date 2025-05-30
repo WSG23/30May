@@ -7,8 +7,8 @@ import pandas as pd
 from typing import Dict, List, Tuple, Any, Optional
 import re
 
-from shared.exceptions import ValidationError, DataProcessingError
-from shared.validators import CSVValidator, MappingValidator
+from core.exceptions import ValidationError, DataProcessingError
+from utils.validators import CSVValidator, MappingValidator
 from config.constants import REQUIRED_INTERNAL_COLUMNS, FILE_LIMITS
 
 class EnhancedDataValidator:

@@ -5,7 +5,7 @@ Extracted from core_layout.py and graph_callbacks.py
 """
 
 from dash import html
-from styles.style_config import COLORS, UI_VISIBILITY
+from ui.themes.style_config import COLORS, UI_VISIBILITY
 
 
 class StatsComponent:

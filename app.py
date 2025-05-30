@@ -13,10 +13,10 @@ from ui.components.mapping import create_mapping_component  # type: ignore
 from ui.components.classification import create_classification_component  # type: ignore
 from ui.components.graph import create_graph_component  # type: ignore
 from ui.components.stats import create_stats_component  # type: ignore
-from ui.handlers.upload_handlers import create_upload_handlers  # type: ignore
-from ui.handlers.mapping_handlers import create_mapping_handlers  # type: ignore
-from ui.handlers.classification_handlers import create_classification_handlers  # type: ignore
-from ui.handlers.graph_handlers import create_graph_handlers  # type: ignore
+from ui.components.upload_handlers import create_upload_handlers  # type: ignore
+from ui.components.mapping_handlers import create_mapping_handlers  # type: ignore
+from ui.components.classification_handlers import create_classification_handlers  # type: ignore
+from ui.components.graph_handlers import create_graph_handlers  # type: ignore
 
 # Import existing modules (will be refactored in future phases)
 from layout.core_layout import create_main_layout

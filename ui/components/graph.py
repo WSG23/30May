@@ -6,8 +6,8 @@ Extracted from core_layout.py and graph_callbacks.py
 
 from dash import html, dcc
 import dash_cytoscape as cyto
-from styles.style_config import COLORS
-from styles.graph_styles import (
+from ui.themes.style_config import COLORS
+from ui.themes.graph_styles import (
     centered_graph_box_style,
     cytoscape_inside_box_style,
     tap_node_data_centered_style,

@@ -3,7 +3,7 @@
 Graph styling configuration for Cytoscape components
 """
 
-from styles.style_config import COLORS, SPACING, BORDER_RADIUS, SHADOWS, TYPOGRAPHY
+from ui.themes.style_config import COLORS, SPACING, BORDER_RADIUS, SHADOWS, TYPOGRAPHY
 
 # Cytoscape graph styles
 GRAPH_STYLES = [

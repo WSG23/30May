@@ -10,7 +10,7 @@ from dash.dependencies import ALL
 
 # Import UI components
 from ui.components.mapping import create_mapping_component, create_mapping_validator
-from styles.style_config import COLORS
+from ui.themes.style_config import COLORS
 
 
 class MappingHandlers:

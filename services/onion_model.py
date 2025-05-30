@@ -31,7 +31,7 @@ from typing import Dict, List, Tuple, Any, Optional
 import logging
 
 from constants.constants import REQUIRED_INTERNAL_COLUMNS
-from shared.exceptions import DataProcessingError
+from core.exceptions import DataProcessingError
 
 logger = logging.getLogger(__name__)
 

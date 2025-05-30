@@ -3,13 +3,13 @@
 Shared utilities package to prevent circular imports
 """
 
-from .exceptions import (
+from ..core.exceptions import (
     YosaiError,
     DataProcessingError,
     ValidationError,
     ConfigurationError
 )
-from .validators import (
+from ..utils.validators import (
     CSVValidator,
     MappingValidator,
     ClassificationValidator

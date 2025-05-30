@@ -14,7 +14,7 @@ from ..utils.validators import (
     MappingValidator,
     ClassificationValidator
 )
-from .utils import (
+from ..utils.helpers import (
     format_file_size,
     safe_json_loads,
     sanitize_filename,

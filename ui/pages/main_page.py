@@ -473,21 +473,22 @@ def create_mapping_section_with_fallback():
 
 
 def create_classification_section():
-    """Step 2 & 3: Facility Setup + Door Classification"""
+    """Step 2 & 3: Facility Setup + Door Classification with modern UI"""
     try:
         from ui.components.classification import create_classification_component
         classification_component = create_classification_component()
         return classification_component.create_entrance_verification_section()
     except ImportError:
-        # Fallback UI
+        # Fallback UI with modern components
         return html.Div(
             id='entrance-verification-ui-section',
             style={'display': 'none'},
             children=[
+                # === Step 2: Facility Setup Card ===
                 html.Div(
                     [
                         html.H4(
-                            "Facility Setup",
+                            "Step 2: Facility Setup",
                             style={
                                 'color': COLORS['text_primary'],
                                 'textAlign': 'center',
@@ -496,9 +497,9 @@ def create_classification_section():
                             }
                         ),
 
-                        # Floor slider
+                        # ── Modern Floors Slider (replacing dropdown) ─────────────────────────
                         html.Label(
-                            "Floors:",
+                            "How many floors are in the facility?",
                             style={
                                 'color': COLORS['text_primary'],
                                 'fontWeight': 'bold',
@@ -508,53 +509,82 @@ def create_classification_section():
                                 'display': 'block'
                             }
                         ),
-
                         dcc.Slider(
-                            id="num-floors-slider",
+                            id="num-floors-input",  # Keep same ID for compatibility
                             min=1,
-                            max=51,
+                            max=20,
                             step=1,
-                            value=1,
-                            marks={i: str(i) for i in range(1, 51, 5)},
+                            value=4,  # Default 4 floors
+                            marks={i: str(i) for i in range(1, 21, 2)},  # Every 2nd number
                             tooltip={"always_visible": False, "placement": "bottom"},
                             updatemode="drag",
+                            className="modern-floor-slider",
                             style={'marginBottom': '6px'}
                         ),
-
                         html.Div(
                             id="num-floors-display",
                             style={
                                 "fontSize": "0.9rem",
-                                "color": "#DDD",
+                                "color": COLORS['text_secondary'],
                                 "marginTop": "6px",
-                                "textAlign": "center"
+                                "textAlign": "center",
+                                "fontWeight": "600"
                             }
                         ),
+                        html.Div(
+                            "Count floors above ground including mezzanines and secure zones",
+                            style={
+                                "fontSize": "0.8rem",
+                                "color": COLORS['text_tertiary'],
+                                "marginTop": "4px",
+                                "textAlign": "center",
+                                "marginBottom": "24px"
+                            }
+                        ),
+                        # ── End Modern Floors Slider ──────────────────────────────────────────
 
-                        # Manual Map toggle
+                        # ── Modern Toggle Switch (replacing radio items) ──────────────────────
                         html.Label(
-                            "Manual Map?",
+                            "Enable Manual Door Classification?",
                             style={
                                 'color': COLORS['text_primary'],
                                 'fontWeight': 'bold',
                                 'fontSize': '1rem',
-                                'marginTop': '24px',
-                                'marginBottom': '8px',
+                                'marginBottom': '12px',
                                 'textAlign': 'center',
                                 'display': 'block'
                             }
                         ),
-                        dcc.RadioItems(
-                            id='manual-map-toggle',
-                            options=[
-                                {'label': 'Yes', 'value': 'yes'},
-                                {'label': 'No',  'value': 'no'}
-                            ],
-                            value='yes',
-                            inline=True,
-                            labelStyle={'marginRight': '24px', 'color': COLORS['text_primary']},
-                            inputStyle={'marginRight': '6px'}
-                        ),
+                        
+                        # Modern Toggle Switch Container
+                        html.Div([
+                            # Hidden radio items for functionality (keep existing logic)
+                            dcc.RadioItems(
+                                id='manual-map-toggle',
+                                options=[
+                                    {'label': '', 'value': 'no'}, 
+                                    {'label': '', 'value': 'yes'}
+                                ],
+                                value='no',  # Default to No
+                                style={'display': 'none'}  # Hide the actual radio items
+                            ),
+                            
+                            # Visual Toggle Switch
+                            html.Div([
+                                html.Div([
+                                    html.Span("No", className="toggle-label-left"),
+                                    html.Div([
+                                        html.Div(className="toggle-slider")
+                                    ], className="toggle-switch"),
+                                    html.Span("Yes", className="toggle-label-right")
+                                ], className="toggle-container", id="visual-toggle")
+                            ], className="modern-toggle-wrapper")
+                        ], style={
+                            'display': 'flex',
+                            'justifyContent': 'center',
+                            'alignItems': 'center'
+                        })
+                        # ── End Modern Toggle Switch ───────────────────────────────────────────
                     ],
                     style={
                         'padding': '20px',
@@ -567,19 +597,23 @@ def create_classification_section():
                     }
                 ),
 
-                # Door Classification Table Container
+                # === Step 3: Door Classification Table Container (hidden initially) ===
                 html.Div(
                     id="door-classification-table-container",
                     style={'display': 'none'},
                     children=[
                         html.H4(
-                            "Door Classification",
+                            "Step 3: Door Classification",
                             style={
                                 'color': COLORS['text_primary'],
                                 'textAlign': 'center',
                                 'marginBottom': '12px',
                                 'fontSize': '1.3rem'
                             }
+                        ),
+                        html.P(
+                            "Assign a security level to each door below:",
+                            style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '8px'}
                         ),
                         html.Div(id="door-classification-table")
                     ]

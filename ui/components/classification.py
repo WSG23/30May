@@ -1,16 +1,16 @@
 # ui/components/classification.py
 """
 Door classification component for facility setup and door categorization
-Extracted from core_layout.py and graph_callbacks.py
+Updated with modern toggle and slider components
 """
 
-from dash import html, dcc
+from dash import html, dcc, callback, Input, Output
 import dash_bootstrap_components as dbc
 from ui.themes.style_config import COLORS, SPACING, BORDER_RADIUS, SHADOWS, TYPOGRAPHY
 
 
 class ClassificationComponent:
-    """Centralized classification component with all related UI elements"""
+    """Centralized classification component with modern UI elements"""
     
     def __init__(self):
         # Define Security Levels for the slider (0-10 range)
@@ -44,20 +44,20 @@ class ClassificationComponent:
         )
     
     def create_facility_setup_card(self):
-        """Creates Step 2: Facility Setup card"""
+        """Creates Step 2: Facility Setup card with modern slider and toggle"""
         return dbc.Card([
             dbc.CardHeader(
                 html.H4("Step 2: Facility Setup", className="text-center", 
                        style={'color': COLORS['text_primary']})
             ),
             dbc.CardBody([
-                self.create_floors_input_row(),
-                self.create_manual_toggle_row()
+                self.create_floors_slider_row(),
+                self.create_modern_toggle_row()
             ])
         ], className="shadow-sm p-4 my-4 rounded", style={'backgroundColor': COLORS['surface']})
     
-    def create_floors_input_row(self):
-        """Creates the number of floors input row"""
+    def create_floors_slider_row(self):
+        """Creates the modern floors slider replacing the dropdown"""
         return dbc.Row([
             dbc.Col([
                 html.Label(
@@ -66,35 +66,55 @@ class ClassificationComponent:
                     style={
                         'color': COLORS['text_primary'],
                         'fontSize': TYPOGRAPHY['text_base'],
-                        'marginBottom': SPACING['sm']
+                        'marginBottom': SPACING['sm'],
+                        'textAlign': 'center',
+                        'display': 'block'
                     }
                 ),
-                dcc.Dropdown(
-                    id="num-floors-input",
-                    options=[{"label": str(i), "value": i} for i in range(1, 11)],
-                    value=4,
-                    clearable=False,
+                
+                # Modern Slider (1-20 floors)
+                dcc.Slider(
+                    id="num-floors-input",  # Keep same ID for compatibility
+                    min=1,
+                    max=20,
+                    step=1,
+                    value=4,  # Default value
+                    marks={i: str(i) for i in range(1, 21, 2)},  # Every 2nd number to avoid crowding
+                    tooltip={"always_visible": False, "placement": "bottom"},
+                    updatemode="drag",
+                    className="modern-floor-slider",
+                    style={'marginBottom': SPACING['sm']}
+                ),
+                
+                # Live display of slider value
+                html.Div(
+                    id="num-floors-display",
                     style={
-                        "width": "100%", 
-                        "marginBottom": SPACING['sm'],
-                        'backgroundColor': COLORS['surface'], 
-                        'color': COLORS['text_primary'], 
-                        'borderColor': COLORS['border']
+                        "fontSize": "0.9rem",
+                        "color": COLORS['text_secondary'],
+                        "marginTop": "6px",
+                        "textAlign": "center",
+                        "fontWeight": "600"
                     }
                 ),
+                
+                # Helper text
                 html.Small(
                     "Count floors above ground including mezzanines and secure zones.", 
                     className="text-muted", 
                     style={
                         'color': COLORS['text_tertiary'],
-                        'fontSize': TYPOGRAPHY['text_sm']
+                        'fontSize': TYPOGRAPHY['text_sm'],
+                        'textAlign': 'center',
+                        'display': 'block',
+                        'marginTop': '4px'
                     }
                 )
             ])
         ], style={'marginBottom': SPACING['xl']})
     
-    def create_manual_toggle_row(self):
-        """Creates the manual classification toggle with pill-style design (Yes=Green, No=Red)"""
+    def create_modern_toggle_row(self):
+        """Creates the modern toggle switch for manual classification"""
         return dbc.Row([
             dbc.Col([
                 html.Label(
@@ -103,29 +123,42 @@ class ClassificationComponent:
                     style={
                         'color': COLORS['text_primary'],
                         'fontSize': TYPOGRAPHY['text_base'],
-                        'marginBottom': SPACING['sm']
+                        'marginBottom': SPACING['base'],
+                        'textAlign': 'center',
+                        'display': 'block'
                     }
                 ),
-                dcc.RadioItems(
-                    id='manual-map-toggle',
-                    options=[
-                        {'label': 'Yes', 'value': 'yes'}, 
-                        {'label': 'No', 'value': 'no'}
-                    ],
-                    value='yes', 
-                    inline=True,
-                    className="yes-no-toggle",
-                    labelStyle={
-                        'display': 'inline-block',
-                        'marginRight': SPACING['sm'],
-                        'padding': f"{SPACING['xs']} {SPACING['base']}",
-                        'borderRadius': BORDER_RADIUS['full'],
-                        'border': f"1px solid {COLORS['border']}",
-                        'cursor': 'pointer',
-                        'transition': 'all 0.2s ease',
-                        'fontSize': TYPOGRAPHY['text_sm']
-                    }
-                )
+                
+                # Modern Toggle Switch Container
+                html.Div([
+                    html.Div([
+                        # Hidden radio items for functionality (keep existing logic)
+                        dcc.RadioItems(
+                            id='manual-map-toggle',
+                            options=[
+                                {'label': '', 'value': 'no'}, 
+                                {'label': '', 'value': 'yes'}
+                            ],
+                            value='no',  # Default to No
+                            style={'display': 'none'}  # Hide the actual radio items
+                        ),
+                        
+                        # Visual Toggle Switch
+                        html.Div([
+                            html.Div([
+                                html.Span("No", className="toggle-label-left"),
+                                html.Div([
+                                    html.Div(className="toggle-slider")
+                                ], className="toggle-switch"),
+                                html.Span("Yes", className="toggle-label-right")
+                            ], className="toggle-container", id="visual-toggle")
+                        ], className="modern-toggle-wrapper")
+                    ])
+                ], style={
+                    'display': 'flex',
+                    'justifyContent': 'center',
+                    'alignItems': 'center'
+                })
             ])
         ])
     
@@ -158,6 +191,7 @@ class ClassificationComponent:
             className="shadow-sm p-4 my-4 rounded"
         )
     
+    # Keep all existing methods for door classification table, etc.
     def create_scrollable_door_list(self, doors_to_classify, existing_classifications=None, num_floors=3):
         """Creates a scrollable door classification list with header"""
         if not doors_to_classify:
@@ -238,8 +272,8 @@ class ClassificationComponent:
         """Creates a single door classification row with horizontal layout"""
         # Pre-select values based on existing classifications
         pre_sel_floor = current_classification.get('floor', '1')
-        pre_sel_door_type = current_classification.get('door_type', 'none')  # 'entry_exit', 'stairway', or 'none'
-        pre_sel_security_val = current_classification.get('security_level', 5)  # 0-10 range
+        pre_sel_door_type = current_classification.get('door_type', 'none')
+        pre_sel_security_val = current_classification.get('security_level', 5)
         
         return html.Div([
             # Door ID Label
@@ -271,7 +305,7 @@ class ClassificationComponent:
                 )
             ], style={'flex': '0 0 80px', 'marginRight': SPACING['sm']}),
             
-            # Entry/Exit Toggle (Radio style, pill appearance)
+            # Entry/Exit Toggle
             html.Div([
                 dcc.RadioItems(
                     id={'type': 'door-type-toggle', 'index': door_id},
@@ -293,7 +327,7 @@ class ClassificationComponent:
                 )
             ], style={'flex': '0 0 100px', 'marginRight': SPACING['sm']}),
             
-            # Stairway Toggle (Radio style, pill appearance)
+            # Stairway Toggle
             html.Div([
                 dcc.RadioItems(
                     id={'type': 'stairway-toggle', 'index': door_id},
@@ -315,7 +349,7 @@ class ClassificationComponent:
                 )
             ], style={'flex': '0 0 100px', 'marginRight': SPACING['sm']}),
             
-            # Security Level Slider (0-10 range)
+            # Security Level Slider
             html.Div([
                 dcc.Slider(
                     id={'type': 'security-level-slider', 'index': door_id},

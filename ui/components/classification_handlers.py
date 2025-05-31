@@ -1,15 +1,14 @@
 # ui/handlers/classification_handlers.py
 """
-Classification callback handlers - extracted from graph_callbacks.py
-Separated business logic from UI definitions
+Classification callback handlers - Updated with modern slider support
 """
 
 import json
 from dash import Input, Output, State, html, callback, no_update
 from dash.dependencies import ALL
 
-# Import UI components - type: ignore to suppress Pylance warnings
-from ui.components.classification import create_classification_component  # type: ignore
+# Import UI components
+from ui.components.classification import create_classification_component
 from utils.logging_config import get_logger
 logger = get_logger(__name__)
 
@@ -25,7 +24,25 @@ class ClassificationHandlers:
         """Register all classification-related callbacks"""
         self._register_door_table_generation_handler()
         self._register_door_type_mutual_exclusion_handler()
-        # Note: Floor slider callback is handled in main_page.py to avoid duplicates
+        self._register_floor_slider_display_handler()  # NEW: Handle slider display
+        
+    def _register_floor_slider_display_handler(self):
+        """Update floor display when slider value changes"""
+        @self.app.callback(
+            Output("num-floors-display", "children"),
+            Input("num-floors-input", "value"),
+            prevent_initial_call=False
+        )
+        def update_floor_display(value):
+            """Update the floor display text based on slider value"""
+            if value is None:
+                value = 4  # Default value
+            
+            floors = int(value)
+            if floors == 1:
+                return "1 floor"
+            else:
+                return f"{floors} floors"
         
     def _register_door_table_generation_handler(self):
         """Generates door classification table when conditions are met"""
@@ -34,7 +51,7 @@ class ClassificationHandlers:
             [
                 Input('confirm-header-map-button', 'n_clicks'),
                 Input('manual-map-toggle', 'value'),
-                Input('num-floors-input', 'value')
+                Input('num-floors-input', 'value')  # Updated to handle slider
             ],
             [
                 State('all-doors-from-csv-store', 'data'),
@@ -51,10 +68,13 @@ class ClassificationHandlers:
                 logger.info("DEBUG: Not in manual mode or no doors available for classification table.")
                 return []
                 
+            # Handle slider value (ensure it's an integer)
+            num_floors_int = int(num_floors) if num_floors is not None else 4
+                
             return self._generate_classification_table(
                 all_doors_from_store_data,
                 existing_saved_classifications,
-                num_floors or 3
+                num_floors_int
             )
     
     def _register_door_type_mutual_exclusion_handler(self):
@@ -137,7 +157,7 @@ class ClassificationHandlers:
             logger.info(f"Error generating classification table: {e}")
             return [html.P(f"Error generating classification table: {str(e)}", 
                           style={'color': 'red', 'textAlign': 'center'})]
-    
+
     def extract_current_classifications_from_inputs(self, floor_values, door_type_values, stairway_values, 
                                                    security_slider_values, all_door_ids):
         """Extract current classification values from form inputs - updated for new structure"""
@@ -209,48 +229,7 @@ class ClassificationHandlers:
             'high_security': high_security,
             'avg_security_level': round(avg_security, 1)
         }
-    
-    def validate_classification_completeness(self, classifications, all_doors):
-        """Validate classification completeness"""
-        if not all_doors:
-            return {
-                'is_complete': True,
-                'total_doors': 0,
-                'classified_doors': 0,
-                'missing_count': 0,
-                'missing_doors': [],
-                'message': 'No doors to classify'
-            }
-        
-        missing_doors = []
-        incomplete_doors = []
-        
-        for door_id in all_doors:
-            if door_id not in classifications:
-                missing_doors.append(door_id)
-                continue
-            
-            classification = classifications[door_id]
-            
-            # Check if required fields are present
-            if not all(field in classification for field in ['floor', 'security_level']):
-                incomplete_doors.append(door_id)
-        
-        total_doors = len(all_doors)
-        missing_count = len(missing_doors) + len(incomplete_doors)
-        classified_count = total_doors - missing_count
-        is_complete = missing_count == 0
-        
-        return {
-            'is_complete': is_complete,
-            'total_doors': total_doors,
-            'classified_doors': classified_count,
-            'missing_count': missing_count,
-            'missing_doors': missing_doors,
-            'incomplete_doors': incomplete_doors,
-            'message': self._get_validation_message(is_complete, missing_count, total_doors)
-        }
-    
+
     def _get_validation_message(self, is_complete, missing_count, total_doors):
         """Get user-friendly validation message"""
         if is_complete:

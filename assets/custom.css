@@ -836,3 +836,249 @@ input[type="file"] {
   font-size: 0.8rem;
   top: 16px;    /* push labels slightly below the 8px track */
 }
+
+/* assets/custom.css - Modern UI Components */
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MODERN FLOOR SLIDER STYLES
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* 1) Dark rail background, 8px tall, rounded corners */
+.modern-floor-slider .rc-slider-rail {
+  background-color: #333;
+  height: 8px;
+  border-radius: 4px;
+}
+
+/* 2) Filled portion (track before handle) in lighter gray */
+.modern-floor-slider .rc-slider-track {
+  background-color: #555;
+  height: 8px;
+  border-radius: 4px;
+}
+
+/* 3) Style the handle: white border, bright blue fill, 18×18px */
+.modern-floor-slider .rc-slider-handle {
+  border: 2px solid #FFF;
+  background-color: #2196F3; /* Match COLORS['accent'] */
+  width: 18px;
+  height: 18px;
+  margin-top: -5px; /* to center on the 8px track */
+  box-shadow: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+/* 4) On :hover or :active, add a subtle blue glow behind handle */
+.modern-floor-slider .rc-slider-handle:hover,
+.modern-floor-slider .rc-slider-handle:active,
+.modern-floor-slider .rc-slider-handle:focus {
+  box-shadow: 0 0 12px rgba(33, 150, 243, 0.6);
+  background-color: #42A5F5; /* Lighter blue on hover */
+}
+
+/* 5) Hide the default dot markers (we only want the numeric tick labels) */
+.modern-floor-slider .rc-slider-dot {
+  display: none;
+}
+
+/* 6) Style the tick‐mark labels (1, 2, …, 20) */
+.modern-floor-slider .rc-slider-mark-text {
+  color: #E2E8F0; /* COLORS['text_secondary'] */
+  font-size: 0.8rem;
+  top: 16px; /* push labels slightly below the track */
+  font-weight: 500;
+}
+
+/* 7) Active/selected tick mark styling */
+.modern-floor-slider .rc-slider-mark-text-active {
+  color: #2196F3; /* Highlight current value */
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MODERN TOGGLE SWITCH STYLES  
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Toggle wrapper container */
+.modern-toggle-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0;
+}
+
+/* Main toggle container */
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  user-select: none;
+  cursor: pointer;
+}
+
+/* Toggle switch background */
+.toggle-switch {
+  position: relative;
+  width: 200px;  /* Requested width */
+  height: 40px;  /* Requested height */
+  background-color: #fff;  /* Default (No) is white */
+  border: 2px solid #ddd;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Toggle switch when active (Yes selected) */
+.toggle-switch.active {
+  background-color: #2196F3;  /* Default blue for Yes */
+  border-color: #2196F3;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Toggle slider (the moving circle) */
+.toggle-slider {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 32px;
+  height: 32px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+/* Toggle slider when active (moved to right) */
+.toggle-switch.active .toggle-slider {
+  left: calc(100% - 35px); /* Move to right side */
+  background-color: #fff;
+}
+
+/* Toggle labels */
+.toggle-label-left,
+.toggle-label-right {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #A0AEC0; /* COLORS['text_tertiary'] */
+  transition: color 0.3s ease;
+  min-width: 30px;
+  text-align: center;
+}
+
+/* Active label styling */
+.toggle-label-left.active {
+  color: #F7FAFC; /* COLORS['text_primary'] */
+}
+
+.toggle-label-right.active {
+  color: #F7FAFC; /* COLORS['text_primary'] */
+}
+
+/* Hover effects */
+.toggle-container:hover .toggle-switch {
+  transform: scale(1.02);
+}
+
+.toggle-container:hover .toggle-slider {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Focus states for accessibility */
+.toggle-switch:focus-within {
+  outline: 2px solid #2196F3;
+  outline-offset: 2px;
+}
+
+/* Animation for smooth transitions */
+@keyframes toggleSlide {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(165px);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN FOR SMALLER SCREENS
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .toggle-switch {
+    width: 160px;  /* Slightly smaller on mobile */
+    height: 36px;
+  }
+  
+  .toggle-slider {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .toggle-switch.active .toggle-slider {
+    left: calc(100% - 31px);
+  }
+  
+  .modern-floor-slider .rc-slider-mark-text {
+    font-size: 0.7rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   INTEGRATION WITH EXISTING CLASSIFICATION STYLES
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Ensure the new components work well with existing door classification table */
+.door-classification-card .modern-floor-slider {
+  margin: 8px 0;
+}
+
+/* Security level sliders in door rows */
+.security-range-slider .rc-slider-rail {
+  background-color: #2D3748;
+  height: 6px;
+}
+
+.security-range-slider .rc-slider-track {
+  background-color: #2196F3;
+  height: 6px;
+}
+
+.security-range-slider .rc-slider-handle {
+  border: 1px solid #fff;
+  background-color: #2196F3;
+  width: 14px;
+  height: 14px;
+  margin-top: -4px;
+}
+
+.security-range-slider .rc-slider-handle:hover {
+  box-shadow: 0 0 6px rgba(33, 150, 243, 0.6);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   DARK THEME COMPATIBILITY
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Ensure components look good in dark theme */
+body {
+  --toggle-bg-inactive: #fff;
+  --toggle-bg-active: #2196F3;
+  --toggle-border: #ddd;
+  --toggle-slider-bg: #fff;
+  --slider-rail-bg: #333;
+  --slider-track-bg: #555;
+  --slider-handle-bg: #2196F3;
+}
+
+/* Optional: Light theme overrides (if needed) */
+[data-theme="light"] {
+  --toggle-bg-inactive: #f8f9fa;
+  --toggle-bg-active: #2196F3;
+  --toggle-border: #dee2e6;
+  --slider-rail-bg: #e9ecef;
+  --slider-track-bg: #adb5bd;
+}

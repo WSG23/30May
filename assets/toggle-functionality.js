@@ -1,17 +1,21 @@
 // assets/toggle-functionality.js
-// Modern Toggle Switch Functionality
+// Fixed Modern Toggle Switch Functionality for Dash Integration
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Toggle functionality loaded');
-    initializeToggleSwitches();
+    console.log('🎛️ Toggle functionality loaded');
+    setTimeout(initializeToggleSwitches, 100); // Small delay to ensure DOM is ready
 });
 
 // Initialize toggle switch functionality
 function initializeToggleSwitches() {
+    console.log('🔄 Initializing toggle switches...');
+    
     // Find all toggle containers
     const toggleContainers = document.querySelectorAll('.toggle-container');
+    console.log(`Found ${toggleContainers.length} toggle containers`);
     
-    toggleContainers.forEach(container => {
+    toggleContainers.forEach((container, index) => {
+        console.log(`Setting up toggle ${index + 1}`);
         setupToggleSwitch(container);
     });
 }
@@ -22,9 +26,12 @@ function setupToggleSwitch(container) {
     const leftLabel = container.querySelector('.toggle-label-left');
     const rightLabel = container.querySelector('.toggle-label-right');
     
-    if (!toggleSwitch) return;
+    if (!toggleSwitch) {
+        console.warn('Toggle switch element not found');
+        return;
+    }
     
-    // Find the associated hidden radio buttons
+    // Find the associated hidden radio items - improved search
     const radioItems = findAssociatedRadioItems(container);
     
     if (!radioItems) {
@@ -32,17 +39,24 @@ function setupToggleSwitch(container) {
         return;
     }
     
-    // Set initial state based on radio button value
-    updateToggleVisualState(container, radioItems.value === 'yes');
+    console.log('✅ Found radio items:', radioItems.id);
     
-    // Add click event listener
+    // Set initial state based on radio button value
+    const currentValue = getCurrentRadioValue(radioItems);
+    updateToggleVisualState(container, currentValue === 'yes');
+    
+    // Add click event listener to the entire toggle container
     container.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
+        console.log('🖱️ Toggle clicked');
+        
         // Toggle the state
         const isCurrentlyActive = toggleSwitch.classList.contains('active');
         const newValue = isCurrentlyActive ? 'no' : 'yes';
+        
+        console.log(`Toggling from ${isCurrentlyActive ? 'yes' : 'no'} to ${newValue}`);
         
         // Update the hidden radio button
         updateRadioValue(radioItems, newValue);
@@ -50,25 +64,60 @@ function setupToggleSwitch(container) {
         // Update visual state
         updateToggleVisualState(container, newValue === 'yes');
         
-        // Trigger change event for Dash callbacks
-        triggerDashCallback(radioItems);
+        // Trigger change event for Dash callbacks - multiple methods
+        triggerDashCallback(radioItems, newValue);
     });
     
     // Watch for external changes to radio buttons (from Dash)
     observeRadioChanges(radioItems, container);
+    
+    console.log('✅ Toggle switch setup complete');
 }
 
-// Find the associated radio items for a toggle container
+// Improved function to find associated radio items
 function findAssociatedRadioItems(container) {
-    // Look for radio items in the same parent or nearby
+    // Method 1: Look for radio items with manual-map-toggle ID in the same parent tree
     let parent = container.parentElement;
-    while (parent && !parent.querySelector('input[type="radio"]')) {
+    let radioContainer = null;
+    
+    // Search up the DOM tree
+    while (parent && parent !== document.body) {
+        radioContainer = parent.querySelector('#manual-map-toggle');
+        if (radioContainer) {
+            console.log('Found radio container via parent search');
+            break;
+        }
         parent = parent.parentElement;
-        if (parent === document.body) break;
     }
     
-    const radioContainer = parent ? parent.querySelector('[id*="manual-map-toggle"]') : null;
+    // Method 2: Direct document search if parent search fails
+    if (!radioContainer) {
+        radioContainer = document.querySelector('#manual-map-toggle');
+        if (radioContainer) {
+            console.log('Found radio container via document search');
+        }
+    }
+    
+    // Method 3: Look for any radio items in nearby containers
+    if (!radioContainer) {
+        const allRadioItems = document.querySelectorAll('input[type="radio"][value="yes"], input[type="radio"][value="no"]');
+        for (let radio of allRadioItems) {
+            const parentDiv = radio.closest('div[id*="manual"]');
+            if (parentDiv) {
+                radioContainer = parentDiv;
+                console.log('Found radio container via radio input search');
+                break;
+            }
+        }
+    }
+    
     return radioContainer;
+}
+
+// Get current radio value
+function getCurrentRadioValue(radioContainer) {
+    const checkedRadio = radioContainer.querySelector('input[type="radio"]:checked');
+    return checkedRadio ? checkedRadio.value : 'no';
 }
 
 // Update toggle visual state
@@ -76,6 +125,8 @@ function updateToggleVisualState(container, isActive) {
     const toggleSwitch = container.querySelector('.toggle-switch');
     const leftLabel = container.querySelector('.toggle-label-left');
     const rightLabel = container.querySelector('.toggle-label-right');
+    
+    console.log(`Updating visual state: ${isActive ? 'active' : 'inactive'}`);
     
     if (isActive) {
         toggleSwitch.classList.add('active');
@@ -88,31 +139,83 @@ function updateToggleVisualState(container, isActive) {
     }
 }
 
-// Update radio button value
+// Update radio button value - improved version
 function updateRadioValue(radioContainer, value) {
+    console.log(`Setting radio value to: ${value}`);
+    
+    // Find all radio inputs in the container
     const radioInputs = radioContainer.querySelectorAll('input[type="radio"]');
     
     radioInputs.forEach(input => {
         if (input.value === value) {
             input.checked = true;
+            console.log(`✅ Set ${input.value} radio to checked`);
         } else {
             input.checked = false;
         }
     });
+    
+    // Also try to update the Dash component's value property directly
+    if (radioContainer._dash_renderer && radioContainer._dash_renderer.value !== value) {
+        radioContainer._dash_renderer.value = value;
+        console.log(`✅ Updated Dash renderer value to: ${value}`);
+    }
 }
 
-// Trigger Dash callback by dispatching change event
-function triggerDashCallback(radioContainer) {
-    const checkedRadio = radioContainer.querySelector('input[type="radio"]:checked');
+// Enhanced Dash callback triggering
+function triggerDashCallback(radioContainer, newValue) {
+    console.log(`🎯 Triggering Dash callback with value: ${newValue}`);
+    
+    // Method 1: Trigger on the checked radio input
+    const checkedRadio = radioContainer.querySelector(`input[type="radio"][value="${newValue}"]`);
     if (checkedRadio) {
-        // Create and dispatch change event
-        const event = new Event('change', { bubbles: true });
-        checkedRadio.dispatchEvent(event);
-        
-        // Also try dispatching on the container (for Dash)
-        const containerEvent = new Event('change', { bubbles: true });
-        radioContainer.dispatchEvent(containerEvent);
+        // Multiple event types to ensure Dash picks it up
+        ['change', 'input', 'click'].forEach(eventType => {
+            const event = new Event(eventType, { 
+                bubbles: true, 
+                cancelable: true,
+                composed: true 
+            });
+            checkedRadio.dispatchEvent(event);
+        });
+        console.log('✅ Dispatched events on radio input');
     }
+    
+    // Method 2: Trigger on the radio container
+    ['change', 'input'].forEach(eventType => {
+        const containerEvent = new Event(eventType, { 
+            bubbles: true, 
+            cancelable: true,
+            composed: true 
+        });
+        radioContainer.dispatchEvent(containerEvent);
+    });
+    console.log('✅ Dispatched events on radio container');
+    
+    // Method 3: Try to trigger Dash directly if available
+    if (window.dash_clientside && window.dash_clientside.callback_context) {
+        try {
+            // Update Dash's internal state
+            window.dash_clientside.callback_context.triggered = [{
+                prop_id: 'manual-map-toggle.value',
+                value: newValue
+            }];
+            console.log('✅ Updated Dash callback context');
+        } catch (e) {
+            console.log('⚠️ Could not update Dash context:', e);
+        }
+    }
+    
+    // Method 4: Custom event for Dash
+    const dashEvent = new CustomEvent('dash-update', {
+        detail: {
+            component_id: 'manual-map-toggle',
+            value: newValue
+        },
+        bubbles: true
+    });
+    document.dispatchEvent(dashEvent);
+    console.log('✅ Dispatched custom Dash event');
 }
 
 // Observe radio button changes from external sources (Dash callbacks)
@@ -124,11 +227,10 @@ function observeRadioChanges(radioContainer, toggleContainer) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'attributes' || mutation.type === 'childList') {
                 // Check current radio state
-                const checkedRadio = radioContainer.querySelector('input[type="radio"]:checked');
-                if (checkedRadio) {
-                    const isActive = checkedRadio.value === 'yes';
-                    updateToggleVisualState(toggleContainer, isActive);
-                }
+                const currentValue = getCurrentRadioValue(radioContainer);
+                const isActive = currentValue === 'yes';
+                updateToggleVisualState(toggleContainer, isActive);
+                console.log(`📡 External change detected: ${currentValue}`);
             }
         });
     });
@@ -141,55 +243,47 @@ function observeRadioChanges(radioContainer, toggleContainer) {
     });
     
     // Also listen for change events
-    radioContainer.addEventListener('change', function() {
-        const checkedRadio = radioContainer.querySelector('input[type="radio"]:checked');
-        if (checkedRadio) {
-            const isActive = checkedRadio.value === 'yes';
-            updateToggleVisualState(toggleContainer, isActive);
-        }
+    radioContainer.addEventListener('change', function(e) {
+        const currentValue = getCurrentRadioValue(radioContainer);
+        const isActive = currentValue === 'yes';
+        updateToggleVisualState(toggleContainer, isActive);
+        console.log(`📻 Radio change event: ${currentValue}`);
     });
-}
-
-// Floor slider display update
-function updateFloorDisplay() {
-    const floorSlider = document.querySelector('#num-floors-input');
-    const floorDisplay = document.querySelector('#num-floors-display');
     
-    if (floorSlider && floorDisplay) {
-        const value = floorSlider.value || 4;
-        const floors = parseInt(value);
-        const text = floors === 1 ? '1 floor' : `${floors} floors`;
-        floorDisplay.textContent = text;
-    }
+    console.log('👀 Set up radio change observers');
 }
 
 // Re-initialize toggles when new content is added (for dynamic content)
 function reinitializeToggles() {
+    console.log('🔄 Reinitializing toggles...');
     initializeToggleSwitches();
 }
 
-// Expose functions globally for Dash integration
-window.toggleFunctionality = {
-    initialize: initializeToggleSwitches,
-    reinitialize: reinitializeToggles,
-    updateFloorDisplay: updateFloorDisplay
-};
-
-// Watch for dynamically added content
+// Watch for dynamically added content - improved version
 const bodyObserver = new MutationObserver(function(mutations) {
+    let shouldReinitialize = false;
+    
     mutations.forEach(function(mutation) {
         if (mutation.addedNodes.length > 0) {
-            // Check if any added nodes contain toggle containers
             mutation.addedNodes.forEach(function(node) {
                 if (node.nodeType === 1) { // Element node
+                    // Check if any added nodes contain toggle containers
                     const toggles = node.querySelectorAll ? node.querySelectorAll('.toggle-container') : [];
-                    if (toggles.length > 0 || node.classList?.contains('toggle-container')) {
-                        setTimeout(initializeToggleSwitches, 100); // Small delay to ensure DOM is ready
+                    const hasToggleClass = node.classList && node.classList.contains('toggle-container');
+                    const hasRadioItems = node.querySelectorAll ? node.querySelectorAll('#manual-map-toggle').length > 0 : false;
+                    
+                    if (toggles.length > 0 || hasToggleClass || hasRadioItems) {
+                        shouldReinitialize = true;
                     }
                 }
             });
         }
     });
+    
+    if (shouldReinitialize) {
+        console.log('🆕 New toggle content detected, reinitializing...');
+        setTimeout(initializeToggleSwitches, 100); // Small delay to ensure DOM is ready
+    }
 });
 
 bodyObserver.observe(document.body, {
@@ -197,4 +291,57 @@ bodyObserver.observe(document.body, {
     subtree: true
 });
 
-console.log('Toggle functionality script loaded and initialized');
+// Expose functions globally for manual testing and Dash integration
+window.toggleFunctionality = {
+    initialize: initializeToggleSwitches,
+    reinitialize: reinitializeToggles,
+    test: function() {
+        console.log('🧪 Testing toggle functionality...');
+        const radioContainer = document.querySelector('#manual-map-toggle');
+        const toggleContainer = document.querySelector('.toggle-container');
+        
+        console.log('Radio container:', radioContainer);
+        console.log('Toggle container:', toggleContainer);
+        console.log('Current radio value:', radioContainer ? getCurrentRadioValue(radioContainer) : 'not found');
+        
+        if (radioContainer && toggleContainer) {
+            console.log('✅ All components found - toggle should work');
+        } else {
+            console.log('❌ Missing components - toggle may not work');
+        }
+    }
+};
+
+// Debug function to check toggle state
+function debugToggleState() {
+    const radioContainer = document.querySelector('#manual-map-toggle');
+    const toggleContainer = document.querySelector('.toggle-container');
+    
+    console.log('=== TOGGLE DEBUG INFO ===');
+    console.log('Radio container found:', !!radioContainer);
+    console.log('Toggle container found:', !!toggleContainer);
+    
+    if (radioContainer) {
+        const currentValue = getCurrentRadioValue(radioContainer);
+        console.log('Current radio value:', currentValue);
+        
+        const allRadios = radioContainer.querySelectorAll('input[type="radio"]');
+        console.log('Radio options:', Array.from(allRadios).map(r => ({
+            value: r.value,
+            checked: r.checked
+        })));
+    }
+    
+    if (toggleContainer) {
+        const toggleSwitch = toggleContainer.querySelector('.toggle-switch');
+        console.log('Toggle active:', toggleSwitch ? toggleSwitch.classList.contains('active') : 'switch not found');
+    }
+    console.log('========================');
+}
+
+// Expose debug function
+window.debugToggle = debugToggleState;
+
+console.log('🎛️ Toggle functionality script loaded and initialized');
+console.log('💡 Use window.toggleFunctionality.test() to test the toggle');
+console.log('🐛 Use window.debugToggle() to debug toggle state');

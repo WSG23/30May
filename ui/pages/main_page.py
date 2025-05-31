@@ -514,8 +514,8 @@ def create_classification_section():
                             min=1,
                             max=20,
                             step=1,
-                            value=4,  # Default 4 floors
-                            marks={i: str(i) for i in range(1, 21, 2)},  # Every 2nd number
+                            value=1,  # Default 1 floors
+                            marks={i: str(i) for i in range(1, 21, 5)},  # Every 5th number
                             tooltip={"always_visible": False, "placement": "bottom"},
                             updatemode="drag",
                             className="modern-floor-slider"

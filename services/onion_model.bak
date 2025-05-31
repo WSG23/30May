@@ -1,7 +1,10 @@
+from utils.logging_config import get_logger
+logger = get_logger(__name__)
+
 def override_config_for_testing(original_config):
     """Temporary override to fix the filtering issue"""
-   logger.info("=== APPLYING TEMPORARY CONFIG OVERRIDE ===")
-   logger.info(f"Original config: {original_config}")
+    logger.info("=== APPLYING TEMPORARY CONFIG OVERRIDE ===")
+    logger.info(f"Original config: {original_config}")
     
     # Create a working config
     working_config = original_config.copy()
@@ -9,7 +12,7 @@ def override_config_for_testing(original_config):
     working_config['invalid_phrases_exact'] = []       # Remove filter
     working_config['invalid_phrases_contain'] = []     # Remove filter
     
-   logger.info(f"New config: {working_config}")
+    logger.info(f"New config: {working_config}")
     return working_config
 config_params = {
     'num_floors': 4,
@@ -54,67 +57,67 @@ def run_onion_model_processing(
         Tuple of (enriched_df, device_attributes_df, path_viz_data_df, all_paths_df)
     """
     try:
-       logger.info(f"=== DEBUG: Starting onion model processing ===")
-       logger.info(f"DEBUG: Raw data shape: {raw_df.shape}")
-       logger.info(f"DEBUG: Raw data columns: {list(raw_df.columns)}")
-       logger.info(f"DEBUG: Config params: {config_params}")
-       logger.info(f"DEBUG: Confirmed entrances: {confirmed_official_entrances}")
-       logger.info(f"DEBUG: Detailed classifications: {detailed_door_classifications}")
+        logger.info(f"=== DEBUG: Starting onion model processing ===")
+        logger.info(f"DEBUG: Raw data shape: {raw_df.shape}")
+        logger.info(f"DEBUG: Raw data columns: {list(raw_df.columns)}")
+        logger.info(f"DEBUG: Config params: {config_params}")
+        logger.info(f"DEBUG: Confirmed entrances: {confirmed_official_entrances}")
+        logger.info(f"DEBUG: Detailed classifications: {detailed_door_classifications}")
         
         logger.info(f"Starting onion model processing for {len(raw_df)} records")
         
         # Step 1: Clean and prepare data
-       logger.info(f"\n=== Step 1: Cleaning data ===")
+        logger.info(f"\n=== Step 1: Cleaning data ===")
         cleaned_df = clean_access_data(raw_df, config_params)
-       logger.info(f"DEBUG: Cleaned data shape: {cleaned_df.shape}")
+        logger.info(f"DEBUG: Cleaned data shape: {cleaned_df.shape}")
         
         if len(cleaned_df) == 0:
-           logger.info("ERROR: No data remaining after cleaning!")
+            logger.info("ERROR: No data remaining after cleaning!")
             return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
         
         # Step 2: Identify entrances and calculate device depths
-       logger.info(f"\n=== Step 2: Calculating device attributes ===")
+        logger.info(f"\n=== Step 2: Calculating device attributes ===")
         device_attributes = calculate_device_attributes(
             cleaned_df, 
             config_params,
             confirmed_official_entrances,
             detailed_door_classifications
         )
-       logger.info(f"DEBUG: Device attributes shape: {device_attributes.shape}")
-       logger.info(f"DEBUG: Device attributes columns: {list(device_attributes.columns)}")
+        logger.info(f"DEBUG: Device attributes shape: {device_attributes.shape}")
+        logger.info(f"DEBUG: Device attributes columns: {list(device_attributes.columns)}")
         
         if len(device_attributes) == 0:
-           logger.info("ERROR: No device attributes calculated!")
+            logger.info("ERROR: No device attributes calculated!")
             return cleaned_df, pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
         
         # Step 3: Generate user paths and transitions
-       logger.info(f"\n=== Step 3: Generating user paths ===")
+        logger.info(f"\n=== Step 3: Generating user paths ===")
         all_paths_df = generate_user_paths(cleaned_df, device_attributes)
-       logger.info(f"DEBUG: All paths shape: {all_paths_df.shape}")
-       logger.info(f"DEBUG: All paths columns: {list(all_paths_df.columns) if not all_paths_df.empty else 'EMPTY'}")
+        logger.info(f"DEBUG: All paths shape: {all_paths_df.shape}")
+        logger.info(f"DEBUG: All paths columns: {list(all_paths_df.columns) if not all_paths_df.empty else 'EMPTY'}")
         
         if len(all_paths_df) == 0:
-           logger.info("WARNING: No user paths generated!")
+            logger.info("WARNING: No user paths generated!")
         
         # Step 4: Prepare visualization data
-       logger.info(f"\n=== Step 4: Preparing visualization data ===")
+        logger.info(f"\n=== Step 4: Preparing visualization data ===")
         path_viz_data = prepare_path_visualization_data(all_paths_df)
-       logger.info(f"DEBUG: Path viz data shape: {path_viz_data.shape}")
-       logger.info(f"DEBUG: Path viz data columns: {list(path_viz_data.columns) if not path_viz_data.empty else 'EMPTY'}")
+        logger.info(f"DEBUG: Path viz data shape: {path_viz_data.shape}")
+        logger.info(f"DEBUG: Path viz data columns: {list(path_viz_data.columns) if not path_viz_data.empty else 'EMPTY'}")
         
         if len(path_viz_data) == 0:
-           logger.info("WARNING: No visualization data prepared!")
+            logger.info("WARNING: No visualization data prepared!")
         
         # Step 5: Enrich original data with processing results
-       logger.info(f"\n=== Step 5: Enriching data ===")
+        logger.info(f"\n=== Step 5: Enriching data ===")
         enriched_df = enrich_data_with_results(cleaned_df, device_attributes)
-       logger.info(f"DEBUG: Enriched data shape: {enriched_df.shape}")
+        logger.info(f"DEBUG: Enriched data shape: {enriched_df.shape}")
         
-       logger.info(f"\n=== FINAL RESULTS ===")
-       logger.info(f"Enriched DF: {enriched_df.shape}")
-       logger.info(f"Device Attributes: {device_attributes.shape}")
-       logger.info(f"Path Viz Data: {path_viz_data.shape}")
-       logger.info(f"All Paths: {all_paths_df.shape}")
+        logger.info(f"\n=== FINAL RESULTS ===")
+        logger.info(f"Enriched DF: {enriched_df.shape}")
+        logger.info(f"Device Attributes: {device_attributes.shape}")
+        logger.info(f"Path Viz Data: {path_viz_data.shape}")
+        logger.info(f"All Paths: {all_paths_df.shape}")
         
         logger.info("Onion model processing completed successfully")
         
@@ -140,7 +143,7 @@ def clean_access_data(df: pd.DataFrame, config_params: Dict[str, Any]) -> pd.Dat
     except (KeyError, NameError) as e:
         raise DataProcessingError(f"Required column constants not found: {str(e)}")
     
-   logger.info(f"DEBUG: Using columns - timestamp: '{timestamp_col}', eventtype: '{eventtype_col}', doorid: '{doorid_col}', userid: '{userid_col}'")
+    logger.info(f"DEBUG: Using columns - timestamp: '{timestamp_col}', eventtype: '{eventtype_col}', doorid: '{doorid_col}', userid: '{userid_col}'")
     
     cleaned_df = df.copy()
     
@@ -153,18 +156,18 @@ def clean_access_data(df: pd.DataFrame, config_params: Dict[str, Any]) -> pd.Dat
     if missing_columns:
         raise DataProcessingError(f"Missing required columns: {missing_columns}. Available columns: {list(cleaned_df.columns)}")
     
-   logger.info(f"DEBUG: Before filtering - {len(cleaned_df)} records")
+    logger.info(f"DEBUG: Before filtering - {len(cleaned_df)} records")
     
     # Filter by primary positive indicator
     primary_indicator = config_params.get('primary_positive_indicator', 'ACCESS GRANTED')
-   logger.info(f"DEBUG: Filtering by primary indicator: '{primary_indicator}'")
+    logger.info(f"DEBUG: Filtering by primary indicator: '{primary_indicator}'")
     
     if primary_indicator:
         before_count = len(cleaned_df)
         cleaned_df = cleaned_df[
             cleaned_df[eventtype_col].str.contains(primary_indicator, na=False)
         ]
-       logger.info(f"DEBUG: After primary indicator filter: {len(cleaned_df)} records (removed {before_count - len(cleaned_df)})")
+        logger.info(f"DEBUG: After primary indicator filter: {len(cleaned_df)} records (removed {before_count - len(cleaned_df)})")
     
     # Remove invalid phrases
     invalid_exact = config_params.get('invalid_phrases_exact', [])
@@ -194,14 +197,14 @@ def clean_access_data(df: pd.DataFrame, config_params: Dict[str, Any]) -> pd.Dat
     
     # Show sample of remaining data
     if len(cleaned_df) > 0:
-       logger.info(f"DEBUG: Sample of cleaned data:")
-       logger.info(cleaned_df[[doorid_col, userid_col, eventtype_col]].head())
-       logger.info(f"DEBUG: Unique doors: {cleaned_df[doorid_col].nunique()}")
-       logger.info(f"DEBUG: Unique users: {cleaned_df[userid_col].nunique()}")
+        logger.info(f"DEBUG: Sample of cleaned data:")
+        logger.info(cleaned_df[[doorid_col, userid_col, eventtype_col]].head())
+        logger.info(f"DEBUG: Unique doors: {cleaned_df[doorid_col].nunique()}")
+        logger.info(f"DEBUG: Unique users: {cleaned_df[userid_col].nunique()}")
     else:
-       logger.info("WARNING: No data remaining after cleaning!")
+        logger.info("WARNING: No data remaining after cleaning!")
     
-    logger.info(f"Cleaned data: {len(cleaned_df)} records remaining")
+        logger.info(f"Cleaned data: {len(cleaned_df)} records remaining")
     return cleaned_df
 
 
@@ -242,8 +245,8 @@ def calculate_device_attributes(
         except (KeyError, NameError) as e:
             raise DataProcessingError(f"Required column constants not found: {str(e)}")
         
-       logger.info(f"DEBUG: Expected doorid_col = '{doorid_col}'")
-       logger.info(f"DEBUG: Available columns in df = {list(df.columns)}")
+        logger.info(f"DEBUG: Expected doorid_col = '{doorid_col}'")
+        logger.info(f"DEBUG: Available columns in df = {list(df.columns)}")
         
         # Validate column exists
         if doorid_col not in df.columns:
@@ -251,7 +254,7 @@ def calculate_device_attributes(
         
         # Get unique doors
         unique_doors = df[doorid_col].unique()
-       logger.info(f"DEBUG: Found {len(unique_doors)} unique doors: {list(unique_doors)}")
+        logger.info(f"DEBUG: Found {len(unique_doors)} unique doors: {list(unique_doors)}")
         
         device_attrs = []
         
@@ -264,7 +267,7 @@ def calculate_device_attributes(
                 'UniqueUsers': door_data[userid_col].nunique()
             }
             
-           logger.info(f"DEBUG: Door '{door_id}' - Events: {attr['EventCount']}, Users: {attr['UniqueUsers']}")
+            logger.info(f"DEBUG: Door '{door_id}' - Events: {attr['EventCount']}, Users: {attr['UniqueUsers']}")
             
             # Apply detailed classifications if provided
             if detailed_classifications and door_id in detailed_classifications:
@@ -273,14 +276,14 @@ def calculate_device_attributes(
                 attr['IsOfficialEntrance'] = classification.get('is_ee', False)
                 attr['IsStaircase'] = classification.get('is_stair', False)
                 attr['SecurityLevel'] = classification.get('security', 'green')
-               logger.info(f"DEBUG: Applied detailed classification for '{door_id}': {classification}")
+                logger.info(f"DEBUG: Applied detailed classification for '{door_id}': {classification}")
             else:
                 # Default values
                 attr['Floor'] = '1'
                 attr['IsOfficialEntrance'] = door_id in (confirmed_entrances or [])
                 attr['IsStaircase'] = False
                 attr['SecurityLevel'] = 'green'
-               logger.info(f"DEBUG: Applied default classification for '{door_id}'")
+                logger.info(f"DEBUG: Applied default classification for '{door_id}'")
             
             # Calculate device depth (simplified heuristic)
             if attr['IsOfficialEntrance']:
@@ -299,9 +302,9 @@ def calculate_device_attributes(
             device_attrs.append(attr)
         
         device_attrs_df = pd.DataFrame(device_attrs)
-       logger.info(f"DEBUG: Created device_attrs_df with columns: {list(device_attrs_df.columns)}")
-       logger.info(f"DEBUG: Device attributes summary:")
-       logger.info(device_attrs_df[['DoorID', 'EventCount', 'FinalGlobalDeviceDepth', 'IsOfficialEntrance']])
+        logger.info(f"DEBUG: Created device_attrs_df with columns: {list(device_attrs_df.columns)}")
+        logger.info(f"DEBUG: Device attributes summary:")
+        logger.info(device_attrs_df[['DoorID', 'EventCount', 'FinalGlobalDeviceDepth', 'IsOfficialEntrance']])
         
         # Calculate most common next door for each device
         if 'DoorID' in device_attrs_df.columns:
@@ -313,7 +316,7 @@ def calculate_device_attributes(
         return device_attrs_df
         
     except Exception as e:
-       logger.info(f"ERROR in calculate_device_attributes: {str(e)}")
+        logger.info(f"ERROR in calculate_device_attributes: {str(e)}")
         raise DataProcessingError(f"Failed to calculate device attributes: {str(e)}")
 
 def calculate_most_common_next_door(df: pd.DataFrame, door_id: str) -> str:
@@ -369,7 +372,7 @@ def calculate_most_common_next_door(df: pd.DataFrame, door_id: str) -> str:
 def generate_user_paths(df: pd.DataFrame, device_attributes: pd.DataFrame) -> pd.DataFrame:
     """Generate user movement paths between doors"""
     try:
-       logger.info(f"DEBUG: Starting generate_user_paths with {len(df)} records")
+        logger.info(f"DEBUG: Starting generate_user_paths with {len(df)} records")
         
         # Get column names with error handling
         try:
@@ -379,9 +382,9 @@ def generate_user_paths(df: pd.DataFrame, device_attributes: pd.DataFrame) -> pd
         except (KeyError, NameError) as e:
             raise DataProcessingError(f"Required column constants not found: {str(e)}")
         
-       logger.info(f"DEBUG: generate_user_paths - doorid_col = '{doorid_col}'")
-       logger.info(f"DEBUG: generate_user_paths - df.columns = {list(df.columns)}")
-       logger.info(f"DEBUG: generate_user_paths - device_attributes.columns = {list(device_attributes.columns)}")
+        logger.info(f"DEBUG: generate_user_paths - doorid_col = '{doorid_col}'")
+        logger.info(f"DEBUG: generate_user_paths - df.columns = {list(df.columns)}")
+        logger.info(f"DEBUG: generate_user_paths - device_attributes.columns = {list(device_attributes.columns)}")
         
         # Validate columns exist
         required_cols = [timestamp_col, doorid_col, userid_col]
@@ -399,9 +402,9 @@ def generate_user_paths(df: pd.DataFrame, device_attributes: pd.DataFrame) -> pd
             user_data_sorted = user_data.sort_values(timestamp_col)
             
             if users_processed <= 5:  # Debug first 5 users
-               logger.info(f"DEBUG: Processing user {user_id} with {len(user_data_sorted)} events")
-               logger.info(f"DEBUG: User events: {list(user_data_sorted[doorid_col])}")
-            
+                logger.info(f"DEBUG: Processing user {user_id} with {len(user_data_sorted)} events")
+                logger.info(f"DEBUG: User events: {list(user_data_sorted[doorid_col])}")
+                
             for i in range(len(user_data_sorted) - 1):
                 current_door = user_data_sorted.iloc[i][doorid_col]
                 next_door = user_data_sorted.iloc[i + 1][doorid_col]
@@ -423,54 +426,54 @@ def generate_user_paths(df: pd.DataFrame, device_attributes: pd.DataFrame) -> pd
                     paths_found += 1
                     
                     if paths_found <= 10:  # Debug first 10 paths
-                       logger.info(f"DEBUG: Path {paths_found}: {current_door} -> {next_door} ({time_diff:.0f}s)")
+                        logger.info(f"DEBUG: Path {paths_found}: {current_door} -> {next_door} ({time_diff:.0f}s)")
         
-       logger.info(f"DEBUG: Processed {users_processed} users, found {paths_found} valid paths")
+        logger.info(f"DEBUG: Processed {users_processed} users, found {paths_found} valid paths")
         
         paths_df = pd.DataFrame(paths)
         
         if not paths_df.empty:
-           logger.info(f"DEBUG: Created paths_df with {len(paths_df)} rows")
+            logger.info(f"DEBUG: Created paths_df with {len(paths_df)} rows")
             
             # Calculate transition frequencies
             transition_counts = paths_df.groupby(['SourceDoor', 'TargetDoor']).size().reset_index(name='TransitionFrequency')
-           logger.info(f"DEBUG: Transition counts shape: {transition_counts.shape}")
+            logger.info(f"DEBUG: Transition counts shape: {transition_counts.shape}")
             
             paths_df = paths_df.merge(transition_counts, on=['SourceDoor', 'TargetDoor'])
-           logger.info(f"DEBUG: After merge, paths_df shape: {paths_df.shape}")
+            logger.info(f"DEBUG: After merge, paths_df shape: {paths_df.shape}")
             
             # Add depth information - use 'DoorID' column from device_attributes
             if 'DoorID' in device_attributes.columns:
                 device_depth_map = device_attributes.set_index('DoorID')['FinalGlobalDeviceDepth'].to_dict()
-               logger.info(f"DEBUG: Device depth map: {device_depth_map}")
+                logger.info(f"DEBUG: Device depth map: {device_depth_map}")
             else:
-               logger.info(f"WARNING: 'DoorID' column not found in device_attributes. Available: {list(device_attributes.columns)}")
+                logger.info(f"WARNING: 'DoorID' column not found in device_attributes. Available: {list(device_attributes.columns)}")
                 device_depth_map = {}
                 
             paths_df['SourceDepth'] = paths_df['SourceDoor'].map(device_depth_map)
             paths_df['TargetDepth'] = paths_df['TargetDoor'].map(device_depth_map)
             paths_df['is_to_inner_default'] = paths_df['TargetDepth'] > paths_df['SourceDepth']
             
-           logger.info(f"DEBUG: Final paths_df columns: {list(paths_df.columns)}")
-           logger.info(f"DEBUG: Sample paths:")
-           logger.info(paths_df[['SourceDoor', 'TargetDoor', 'TransitionFrequency']].head())
+            logger.info(f"DEBUG: Final paths_df columns: {list(paths_df.columns)}")
+            logger.info(f"DEBUG: Sample paths:")
+            logger.info(paths_df[['SourceDoor', 'TargetDoor', 'TransitionFrequency']].head())
         else:
-           logger.info("WARNING: No paths generated!")
+            logger.info("WARNING: No paths generated!")
         
         logger.info(f"Generated {len(paths_df)} user path records")
         return paths_df
         
     except Exception as e:
-       logger.info(f"ERROR in generate_user_paths: {str(e)}")
+        logger.info(f"ERROR in generate_user_paths: {str(e)}")
         raise DataProcessingError(f"Failed to generate user paths: {str(e)}")
 
 
 def prepare_path_visualization_data(all_paths_df: pd.DataFrame) -> pd.DataFrame:
     """Prepare path data for visualization"""
-   logger.info(f"DEBUG: Starting prepare_path_visualization_data with {len(all_paths_df)} paths")
+    logger.info(f"DEBUG: Starting prepare_path_visualization_data with {len(all_paths_df)} paths")
     
     if all_paths_df.empty:
-       logger.info("DEBUG: No paths to visualize, returning empty DataFrame")
+        logger.info("DEBUG: No paths to visualize, returning empty DataFrame")
         return pd.DataFrame(columns=['Door1', 'Door2', 'PathWidth'])
     
     # Create undirected path weights
@@ -479,15 +482,15 @@ def prepare_path_visualization_data(all_paths_df: pd.DataFrame) -> pd.DataFrame:
         lambda row: tuple(sorted([row['SourceDoor'], row['TargetDoor']])), axis=1
     )
     
-   logger.info(f"DEBUG: Created canonical pairs, sample: {paths_df['CanonicalPair'].head().tolist()}")
+    logger.info(f"DEBUG: Created canonical pairs, sample: {paths_df['CanonicalPair'].head().tolist()}")
     
     # Aggregate by canonical pairs
     path_weights = paths_df.groupby('CanonicalPair')['TransitionFrequency'].sum().reset_index()
     path_weights.rename(columns={'TransitionFrequency': 'PathWidth'}, inplace=True)
     
-   logger.info(f"DEBUG: Path weights shape: {path_weights.shape}")
-   logger.info(f"DEBUG: Sample path weights:")
-   logger.info(path_weights.head())
+    logger.info(f"DEBUG: Path weights shape: {path_weights.shape}")
+    logger.info(f"DEBUG: Sample path weights:")
+    logger.info(path_weights.head())
     
     # Split canonical pairs back to Door1, Door2
     if not path_weights.empty:
@@ -497,12 +500,12 @@ def prepare_path_visualization_data(all_paths_df: pd.DataFrame) -> pd.DataFrame:
             columns=['Door1', 'Door2']
         )
         path_viz_df = pd.concat([split_pairs, path_weights[['PathWidth']]], axis=1)
-       logger.info(f"DEBUG: Final visualization data shape: {path_viz_df.shape}")
-       logger.info(f"DEBUG: Sample visualization data:")
-       logger.info(path_viz_df.head())
+        logger.info(f"DEBUG: Final visualization data shape: {path_viz_df.shape}")
+        logger.info(f"DEBUG: Sample visualization data:")
+        logger.info(path_viz_df.head())
     else:
         path_viz_df = pd.DataFrame(columns=['Door1', 'Door2', 'PathWidth'])
-       logger.info("DEBUG: No path weights generated")
+        logger.info("DEBUG: No path weights generated")
     
     logger.info(f"Prepared {len(path_viz_df)} path visualization records")
     return path_viz_df
@@ -557,3 +560,7 @@ def enrich_data_with_results(df: pd.DataFrame, device_attributes: pd.DataFrame) 
     
     logger.info(f"Enriched data with {len(enriched_df)} records")
     return enriched_df
+
+if __name__ == "__main__":
+    # quick smoke-test or sample config here
+    pass

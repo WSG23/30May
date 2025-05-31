@@ -6,7 +6,7 @@ GRAPH_PROCESSING_CONFIG = {
     'primary_positive_indicator': '',
     'invalid_phrases_exact': [],
     'invalid_phrases_contain': [],
-    'same_door_scan_threshold_seconds': 10,
+    'same_door_scan_threshold_seconds': 100,
     'ping_pong_threshold_minutes': 1
 }
 

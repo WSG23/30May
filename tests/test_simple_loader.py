@@ -25,17 +25,17 @@ def test_loader_debug():
         'EventType': 'EventType (Access Result)'
     }
     
-   logger.info("🔍 Constants:", REQUIRED_INTERNAL_COLUMNS)
-   logger.info("🔍 Mapping:", column_mapping)
+    logger.info("🔍 Constants:", REQUIRED_INTERNAL_COLUMNS)
+    logger.info("🔍 Mapping:", column_mapping)
     
     csv_io = io.StringIO(csv_content)
     result = loader.load_csv_event_log(csv_io, column_mapping)
     
-   logger.info("🔍 Result type:", type(result))
-   logger.info("🔍 Result:", result)
+    logger.info("🔍 Result type:", type(result))
+    logger.info("🔍 Result:", result)
     
     if isinstance(result, dict):
-       logger.info("🔍 Success:", result.get('success'))
+        logger.info("🔍 Success:", result.get('success'))
         if result.get('success'):
            logger.info("🔍 DataFrame shape:", result['result'].shape)
            logger.info("🔍 DataFrame columns:", list(result['result'].columns))
@@ -47,7 +47,7 @@ def test_loader_debug():
 
 def test_constants_check():
     """Check that constants are as expected"""
-   logger.info("🔍 REQUIRED_INTERNAL_COLUMNS:")
+    logger.info("🔍 REQUIRED_INTERNAL_COLUMNS:")
     for key, value in REQUIRED_INTERNAL_COLUMNS.items():
        logger.info(f"  {key} -> {value}")
     
@@ -59,8 +59,8 @@ def test_constants_check():
     }
     
     actual_values = set(REQUIRED_INTERNAL_COLUMNS.values())
-   logger.info("🔍 Expected values:", expected_values)
-   logger.info("🔍 Actual values:", actual_values)
-   logger.info("🔍 Match:", expected_values == actual_values)
+    logger.info("🔍 Expected values:", expected_values)
+    logger.info("🔍 Actual values:", actual_values)
+    logger.info("🔍 Match:", expected_values == actual_values)
     
     assert True  # Always pass, just want debug info

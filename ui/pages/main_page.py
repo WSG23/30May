@@ -255,7 +255,6 @@ def create_mapping_section_with_fallback():
                     id='confirm-header-map-button',
                     n_clicks=0,
                     style={
-                        'marginTop': '15px',
                         'padding': '8px 16px',
                         'border': 'none',
                         'borderRadius': '5px',
@@ -264,9 +263,8 @@ def create_mapping_section_with_fallback():
                         'fontSize': '0.9rem',
                         'fontWeight': 'bold',
                         'cursor': 'pointer',
-                        'marginLeft': 'auto',
-                        'marginRight': 'auto',
-                        'display': 'none',
+                        'display': 'block',
+                        'margin': '15px auto 0',
                         'transition': 'background-color 0.3s ease'
                     }
                 )

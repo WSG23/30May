@@ -9,6 +9,8 @@ import uuid
 from functools import wraps
 from typing import Any, Callable, Dict, Optional, TypeVar, ParamSpec, Union
 from datetime import datetime
+from utils.logging_config import get_logger   # NEW
+logger = get_logger(__name__)                # NEW
 
 # Type variables for better type hinting
 P = ParamSpec('P')
@@ -312,25 +314,25 @@ def test_error_handling():
     
     # Test successful execution
     result1 = test_function(False)
-   logger.info("Success result:", result1)
+    logger.info("Success result:", result1)
     
     # Test error handling
     result2 = test_function(True)
-   logger.info("Error result:", result2)
+    logger.info("Error result:", result2)
     
     # Test function logging
     result3 = logged_function(5, 3)
-   logger.info("Logged function result:", result3)
+    logger.info("Logged function result:", result3)
     
     # Test context manager
     try:
         with ErrorContext("test_operation"):
             # This would be your actual operation
-           logger.info("Performing operation...")
+            logger.info("Performing operation...")
     except Exception:
         pass
     
-   logger.info("✅ Error handling tests completed")
+    logger.info("✅ Error handling tests completed")
 
 if __name__ == "__main__":
     test_error_handling()

@@ -8,6 +8,8 @@ from typing import Any, Dict, List, Optional, Union, Callable
 import html
 import json
 import os
+from utils.logging_config import get_logger   # NEW
+logger = get_logger(__name__)                # NEW
 
 class InputSanitizer:
     """Sanitize user inputs to prevent injection and other issues"""
@@ -403,20 +405,20 @@ def test_sanitizers():
     
     # Test string sanitization
     test_string = "<script>alert('xss')</script>Hello World!"
-   logger.info("Original:", test_string)
-   logger.info("Sanitized:", sanitizer.sanitize_string(test_string))
+    logger.info("Original:", test_string)
+    logger.info("Sanitized:", sanitizer.sanitize_string(test_string))
     
     # Test filename sanitization
     test_filename = "../../../etc/passwd.txt"
-   logger.info("Original filename:", test_filename)
-   logger.info("Sanitized filename:", sanitizer.sanitize_filename(test_filename))
+    logger.info("Original filename:", test_filename)
+    logger.info("Sanitized filename:", sanitizer.sanitize_filename(test_filename))
     
     # Test email sanitization
     test_email = "  USER@EXAMPLE.COM  "
-   logger.info("Original email:", test_email)
-   logger.info("Sanitized email:", sanitizer.sanitize_email(test_email))
-    
-   logger.info("✅ Sanitizer tests completed")
+    logger.info("Original email:", test_email)
+    logger.info("Sanitized email:", sanitizer.sanitize_email(test_email))
+        
+    logger.info("✅ Sanitizer tests completed")
 
 if __name__ == "__main__":
     test_sanitizers()

@@ -1,11 +1,7 @@
-# ui/pages/main_page.py
+# ui/pages/main_page.py - FIXED VERSION
 
 """
-Main page layout (CSV mapping + Facility Setup + Door Classification + Generate button) 
-with a dark‐themed, glow‐effect slider for “Floors.” 
-
-All original helper functions have been preserved, and the slider callback is registered
-via a `register_page_callbacks(app)` function to avoid “app is not defined” errors.
+Main page layout - FIXED to hide stats panels initially
 """
 
 from dash import Dash, html, dcc
@@ -14,13 +10,23 @@ import dash_cytoscape as cyto
 import dash_bootstrap_components as dbc
 
 # Import your theme constants
-from ui.themes.style_config import COLORS, UI_VISIBILITY, UI_COMPONENTS, BORDER_RADIUS, SHADOWS
-from ui.themes.graph_styles import (
-    centered_graph_box_style,
-    cytoscape_inside_box_style,
-    tap_node_data_centered_style,
-    actual_default_stylesheet_for_graph
-)
+try:
+    from ui.themes.style_config import COLORS, UI_VISIBILITY, UI_COMPONENTS, BORDER_RADIUS, SHADOWS
+except ImportError:
+    # Fallback colors if theme not available
+    COLORS = {
+        'primary': '#1B2A47',
+        'accent': '#2196F3',
+        'success': '#2DBE6C',
+        'warning': '#FFB020',
+        'critical': '#E02020',
+        'background': '#0F1419',
+        'surface': '#1A2332',
+        'border': '#2D3748',
+        'text_primary': '#F7FAFC',
+        'text_secondary': '#E2E8F0',
+        'text_tertiary': '#A0AEC0',
+    }
 
 # Try to import constants; fallback if missing
 try:
@@ -40,8 +46,7 @@ except ImportError:
 
 def create_main_layout(app_instance, main_logo_path, icon_upload_default, upload_component=None):
     """
-    Creates the main application layout with properly included mapping and classification sections.
-    If `upload_component` is None, uses a simple fallback CSV‐upload UI.
+    Creates the main application layout with properly hidden stats panels
     """
     # If no upload component provided, create fallback
     if upload_component is None:
@@ -61,14 +66,14 @@ def create_main_layout(app_instance, main_logo_path, icon_upload_default, upload
             # Processing Status Indicator (hidden until needed)
             create_processing_status(),
 
-            # Custom Header (shown after processing)
-            create_custom_header(main_logo_path),
+            # Custom Header (HIDDEN until after processing)
+            create_custom_header_hidden(main_logo_path),
 
-            # Statistics Panels (hidden until needed)
-            create_stats_panels(),
+            # Statistics Panels (HIDDEN until after processing)
+            create_stats_panels_hidden(),
 
-            # Graph Output Container (hidden until needed)
-            create_graph_container(),
+            # Graph Output Container (HIDDEN until after processing)
+            create_graph_container_hidden(),
 
             # Data Stores (dcc.Store elements)
             create_data_stores(),
@@ -79,25 +84,193 @@ def create_main_layout(app_instance, main_logo_path, icon_upload_default, upload
     return layout
 
 
+def create_custom_header_hidden(main_logo_path):
+    """
+    Custom header that is HIDDEN by default - only shown after processing
+    """
+    return html.Div(
+        id='yosai-custom-header',
+        style={'display': 'none'},  # EXPLICITLY HIDDEN
+        children=[
+            html.Div([
+                # Logo matching the top header exactly
+                html.Img(
+                    src=main_logo_path, 
+                    style={
+                        'height': '24px',
+                        'marginRight': '10px',
+                        'verticalAlign': 'middle'
+                    }
+                ),
+                # Data Overview text
+                html.Span(
+                    "Data Overview",
+                    style={
+                        'fontSize': '18px',
+                        'fontWeight': '400',
+                        'color': '#ffffff',
+                        'fontFamily': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                        'verticalAlign': 'middle'
+                    }
+                )
+            ], style={
+                'display': 'flex',
+                'alignItems': 'center',
+                'justifyContent': 'center',
+                'padding': '16px 0',
+                'margin': '0'
+            })
+        ]
+    )
+
+
+def create_stats_panels_hidden():
+    """
+    Statistics panels that are HIDDEN by default - only shown after processing
+    """
+    panel_style_base = {
+        'flex': '1',
+        'padding': '20px',
+        'margin': '0 10px',
+        'backgroundColor': COLORS['surface'],
+        'borderRadius': '8px',
+        'textAlign': 'center',
+        'boxShadow': '2px 2px 5px rgba(0,0,0,0.2)'
+    }
+    
+    return html.Div(
+        id='stats-panels-container',
+        style={'display': 'none'},  # EXPLICITLY HIDDEN
+        children=[
+            # Access Events Panel
+            html.Div([
+                html.H3("Access events", style={'color': COLORS['text_primary']}),
+                html.H1(id="total-access-events-H1", style={'color': COLORS['text_primary']}),
+                html.P(id="event-date-range-P", style={'color': COLORS['text_secondary']})
+            ], style={**panel_style_base, 'borderLeft': f'5px solid {COLORS["accent"]}'}),
+            
+            # Statistics Panel
+            html.Div([
+                html.H3("Statistics", style={'color': COLORS['text_primary']}),
+                html.P(id="stats-date-range-P", style={'color': COLORS['text_secondary']}),
+                html.P(id="stats-days-with-data-P", style={'color': COLORS['text_secondary']}),
+                html.P(id="stats-num-devices-P", style={'color': COLORS['text_secondary']}),
+                html.P(id="stats-unique-tokens-P", style={'color': COLORS['text_secondary']})
+            ], style={**panel_style_base, 'borderLeft': f'5px solid {COLORS["warning"]}'}),
+            
+            # Active Devices Panel
+            html.Div([
+                html.H3("Most active devices", style={'color': COLORS['text_primary']}),
+                html.Table([
+                    html.Thead(html.Tr([
+                        html.Th("DEVICE", style={'color': COLORS['text_primary']}),
+                        html.Th("EVENTS", style={'color': COLORS['text_primary']})
+                    ])),
+                    html.Tbody(id='most-active-devices-table-body')
+                ])
+            ], style={**panel_style_base, 'borderLeft': f'5px solid {COLORS["critical"]}'})
+        ]
+    )
+
+
+def create_graph_container_hidden():
+    """
+    Graph container that is HIDDEN by default - only shown after processing
+    """
+    try:
+        from ui.themes.graph_styles import (
+            centered_graph_box_style,
+            cytoscape_inside_box_style,
+            tap_node_data_centered_style,
+            actual_default_stylesheet_for_graph
+        )
+    except ImportError:
+        # Fallback styles
+        centered_graph_box_style = {
+            'width': '90%',
+            'margin': '0 auto',
+            'padding': '20px',
+            'backgroundColor': COLORS['surface'],
+            'borderRadius': '8px'
+        }
+        cytoscape_inside_box_style = {
+            'width': '100%',
+            'height': '600px'
+        }
+        tap_node_data_centered_style = {
+            'textAlign': 'center',
+            'padding': '10px',
+            'color': COLORS['text_primary']
+        }
+        actual_default_stylesheet_for_graph = []
+
+    return html.Div(
+        id='graph-output-container',
+        style={'display': 'none'},  # EXPLICITLY HIDDEN
+        children=[
+            html.H2(
+                "Area Layout Model",
+                id="area-layout-model-title",
+                style={
+                    'textAlign': 'center',
+                    'color': COLORS['text_primary'],
+                    'marginBottom': '20px',
+                    'fontSize': '1.8rem'
+                }
+            ),
+            html.Div(
+                id='cytoscape-graphs-area',
+                style=centered_graph_box_style,
+                children=[
+                    cyto.Cytoscape(
+                        id='onion-graph',
+                        layout={
+                            'name': 'cose',
+                            'idealEdgeLength': 100,
+                            'nodeOverlap': 20,
+                            'refresh': 20,
+                            'fit': True,
+                            'padding': 30,
+                            'randomize': False,
+                            'componentSpacing': 100,
+                            'nodeRepulsion': 400000,
+                            'edgeElasticity': 100,
+                            'nestingFactor': 5,
+                            'gravity': 80,
+                            'numIter': 1000,
+                            'coolingFactor': 0.95,
+                            'minTemp': 1.0
+                        },
+                        style=cytoscape_inside_box_style,
+                        elements=[],
+                        stylesheet=actual_default_stylesheet_for_graph
+                    )
+                ]
+            ),
+            html.Pre(
+                id='tap-node-data-output',
+                style=tap_node_data_centered_style,
+                children="Upload CSV, map headers, (optionally classify doors), then Confirm & Generate. Tap a node for its details."
+            )
+        ]
+    )
+
+
 def create_interactive_setup_container_fixed():
     """
-    Creates the interactive‐setup container with:
-      1) Mapping UI Section (Step 1)
-      2) Classification UI Section (Step 2 + Step 3)
-      3) Confirm & Generate Button
-    The entire container is initially hidden (`display: none`) until a file is uploaded and parsed.
+    Creates the interactive‐setup container - initially hidden until file upload
     """
     return html.Div(
         id='interactive-setup-container',
-        style={'display': 'none'},
+        style={'display': 'none'},  # Hidden until file uploaded
         children=[
-            # Step 1: CSV Header Mapping (actual component or fallback)
+            # Step 1: CSV Header Mapping
             create_mapping_section_with_fallback(),
 
-            # Step 2 & 3: Facility Setup (with slider) + Door Classification
+            # Step 2 & 3: Facility Setup + Door Classification
             create_classification_section(),
 
-            # Final “Generate” Button
+            # Final "Generate" Button
             html.Button(
                 'Confirm Selections & Generate Onion Model',
                 id='confirm-and-generate-button',
@@ -122,7 +295,6 @@ def create_interactive_setup_container_fixed():
 def _create_fallback_upload_component(app_instance, icon_upload_default):
     """
     Creates a simple CSV‐upload component if no custom upload UI is provided.
-    Returns an object with `.create_upload_area()` and `.get_upload_styles()`.
     """
     class SimpleUploadComponent:
         def __init__(self, default_icon, success_icon, fail_icon):
@@ -178,10 +350,6 @@ def _create_fallback_upload_component(app_instance, icon_upload_default):
             )
 
         def get_upload_styles(self):
-            """
-            Returns style dictionaries for different upload states (initial, success, error).
-            Useful if you want to change the border/background based on upload state.
-            """
             return {
                 'initial': {
                     'border': f'2px dashed {COLORS["border"]}',
@@ -205,10 +373,7 @@ def _create_fallback_upload_component(app_instance, icon_upload_default):
 
 
 def create_main_header(main_logo_path):
-    """
-    Creates the main header bar at the top of the app, showing a logo and title.
-    The title is centered via CSS transform.
-    """
+    """Creates the main header bar at the top of the app"""
     return html.Div(
         style={
             'display': 'flex',
@@ -238,9 +403,7 @@ def create_main_header(main_logo_path):
 
 
 def create_upload_section(upload_component):
-    """
-    Wraps the provided upload component in a container. This is shown before any file is loaded.
-    """
+    """Wraps the provided upload component in a container"""
     return html.Div(
         [upload_component.create_upload_area()],
         style={'marginBottom': '20px'}
@@ -248,15 +411,7 @@ def create_upload_section(upload_component):
 
 
 def create_mapping_section_with_fallback():
-    """
-    Step 1: “Map CSV Headers.” If you have a real mapping component (ui/components/mapping.py),
-    import and use it. Otherwise, render a fallback UI:
-      - A header
-      - Instructions
-      - A Details/UL describing each field
-      - A placeholder `html.Div(id='dropdown-mapping-area')`
-      - A “Confirm Header Mapping & Proceed” button
-    """
+    """Step 1: Map CSV Headers - with fallback UI"""
     try:
         from ui.components.mapping import create_mapping_component
         mapping_component = create_mapping_component()
@@ -285,28 +440,16 @@ def create_mapping_section_with_fallback():
                         'color': COLORS['text_secondary'],
                         'fontSize': '0.85rem',
                         'marginBottom': '8px'
-                    }),
-                    html.Details([
-                        html.Summary(
-                            "What do these fields mean?",
-                            style={'color': COLORS['accent'], 'cursor': 'pointer', 'fontSize': '0.9rem'}
-                        ),
-                        html.Ul([
-                            html.Li([html.Strong("Timestamp: "), "When the access event occurred"]),
-                            html.Li([html.Strong("UserID: "), "Person identifier (badge number, employee ID, etc.)"]),
-                            html.Li([html.Strong("DoorID: "), "Device or door identifier"]),
-                            html.Li([html.Strong("EventType: "), "Access result (granted, denied, etc.)"])
-                        ], style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'})
-                    ])
+                    })
                 ], style={'marginBottom': '12px'}),
 
-                # Placeholder for dropdowns that map CSV headers:
+                # Placeholder for dropdowns
                 html.Div(id='dropdown-mapping-area'),
 
                 # Hidden validation message div
                 html.Div(id='mapping-validation-message', style={'display': 'none'}),
 
-                # Step 1 “Confirm Header Mapping & Proceed” button
+                # Confirm button
                 html.Button(
                     'Confirm Header Mapping & Proceed',
                     id='confirm-header-map-button',
@@ -330,30 +473,17 @@ def create_mapping_section_with_fallback():
 
 
 def create_classification_section():
-    """
-    Step 2 & 3: “Facility Setup” + “Door Classification.” If you have a real classification
-    component (ui/components/classification.py), import and use it. Otherwise, render a fallback:
-      - A “Step 2: Facility Setup” card with:
-          • A “Floors:” label
-          • A dark‐themed slider (1–20) that highlights the selected number
-          • An always-visible div (`num-floors-display`) to show the integer (e.g. “4”)
-          • A minimal helper line “Above ground only”
-          • A “Manual Map?” RadioItems (Yes/No)
-      - A “Step 3: Door Classification” container (hidden until triggered)
-    """
+    """Step 2 & 3: Facility Setup + Door Classification"""
     try:
         from ui.components.classification import create_classification_component
         classification_component = create_classification_component()
         return classification_component.create_entrance_verification_section()
-
     except ImportError:
-        # FALLBACK UI for Steps 2 & 3
+        # Fallback UI
         return html.Div(
             id='entrance-verification-ui-section',
             style={'display': 'none'},
             children=[
-
-                # === Step 2: Facility Setup Card ===
                 html.Div(
                     [
                         html.H4(
@@ -366,7 +496,7 @@ def create_classification_section():
                             }
                         ),
 
-                        # ── “Floors:” Label ─────────────────────────────────────────────────
+                        # Floor slider
                         html.Label(
                             "Floors:",
                             style={
@@ -379,21 +509,18 @@ def create_classification_section():
                             }
                         ),
 
-                        # ── Slider from 1 to 50 ─────────────────────────────────────────────
                         dcc.Slider(
                             id="num-floors-slider",
                             min=1,
-                            max= 51,
+                            max=51,
                             step=1,
-                            value=1,   # default (1 floor)
-                            marks={i: str(i) for i in range(1, 51)},
+                            value=1,
+                            marks={i: str(i) for i in range(1, 51, 5)},
                             tooltip={"always_visible": False, "placement": "bottom"},
                             updatemode="drag",
-                            className="floor-slider",  # CSS hook for dark track + glow
                             style={'marginBottom': '6px'}
                         ),
 
-                        # ── Live Display of Slider Value (just the integer) ────────────────
                         html.Div(
                             id="num-floors-display",
                             style={
@@ -404,18 +531,7 @@ def create_classification_section():
                             }
                         ),
 
-                        # ── Minimal Helper Text ──────────────────────────────────────────────
-                        html.Div(
-                            "Above ground only",
-                            style={
-                                "fontSize": "0.8rem",
-                                "color": "#777",
-                                "marginTop": "4px",
-                                "textAlign": "center"
-                            }
-                        ),
-
-                        # ── “Manual Map?” Toggle (Yes / No) ─────────────────────────────────
+                        # Manual Map toggle
                         html.Label(
                             "Manual Map?",
                             style={
@@ -451,7 +567,7 @@ def create_classification_section():
                     }
                 ),
 
-                # === Step 3: Door Classification Table Container (initially hidden) ===
+                # Door Classification Table Container
                 html.Div(
                     id="door-classification-table-container",
                     style={'display': 'none'},
@@ -465,10 +581,6 @@ def create_classification_section():
                                 'fontSize': '1.3rem'
                             }
                         ),
-                        html.P(
-                            "Assign a security level to each door below:",
-                            style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '8px'}
-                        ),
                         html.Div(id="door-classification-table")
                     ]
                 )
@@ -477,10 +589,7 @@ def create_classification_section():
 
 
 def create_processing_status():
-    """
-    Step 4: A simple status indicator (e.g., “Processing…”). 
-    Initially hidden; shown while backend is processing the CSV.
-    """
+    """Processing status indicator"""
     return html.Div(
         id='processing-status',
         style={
@@ -491,50 +600,8 @@ def create_processing_status():
     )
 
 
-def create_custom_header(main_logo_path):
-    """
-    Step 5: Custom header shown after processing. 
-    If ui/components/stats.py is available, use it; otherwise, render an empty div.
-    """
-    try:
-        from ui.components.stats import create_stats_component
-        stats_component = create_stats_component()
-        return stats_component.create_custom_header(main_logo_path)
-    except ImportError:
-        return html.Div(id='yosai-custom-header', style={'display': 'none'})
-
-
-def create_stats_panels():
-    """
-    Step 6: Statistics panels (e.g., summary metrics). 
-    If ui/components/stats.py is available, use it; otherwise, hidden.
-    """
-    try:
-        from ui.components.stats import create_stats_component
-        stats_component = create_stats_component()
-        return stats_component.create_stats_container()
-    except ImportError:
-        return html.Div(id='stats-panels-container', style={'display': 'none'})
-
-
-def create_graph_container():
-    """
-    Step 7: Graph visualization container (e.g., cytoscape component). 
-    If ui/components/graph.py is available, use it; otherwise, hidden.
-    """
-    try:
-        from ui.components.graph import create_graph_component
-        graph_component = create_graph_component()
-        return graph_component.create_graph_container()
-    except ImportError:
-        return html.Div(id='graph-output-container', style={'display': 'none'})
-
-
 def create_data_stores():
-    """
-    Step 8: Create all dcc.Store() components for state management. 
-    These hold parsed CSV, mapped columns, door lists, floor count, etc.
-    """
+    """Create all dcc.Store() components for state management"""
     return html.Div([
         dcc.Store(id='uploaded-file-store'),
         dcc.Store(id='csv-headers-store', storage_type='session'),
@@ -548,9 +615,7 @@ def create_data_stores():
 
 
 def get_main_container_style():
-    """
-    Returns the style for the main container.
-    """
+    """Returns the style for the main container"""
     return {
         'backgroundColor': COLORS['background'],
         'padding': '20px',
@@ -560,24 +625,14 @@ def get_main_container_style():
 
 
 def register_page_callbacks(app):
-    """
-    Call this from your server‐setup code (e.g., in app.py) after instantiating Dash:
-    
-        from ui.pages.main_page import register_page_callbacks
-        app = Dash(__name__, external_stylesheets=[…])
-        register_page_callbacks(app)
-    
-    Wiring:
-      • Updates the “num-floors-display” div whenever “num-floors-slider” changes.
-    """
+    """Register page-specific callbacks"""
     @app.callback(
-    [
-        Output("num-floors-display", "children"),
-        Output("num-floors-store", "data")  # Add this line
-    ],
-    Input("num-floors-slider", "value"),
-)
+        [
+            Output("num-floors-display", "children"),
+            Output("num-floors-store", "data")
+        ],
+        Input("num-floors-slider", "value"),
+    )
     def update_floor_number(n):
-        # Return both the display text and the value for the store
         display_text = f"{n} floor{'s' if n != 1 else ''}"
-        return display_text, n  # Return both values
+        return display_text, n

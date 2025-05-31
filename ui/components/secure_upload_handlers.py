@@ -1,42 +1,20 @@
 # ui/components/secure_upload_handlers.py
 """
-Secure upload handlers with comprehensive validation - FIXED UNBOUND VARIABLES
+Secure upload handlers with comprehensive validation - FIXED VERSION
 """
 
 import base64
 import pandas as pd
 import io
-from typing import Dict, Any, Optional, Tuple, Union
-from dash import callback, Input, Output, State, ctx
+import json
+import traceback
+from typing import Dict, Any, Optional, Tuple
+from dash import Input, Output, State, html, no_update
 
-from utils.secure_validator import SecureFileValidator
-from utils.validators import CSVValidator
+from utils.constants import REQUIRED_INTERNAL_COLUMNS
 from utils.logging_config import get_logger
 
-# Initialize loggers at module level
 logger = get_logger(__name__)
-security_logger = get_logger('security')
-
-# Import security monitor if available
-try:
-    from utils.security_monitor import security_monitor
-    SECURITY_MONITOR_AVAILABLE = True
-    logger.info("Security monitor available")
-except ImportError:
-    logger.warning("SecurityMonitor module not found. Upload attempts will not be monitored.")
-    
-    # Create a dummy security monitor to prevent errors
-    class DummySecurityMonitor:
-        def log_upload_attempt(self, 
-                              filename: str, 
-                              file_size: int, 
-                              source_ip: str = 'unknown', 
-                              validation_result: Optional[Dict[str, Any]] = None) -> None:
-            logger.info(f"Security monitoring not available - logging upload: {filename}")
-    
-    security_monitor = DummySecurityMonitor()
-    SECURITY_MONITOR_AVAILABLE = False
-
 
 class SecureUploadHandlers:
     """Enhanced upload handlers with security validation"""
@@ -45,200 +23,176 @@ class SecureUploadHandlers:
         self.app = app
         self.component = component
         self.icons = icons
-        self.secure_validator = SecureFileValidator()
-        self.csv_validator = CSVValidator()
-
-        logger.info("SecureUploadHandlers initialized with security validation")
+        logger.info("SecureUploadHandlers initialized")
 
     def register_callbacks(self) -> None:
-        """Register upload callbacks with security validation"""
+        """Register upload callbacks with validation"""
 
         @self.app.callback(
             [
-                Output('upload-status', 'children'),
+                Output('uploaded-file-store', 'data'),
+                Output('csv-headers-store', 'data'),
+                Output('dropdown-mapping-area', 'children'),
+                Output('confirm-header-map-button', 'style'),
+                Output('interactive-setup-container', 'style'),
+                Output('processing-status', 'children'),
                 Output('upload-icon', 'src'),
-                Output('csv-store', 'data'),
-                Output('upload-section', 'style'),
-                Output('mapping-section', 'style')
+                Output('upload-data', 'style'),
+                Output('entrance-verification-ui-section', 'style'),
+                Output('door-classification-table-container', 'style', allow_duplicate=True),
+                Output('graph-output-container', 'style'),
+                Output('stats-panels-container', 'style'),
+                Output('yosai-custom-header', 'style', allow_duplicate=True),
+                Output('onion-graph', 'elements'),
+                Output('all-doors-from-csv-store', 'data'),
+                Output('upload-icon', 'style')
             ],
-            [Input('upload-component', 'contents')],
-            [State('upload-component', 'filename')]
+            [Input('upload-data', 'contents')],
+            [State('upload-data', 'filename'), State('column-mapping-store', 'data')],
+            prevent_initial_call='initial_duplicate'
         )
-        def handle_secure_upload(contents: Optional[str], 
-                                filename: Optional[str]) -> Tuple[str, str, Optional[Dict[str, Any]], Dict[str, str], Dict[str, str]]:
-            """Handle file upload with comprehensive security validation"""
+        def handle_secure_upload(contents, filename, saved_col_mappings_json):
+            """Handle file upload with validation"""
 
-            if contents is None or filename is None:
-                return ("", self.icons['default'], None,
-                       {'display': 'block'}, {'display': 'none'})
-
-            # Get client IP (in production, this would come from request headers)
-            client_ip = 'unknown'
+            # Get styles from upload component
+            upload_styles = self.component.get_upload_styles()
             
-            # Initialize variables to prevent unbound variable errors
-            file_content: bytes = b''
-            content_string: str = ''
-            file_size: int = 0
+            # Initial state values
+            hide_style = {'display': 'none'}
+            show_interactive_setup_style = {'display': 'block', 'width': '85%', 'maxWidth': '1000px', 'margin': '16px auto'}
+            confirm_button_style_hidden = {
+                'padding': '8px 16px',
+                'border': 'none',
+                'borderRadius': '5px',
+                'backgroundColor': '#2196F3',
+                'color': 'white',
+                'fontSize': '0.9rem',
+                'fontWeight': 'bold',
+                'cursor': 'pointer',
+                'display': 'none',
+                'margin': '15px auto 0',
+                'transition': 'background-color 0.3s ease'
+            }
+            upload_icon_style = {'width': '120px', 'height': '120px', 'marginBottom': '15px'}
+
+            if contents is None:
+                return (
+                    None, None, [],  # file store, headers, dropdown area
+                    confirm_button_style_hidden,  # confirm button style
+                    hide_style,  # interactive setup container
+                    "",  # processing status
+                    self.icons['default'],  # upload icon src
+                    upload_styles['initial'],  # upload box style
+                    hide_style, hide_style, hide_style, hide_style,  # various containers
+                    hide_style,  # yosai header
+                    [],  # graph elements
+                    None,  # all doors store
+                    upload_icon_style  # upload icon style
+                )
 
             try:
-                # Log security event
-                security_logger.info(f"File upload attempt: {filename}")
                 logger.info(f"Processing upload: {filename}")
-
+                
                 # Decode file content
                 content_type, content_string = contents.split(',')
-                file_content = base64.b64decode(content_string)
-                file_size = len(file_content)
-
-                logger.info(f"File decoded: {file_size} bytes")
-
-                # Step 1: Secure validation
-                security_result: Dict[str, Any] = self.secure_validator.validate_upload(
-                    file_content, filename
-                )
-
-                # Log upload attempt with security monitor
-                # Ensure we pass a proper dictionary, never None
-                security_monitor.log_upload_attempt(
-                    filename=filename,
-                    file_size=file_size,
-                    source_ip=client_ip,
-                    validation_result=security_result  # Always a Dict, never None
-                )
-
-                if not security_result.get('valid', False):
-                    error_msg = "🛡️ Security validation failed:\n" + "\n".join(
-                        security_result.get('errors', ['Unknown security error'])
-                    )
-                    logger.warning(f"Security validation failed for {filename}: {security_result.get('errors', [])}")
-
-                    # Log security incident
-                    security_logger.warning(
-                        "File upload blocked - security validation failed",
-                        extra={
-                            'filename': filename,
-                            'errors': security_result.get('errors', []),
-                            'file_size': file_size,
-                            'source_ip': client_ip
-                        }
-                    )
-
-                    return (
-                        error_msg,
-                        self.icons['fail'],
-                        None,
-                        {'display': 'block'},
-                        {'display': 'none'}
-                    )
-
-                # Log warnings if any
-                warnings = security_result.get('warnings', [])
-                if warnings:
-                    logger.info(f"Upload warnings for {filename}: {warnings}")
-
-                # Step 2: Load and validate CSV structure
-                csv_file = io.StringIO(file_content.decode('utf-8'))
-
-                try:
-                    df = pd.read_csv(csv_file, dtype=str)
-                    self.csv_validator.validate_csv_structure(df)
-                    logger.info(f"CSV structure validated: {df.shape}")
-                except Exception as e:
-                    error_msg = f"📊 CSV structure validation failed: {str(e)}"
-                    logger.warning(f"CSV validation failed for {filename}: {str(e)}")
-                    return (
-                        error_msg,
-                        self.icons['fail'],
-                        None,
-                        {'display': 'block'},
-                        {'display': 'none'}
-                    )
-
-                # Step 3: Store validated data
-                file_info = security_result.get('file_info', {})
-                csv_store_data: Dict[str, Any] = {
-                    'content': content_string,
-                    'filename': filename,
-                    'columns': df.columns.tolist(),
-                    'shape': list(df.shape),  # Convert to list for JSON serialization
-                    'file_info': file_info
-                }
-
-                # Success message with file info
-                success_msg = (
-                    f"✅ {filename} uploaded successfully!\n"
-                    f"🛡️ Security validation: PASSED\n"
-                    f"📊 {file_info.get('row_count', 0):,} rows, "
-                    f"{file_info.get('column_count', 0)} columns\n"
-                    f"📁 {file_info.get('size_bytes', 0):,} bytes\n"
-                    f"🔒 Hash: {file_info.get('file_hash', 'N/A')}"
-                )
-
-                # Add warnings to success message if any
-                if warnings:
-                    success_msg += f"\n⚠️ Warnings: {'; '.join(warnings)}"
-
-                # Log successful upload
-                logger.info(f"File uploaded successfully: {filename}")
-                security_logger.info(
-                    "File upload successful",
-                    extra={
-                        'filename': filename,
-                        'file_hash': file_info.get('file_hash', ''),
-                        'row_count': file_info.get('row_count', 0),
-                        'column_count': file_info.get('column_count', 0),
-                        'size_bytes': file_info.get('size_bytes', 0),
-                        'source_ip': client_ip
-                    }
-                )
-
+                decoded = base64.b64decode(content_string)
+                
+                if not filename.lower().endswith('.csv'):
+                    raise ValueError("Uploaded file is not a CSV.")
+                
+                # Load and validate CSV
+                df_full_for_doors = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+                headers = df_full_for_doors.columns.tolist()
+                
+                if not headers:
+                    raise ValueError("CSV has no headers.")
+                
+                # Process column mappings
+                if isinstance(saved_col_mappings_json, str):
+                    saved_col_mappings = json.loads(saved_col_mappings_json)
+                else:
+                    saved_col_mappings = saved_col_mappings_json or {}
+                
+                header_key = json.dumps(sorted(headers))
+                loaded_col_map_prefs = saved_col_mappings.get(header_key, {})
+                
+                # Create temporary mapping for door extraction
+                temp_mapping_for_doors = {}
+                for csv_h_selected, internal_k in loaded_col_map_prefs.items():
+                    if internal_k in REQUIRED_INTERNAL_COLUMNS:
+                        temp_mapping_for_doors[csv_h_selected] = REQUIRED_INTERNAL_COLUMNS[internal_k]
+                    else:
+                        temp_mapping_for_doors[csv_h_selected] = internal_k
+                
+                # Extract unique doors for classification
+                df_copy = df_full_for_doors.copy()
+                df_copy.rename(columns=temp_mapping_for_doors, inplace=True)
+                
+                DOORID_COL_DISPLAY = REQUIRED_INTERNAL_COLUMNS['DoorID']
+                
+                if DOORID_COL_DISPLAY in df_copy.columns:
+                    all_unique_doors = sorted(df_copy[DOORID_COL_DISPLAY].astype(str).unique().tolist())
+                    logger.info(f"Extracted {len(all_unique_doors)} unique doors for classification.")
+                else:
+                    logger.warning(f"'{DOORID_COL_DISPLAY}' column not found after preliminary mapping.")
+                    all_unique_doors = []
+                
+                # Create mapping dropdowns
+                mapping_dropdowns = self._create_mapping_dropdowns(headers, loaded_col_map_prefs)
+                
+                # Success response
+                confirm_button_style_visible = confirm_button_style_hidden.copy()
+                confirm_button_style_visible['display'] = 'block'
+                
+                processing_status_msg = f"Step 1: Confirm Header Mapping for '{filename}'."
+                
                 return (
-                    success_msg,
-                    self.icons['success'],
-                    csv_store_data,
-                    {'display': 'none'},  # Hide upload section
-                    {'display': 'block'}   # Show mapping section
+                    contents,  # uploaded file store
+                    headers,  # csv headers store
+                    mapping_dropdowns,  # dropdown mapping area
+                    confirm_button_style_visible,  # confirm button style
+                    show_interactive_setup_style,  # interactive setup container
+                    processing_status_msg,  # processing status
+                    self.icons['success'],  # upload icon src
+                    upload_styles['success'],  # upload box style
+                    hide_style, hide_style, hide_style, hide_style,  # various containers
+                    hide_style,  # yosai header
+                    [],  # graph elements
+                    all_unique_doors,  # all doors store
+                    upload_icon_style  # upload icon style
                 )
-
+                
             except Exception as e:
-                error_msg = f"💥 Upload processing failed: {str(e)}"
                 logger.error(f"Upload error for {filename}: {str(e)}")
-
-                # Log security incident for unexpected errors with proper type
-                # Use the file_size we calculated (or 0 if not calculated yet)
-                error_validation_result: Dict[str, Any] = {
-                    'valid': False,
-                    'errors': [f'Processing error: {str(e)}'],
-                    'warnings': [],
-                    'file_info': {}
-                }
-
-                # Use the file_size variable which is always defined
-                security_monitor.log_upload_attempt(
-                    filename=filename,
-                    file_size=file_size,  # This is always defined now
-                    source_ip=client_ip,
-                    validation_result=error_validation_result
-                )
-
-                # Log security incident for unexpected errors
-                security_logger.error(
-                    "Upload processing error",
-                    extra={
-                        'filename': filename,
-                        'error': str(e),
-                        'source_ip': client_ip,
-                        'file_size': file_size
-                    }
-                )
-
+                traceback.print_exc()
+                
+                error_message = f"Error processing '{filename}': {str(e)}"
+                processing_status_msg = error_message
+                
                 return (
-                    error_msg,
-                    self.icons['fail'],
-                    None,
-                    {'display': 'block'},
-                    {'display': 'none'}
+                    None, None,  # file store, headers
+                    [html.P(processing_status_msg, style={'color': 'red'})],  # dropdown area
+                    confirm_button_style_hidden,  # confirm button style
+                    show_interactive_setup_style,  # interactive setup container
+                    processing_status_msg,  # processing status
+                    self.icons['fail'],  # upload icon src
+                    upload_styles['error'],  # upload box style
+                    hide_style, hide_style, hide_style, hide_style,  # various containers
+                    hide_style,  # yosai header
+                    [],  # graph elements
+                    None,  # all doors store
+                    upload_icon_style  # upload icon style
                 )
+
+    def _create_mapping_dropdowns(self, headers, loaded_col_map_prefs):
+        """Create dropdown components for column mapping"""
+        try:
+            from ui.components.mapping import create_mapping_component
+            mapping_component = create_mapping_component()
+            return mapping_component.create_mapping_dropdowns(headers, loaded_col_map_prefs)
+        except ImportError:
+            # Fallback if mapping component not available
+            return [html.P("Mapping component not available", style={'color': 'orange'})]
 
 
 def create_secure_upload_handlers(app, upload_component, icons: Dict[str, str]) -> SecureUploadHandlers:

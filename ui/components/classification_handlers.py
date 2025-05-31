@@ -5,7 +5,7 @@ Separated business logic from UI definitions
 """
 
 import json
-from dash import Input, Output, State, html, no_update
+from dash import Input, Output, State, html, callback, no_update
 from dash.dependencies import ALL
 
 # Import UI components - type: ignore to suppress Pylance warnings
@@ -25,6 +25,22 @@ class ClassificationHandlers:
         """Register all classification-related callbacks"""
         self._register_door_table_generation_handler()
         self._register_door_type_mutual_exclusion_handler()
+        @self.app.callback(
+            Output("num-floors-display", "children"),
+            Output("num-floors-store", "data"),
+            Input("num-floors-slider", "value"),
+
+    def register_sliders_callbacks(app):
+        @app.callback(
+            Output("num-floors-display", "children"),
+            Output("num-floors-store", "data"),
+            Input("num-floors-slider", "value"),
+    )
+    def update_floor_display_and_store(slider_value):
+        # Update the text under the slider
+        display_text = f"{slider_value} floor{'s' if slider_value != 1 else ''}"
+        # Also write the raw integer into the dcc.Store('num-floors-store')
+        return display_text, slider_value
         
     def _register_door_table_generation_handler(self):
         """Generates door classification table when conditions are met"""

@@ -15,6 +15,7 @@ from ui.components.upload_handlers import create_upload_handlers
 from ui.components.mapping_handlers import create_mapping_handlers
 from ui.components.classification_handlers import create_classification_handlers
 from ui.components.graph_handlers import create_graph_handlers
+from ui.components.classification_handlers import ClassificationHandlers
 
 # Import layout from actual structure
 from ui.pages.main_page import create_main_layout
@@ -35,8 +36,26 @@ app = dash.Dash(
     assets_folder='assets',
     external_stylesheets=[dbc.themes.DARKLY]
 )
+from ui.pages.main_page import register_page_callbacks
+register_page_callbacks(app)
 
 server = app.server
+from ui.components.classification_handlers import (
+    create_classification_handlers,
+    register_sliders_callbacks  # <— import the new function
+)
+
+def register_all_callbacks():
+
+    classification_component = create_classification_component()
+    classification_handlers = create_classification_handlers(app, classification_component)
+    classification_handlers.register_callbacks()
+    classification_handlers = ClassificationHandlers(app)
+    print("✅ Classification (slider) callbacks registered")
+
+    # ── Register our slider callback too ───────────────────────────────────
+    register_sliders_callbacks(app)
+    print("✅ Floor slider callbacks registered")
 
 # Assets - using actual structure
 ICON_UPLOAD_DEFAULT = app.get_asset_url('upload_file_csv_icon.png')
@@ -100,3 +119,5 @@ register_all_callbacks()
 if __name__ == "__main__":
     logger.info("🚀 Starting Yōsai Intel Dashboard...")
     app.run(debug=True, host='127.0.0.1', port=8050)
+    register_all_callbacks()
+    app.run_server(debug=True)

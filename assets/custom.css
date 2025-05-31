@@ -793,3 +793,46 @@ input[type="file"] {
   border: 1px solid;
   border-image: linear-gradient(135deg, var(--color-accent), var(--color-success)) 1;
 }
+
+/* 1) Dark rail background, 8px tall, rounded corners */
+.floor-slider .rc-slider-rail {
+  background-color: #333;   /* very dark gray */
+  height: 8px;
+  border-radius: 4px;
+}
+
+/* 2) Filled portion (track before handle) in lighter gray */
+.floor-slider .rc-slider-track {
+  background-color: #555;   /* lighter gray */
+  height: 8px;
+  border-radius: 4px;
+}
+
+/* 3) Style the handle: white border, bright blue fill, 18×18px circle */
+.floor-slider .rc-slider-handle {
+  border: 2px solid #FFF;       /* white outer border */
+  background-color: #00BFFF;    /* bright blue accent */
+  width: 18px;
+  height: 18px;
+  margin-top: -5px;              /* to center the 18px handle on an 8px track */
+  box-shadow: none;              /* remove default shadow */
+  transition: box-shadow 0.2s ease;
+}
+
+/* 4) On :hover or :active, add a subtle blue glow around the handle */
+.floor-slider .rc-slider-handle:hover,
+.floor-slider .rc-slider-handle:active {
+  box-shadow: 0 0 8px rgba(0, 191, 255, 0.6);
+}
+
+/* 5) Hide the default dot markers (we only want the numeric tick labels) */
+.floor-slider .rc-slider-dot {
+  display: none;
+}
+
+/* 6) Style the tick‐mark labels (1, 2, …, 20) in a muted light color */
+.floor-slider .rc-slider-mark-text {
+  color: #DDD;
+  font-size: 0.8rem;
+  top: 16px;    /* push labels slightly below the 8px track */
+}

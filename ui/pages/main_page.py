@@ -1,7 +1,7 @@
-# ui/pages/main_page.py - FIXED VERSION
+# ui/pages/main_page.py - FIXED VERSION (Remove duplicate callback)
 
 """
-Main page layout - FIXED to hide stats panels initially
+Main page layout - FIXED to remove duplicate floor callback
 """
 
 from dash import Dash, html, dcc
@@ -518,8 +518,7 @@ def create_classification_section():
                             marks={i: str(i) for i in range(1, 21, 2)},  # Every 2nd number
                             tooltip={"always_visible": False, "placement": "bottom"},
                             updatemode="drag",
-                            className="modern-floor-slider",
-                            style={'marginBottom': '6px'}
+                            className="modern-floor-slider"
                         ),
                         html.Div(
                             id="num-floors-display",
@@ -659,14 +658,11 @@ def get_main_container_style():
 
 
 def register_page_callbacks(app):
-    """Register page-specific callbacks"""
-    @app.callback(
-        [
-            Output("num-floors-display", "children"),
-            Output("num-floors-store", "data")
-        ],
-        Input("num-floors-slider", "value"),
-    )
-    def update_floor_number(n):
-        display_text = f"{n} floor{'s' if n != 1 else ''}"
-        return display_text, n
+    """
+    Register page-specific callbacks
+    
+    NOTE: Floor slider callback removed - handled by classification_handlers.py
+    """
+    # REMOVED: Duplicate floor slider callback that was causing conflicts
+    # The floor slider is now handled by ui/components/classification_handlers.py
+    pass

@@ -25,22 +25,7 @@ class ClassificationHandlers:
         """Register all classification-related callbacks"""
         self._register_door_table_generation_handler()
         self._register_door_type_mutual_exclusion_handler()
-        @self.app.callback(
-            Output("num-floors-display", "children"),
-            Output("num-floors-store", "data"),
-            Input("num-floors-slider", "value"),
-
-    def register_sliders_callbacks(app):
-        @app.callback(
-            Output("num-floors-display", "children"),
-            Output("num-floors-store", "data"),
-            Input("num-floors-slider", "value"),
-    )
-    def update_floor_display_and_store(slider_value):
-        # Update the text under the slider
-        display_text = f"{slider_value} floor{'s' if slider_value != 1 else ''}"
-        # Also write the raw integer into the dcc.Store('num-floors-store')
-        return display_text, slider_value
+        # Note: Floor slider callback is handled in main_page.py to avoid duplicates
         
     def _register_door_table_generation_handler(self):
         """Generates door classification table when conditions are met"""
@@ -63,8 +48,8 @@ class ClassificationHandlers:
         ):
             # Only generate if manual mapping is chosen and there are doors
             if manual_map_choice != 'yes' or not all_doors_from_store_data:
-               logger.info("DEBUG: Not in manual mode or no doors available for classification table.")
-            return []
+                logger.info("DEBUG: Not in manual mode or no doors available for classification table.")
+                return []
                 
             return self._generate_classification_table(
                 all_doors_from_store_data,

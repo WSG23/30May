@@ -15,10 +15,9 @@ from ui.components.upload_handlers import create_upload_handlers
 from ui.components.mapping_handlers import create_mapping_handlers
 from ui.components.classification_handlers import create_classification_handlers
 from ui.components.graph_handlers import create_graph_handlers
-from ui.components.classification_handlers import ClassificationHandlers
 
 # Import layout from actual structure
-from ui.pages.main_page import create_main_layout
+from ui.pages.main_page import create_main_layout, register_page_callbacks
 
 # Import constants from actual location
 from utils.constants import DEFAULT_ICONS
@@ -36,26 +35,8 @@ app = dash.Dash(
     assets_folder='assets',
     external_stylesheets=[dbc.themes.DARKLY]
 )
-from ui.pages.main_page import register_page_callbacks
-register_page_callbacks(app)
 
 server = app.server
-from ui.components.classification_handlers import (
-    create_classification_handlers,
-    register_sliders_callbacks  # <— import the new function
-)
-
-def register_all_callbacks():
-
-    classification_component = create_classification_component()
-    classification_handlers = create_classification_handlers(app, classification_component)
-    classification_handlers.register_callbacks()
-    classification_handlers = ClassificationHandlers(app)
-    print("✅ Classification (slider) callbacks registered")
-
-    # ── Register our slider callback too ───────────────────────────────────
-    register_sliders_callbacks(app)
-    print("✅ Floor slider callbacks registered")
 
 # Assets - using actual structure
 ICON_UPLOAD_DEFAULT = app.get_asset_url('upload_file_csv_icon.png')
@@ -75,6 +56,10 @@ def register_all_callbacks():
     Register all callbacks using the actual modular system
     """
     try:
+        # Page callbacks (for main page components) - register first
+        register_page_callbacks(app)
+        logger.info("✅ Page callbacks registered")
+        
         # Upload handlers
         upload_component = create_enhanced_upload_component(
             ICON_UPLOAD_DEFAULT, 
@@ -109,7 +94,7 @@ def register_all_callbacks():
         logger.info("🎉 All callbacks registered successfully!")
         
     except Exception as e:
-        logger.info(f"❌ Error registering callbacks: {e}")
+        logger.error(f"❌ Error registering callbacks: {e}")
         import traceback
         traceback.print_exc()
 
@@ -119,5 +104,3 @@ register_all_callbacks()
 if __name__ == "__main__":
     logger.info("🚀 Starting Yōsai Intel Dashboard...")
     app.run(debug=True, host='127.0.0.1', port=8050)
-    register_all_callbacks()
-    app.run_server(debug=True)

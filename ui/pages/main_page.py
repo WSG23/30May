@@ -571,9 +571,13 @@ def register_page_callbacks(app):
       • Updates the “num-floors-display” div whenever “num-floors-slider” changes.
     """
     @app.callback(
+    [
         Output("num-floors-display", "children"),
-        Input("num-floors-slider", "value"),
-    )
+        Output("num-floors-store", "data")  # Add this line
+    ],
+    Input("num-floors-slider", "value"),
+)
     def update_floor_number(n):
-        # Simply return the integer as a string; shows “1”, “2”, … “20” live as you drag
-        return str(n)
+        # Return both the display text and the value for the store
+        display_text = f"{n} floor{'s' if n != 1 else ''}"
+        return display_text, n  # Return both values

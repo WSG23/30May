@@ -1,0 +1,4 @@
+Name,Age,Note
+John,25,Normal user
+Hacker,99,<script>alert('xss')</script>
+Jane,30,Regular employee

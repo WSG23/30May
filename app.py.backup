@@ -13,14 +13,10 @@ from ui.components.mapping import create_mapping_component
 from ui.components.classification import create_classification_component
 from ui.components.graph import create_graph_component
 from ui.components.stats import create_stats_component
-
-# Updated import for secure upload handlers
-from ui.components.secure_upload_handlers import create_secure_upload_handlers  # NEW
+from ui.components.upload_handlers import create_upload_handlers
 from ui.components.mapping_handlers import create_mapping_handlers
 from ui.components.classification_handlers import create_classification_handlers
 from ui.components.graph_handlers import create_graph_handlers
-from ui.components.classification_handlers import ClassificationHandlers
-
 
 # Import layout from actual structure
 from ui.pages.main_page import create_main_layout, register_page_callbacks
@@ -34,18 +30,6 @@ from utils.logging_config import setup_application_logging, get_logger
 setup_application_logging()          # initialise the logging system
 logger = get_logger(__name__)        # module-level logger everyone can use
 # ----------------------------------------------------------------------
-# --- Security initialization -----------------------------------------------
-
-from utils.security_validator import setup_security_validatoring, security_validator
-from config.security_config import SecurityConfig
-
-# Initialize security monitoring
-setup_security_validatoring()
-logger.info("🔐 Security monitoring initialized")
-
-# Initialize monitoring with security integration
-from utils.monitoring import initialize_monitoring
-initialize_monitoring()  # This now includes security checks
 
 app = dash.Dash(
     __name__,
@@ -78,7 +62,7 @@ def register_all_callbacks():
         from ui.components.classification_handlers import create_classification_handlers
         from ui.components.graph_handlers import create_graph_handlers
         
-        # SECURE Upload handlers - UPDATED
+        # Create components
         upload_component = create_enhanced_upload_component(
             ICON_UPLOAD_DEFAULT, 
             ICON_UPLOAD_SUCCESS, 
@@ -87,14 +71,14 @@ def register_all_callbacks():
         mapping_component = create_mapping_component()
         classification_component = create_classification_component()
         
-        # Use secure upload handlers instead of regular ones
-        upload_handlers = create_secure_upload_handlers(app, upload_component, {
+        # Register handlers
+        upload_handlers = create_upload_handlers(app, upload_component, {
             'default': ICON_UPLOAD_DEFAULT,
             'success': ICON_UPLOAD_SUCCESS,
             'fail': ICON_UPLOAD_FAIL
         })
         upload_handlers.register_callbacks()
-        logger.info("✅ Secure upload handlers registered")
+        logger.info("✅ Upload handlers registered")
         
         mapping_handlers = create_mapping_handlers(app, mapping_component)
         mapping_handlers.register_callbacks()
@@ -127,10 +111,9 @@ def register_all_callbacks():
         logger.error(f"❌ Error registering callbacks: {e}")
         import traceback
         traceback.print_exc()
-
-# Register all callbacks
-register_all_callbacks()
-
+        raise
+      
 if __name__ == "__main__":
-    logger.info("🚀 Starting Yōsai Intel Dashboard with Enhanced Security...")
-    app.run(debug=True, host='127.0.0.1', port=8050)
+    register_all_callbacks()
+    logger.info("🚀 Starting Yōsai Intel Dashboard...")
+    app.run(debug=True, host='127.0.0.1', port=8050)  # ← CORRECT METHOD

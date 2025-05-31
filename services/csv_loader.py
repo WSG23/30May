@@ -2,7 +2,7 @@
 import pandas as pd
 import io
 import traceback
-from utils.constants import REQUIRED_INTERNAL_COLUMNS
+from config.settings import REQUIRED_INTERNAL_COLUMNS
 from utils.logging_config import get_logger
 logger = get_logger(__name__)
 

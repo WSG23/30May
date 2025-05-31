@@ -5,7 +5,7 @@ logger = get_logger(__name__)
 
 # Assuming you have a constants file for display names as well
 # Make sure this import path is correct relative to your project structure
-from utils.constants import REQUIRED_INTERNAL_COLUMNS 
+from config.settings import REQUIRED_INTERNAL_COLUMNS
 
 # Define display names for clarity and consistency
 DOORID_COL_DISPLAY = REQUIRED_INTERNAL_COLUMNS['DoorID']        # 'DoorID (Device Name)'

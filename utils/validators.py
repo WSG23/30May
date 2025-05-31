@@ -10,7 +10,7 @@ import re
 from datetime import datetime
 
 from core.exceptions import ValidationError
-from utils.constants import REQUIRED_INTERNAL_COLUMNS, FILE_LIMITS
+from config.settings import REQUIRED_INTERNAL_COLUMNS, FILE_LIMITS
 
 class CSVValidator:
     """Validates CSV files and structure"""

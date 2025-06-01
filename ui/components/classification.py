@@ -1,4 +1,4 @@
-# ui/components/classification.py - FIXED TOGGLE VERSION
+# ui/components/classification.py - FIXED VERSION
 """
 Door classification component with working toggle switch
 """
@@ -42,17 +42,10 @@ class ClassificationComponent:
         )
     
     def create_facility_setup_card(self):
-        """Creates Step 2: Facility Setup card with working toggle structure"""
+        """Creates Step 2: Facility Setup card with modern slider and toggle"""
         return html.Div([
-            html.H4(
-                "Step 2: Facility Setup",
-                style={
-                    'color': COLORS['text_primary'],
-                    'textAlign': 'center',
-                    'marginBottom': '16px',
-                    'fontSize': '1.3rem'
-                }
-            ),
+            html.H4("Step 2: Facility Setup", 
+                   style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '16px'}),
             
             # Floors Slider Row
             self.create_floors_slider_row(),
@@ -126,93 +119,82 @@ class ClassificationComponent:
         ])
     
     def create_working_toggle_row(self):
-        """Creates the working toggle switch with proper structure for JavaScript integration"""
+        """Creates the working toggle switch for manual classification"""
         return html.Div([
             html.Label(
                 "Enable Manual Door Classification?", 
                 style={
                     'color': COLORS['text_primary'],
-                    'fontWeight': 'bold',
                     'fontSize': '1rem',
                     'marginBottom': '12px',
                     'textAlign': 'center',
-                    'display': 'block'
+                    'display': 'block',
+                    'fontWeight': 'bold'
                 }
             ),
             
-            # Container for both hidden radio and visual toggle
             html.Div([
-                # Hidden radio items for Dash functionality
+                html.Span("No", style={
+                    'color': COLORS['text_secondary'],
+                    'marginRight': '10px',
+                    'fontWeight': '500'
+                }),
+                
+                # Simple Bootstrap Switch
+                dbc.Switch(
+                    id='manual-classification-switch',
+                    value=False,  # Default to No/False
+                    style={'transform': 'scale(1.2)'}
+                ),
+                
+                html.Span("Yes", style={
+                    'color': COLORS['text_secondary'],
+                    'marginLeft': '10px',
+                    'fontWeight': '500'
+                }),
+                
+                # Hidden RadioItems for backward compatibility with existing callbacks
                 dcc.RadioItems(
                     id='manual-map-toggle',
                     options=[
-                        {'label': 'No', 'value': 'no'}, 
-                        {'label': 'Yes', 'value': 'yes'}
+                        {'label': '', 'value': 'no'}, 
+                        {'label': '', 'value': 'yes'}
                     ],
-                    value='no',  # Default to No
-                    style={'display': 'none'},  # Hide the actual radio items
-                    persistence=True,  # Remember state
-                    persistence_type='session'
-                ),
-                
-                # Visual Toggle Switch - structured for JavaScript
-                html.Div([
-                    html.Span("No", className="toggle-label-left active"),
-                    html.Div([
-                        html.Div(className="toggle-slider")
-                    ], className="toggle-switch"),
-                    html.Span("Yes", className="toggle-label-right")
-                ], className="toggle-container", id="visual-toggle")
-                
-            ], className="modern-toggle-wrapper", id="toggle-wrapper"),
-            
-            # Status indicator for debugging
-            html.Div(
-                id="toggle-status",
-                style={
-                    'fontSize': '0.7rem',
-                    'color': COLORS['text_tertiary'],
-                    'textAlign': 'center',
-                    'marginTop': '4px',
-                    'minHeight': '12px'  # Reserve space even when empty
-                }
-            )
-            
-        ], style={
-            'display': 'flex',
-            'flexDirection': 'column',
-            'alignItems': 'center',
-            'gap': '8px'
-        })
+                    value='no',
+                    style={'display': 'none'}
+                )
+            ], style={
+                'display': 'flex',
+                'alignItems': 'center',
+                'justifyContent': 'center'
+            })
+        ])
     
     def create_door_classification_card(self):
         """Creates Step 3: Door Classification card"""
         return html.Div(
             id="door-classification-table-container",
-            style={'display': 'none', 'marginTop': '20px'},
+            style={'display': 'none'},
             children=[
-                html.H4(
-                    "Step 3: Door Classification",
-                    style={
-                        'color': COLORS['text_primary'],
-                        'textAlign': 'center',
-                        'marginBottom': '12px',
-                        'fontSize': '1.3rem'
-                    }
-                ),
-                html.P(
-                    "Assign a security level to each door below:",
-                    style={
-                        'color': COLORS['text_primary'], 
-                        'textAlign': 'center', 
-                        'marginBottom': '8px'
-                    }
-                ),
-                html.Div(id="door-classification-table")
+                html.Div([
+                    html.H4("Step 3: Door Classification", 
+                           style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '12px'}),
+                    html.P(
+                        "Assign a security level to each door below:", 
+                        style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '8px'}
+                    ),
+                    html.Div(id="door-classification-table")
+                ], style={
+                    'padding': '20px',
+                    'backgroundColor': COLORS['surface'],
+                    'borderRadius': '8px',
+                    'border': f'1px solid {COLORS["border"]}',
+                    'maxWidth': '900px',
+                    'margin': '0 auto'
+                })
             ]
         )
     
-    # Keep all existing methods for door classification table
     def create_scrollable_door_list(self, doors_to_classify, existing_classifications=None, num_floors=3):
         """Creates a scrollable door classification list with header"""
         if not doors_to_classify:

@@ -1,6 +1,7 @@
-# ui/handlers/classification_handlers.py
+# ui/components/classification_handlers.py
 """
 Classification callback handlers - Updated with modern slider support
+FIXED VERSION with proper indentation and structure
 """
 
 import json
@@ -9,7 +10,9 @@ from dash.dependencies import ALL
 
 # Import UI components
 from ui.components.classification import create_classification_component
+from ui.themes.style_config import COLORS
 from utils.logging_config import get_logger
+
 logger = get_logger(__name__)
 
 
@@ -24,8 +27,55 @@ class ClassificationHandlers:
         """Register all classification-related callbacks"""
         self._register_door_table_generation_handler()
         self._register_door_type_mutual_exclusion_handler()
-        self._register_floor_slider_display_handler()  # NEW: Handle slider display
+        self._register_floor_slider_display_handler()
+        self._register_classification_toggle_handler()
+        self._register_toggle_sync_handler()
         
+    def _register_classification_toggle_handler(self):
+        """Handles the manual door classification toggle functionality"""
+        @self.app.callback(
+            Output('door-classification-table-container', 'style'),
+            Input('manual-map-toggle', 'value'),
+            prevent_initial_call=False
+        )
+        def toggle_classification_tools(manual_map_choice):
+            """Show/hide classification tools based on toggle selection"""
+            print(f"DEBUG: Toggle value received: {manual_map_choice}")
+            
+            hide_style = {'display': 'none'}
+            show_style = {'display': 'block'}
+
+            if manual_map_choice == 'yes':
+                print("DEBUG: Showing classification table")
+                return show_style
+            else:
+                print("DEBUG: Hiding classification table")
+                return hide_style
+                
+    def _register_toggle_sync_handler(self):
+        """Sync the visual switch with the hidden radio items"""
+        @self.app.callback(
+            Output('manual-map-toggle', 'value'),
+            Input('manual-classification-switch', 'value'),
+            prevent_initial_call=False
+        )
+        def sync_switch_to_radio(switch_value):
+            """Convert switch boolean to radio string value"""
+            result = 'yes' if switch_value else 'no'
+            print(f"DEBUG: Switch value {switch_value} -> Radio value {result}")
+            return result
+        
+        @self.app.callback(
+            Output('manual-classification-switch', 'value'),
+            Input('manual-map-toggle', 'value'),
+            prevent_initial_call=False
+        )
+        def sync_radio_to_switch(radio_value):
+            """Convert radio string to switch boolean value"""
+            result = radio_value == 'yes'
+            print(f"DEBUG: Radio value {radio_value} -> Switch value {result}")
+            return result
+
     def _register_floor_slider_display_handler(self):
         """Update floor display when slider value changes"""
         @self.app.callback(
@@ -36,7 +86,7 @@ class ClassificationHandlers:
         def update_floor_display(value):
             """Update the floor display text based on slider value"""
             if value is None:
-                value = 4  # Default value
+                value = 4
             
             floors = int(value)
             if floors == 1:
@@ -379,5 +429,5 @@ def create_classification_handlers(app, classification_component=None):
 def create_classification_data_processor(classification_component=None):
     """Factory function to create data processor"""
     if classification_component is None:
-        classification_component = create_classification_component()  # type: ignore
+        classification_component = create_classification_component()
     return ClassificationDataProcessor(classification_component)

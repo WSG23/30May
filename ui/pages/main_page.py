@@ -518,7 +518,7 @@ def create_classification_section():
                             marks={i: str(i) for i in range(1, 21, 5)},  # Every 5th number
                             tooltip={"always_visible": False, "placement": "bottom"},
                             updatemode="drag",
-                            className="modern-floor-slider"
+                            className="ui-slider"
                         ),
                         html.Div(
                             id="num-floors-display",

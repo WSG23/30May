@@ -339,6 +339,40 @@ function debugToggleState() {
     console.log('========================');
 }
 
+// Add color management for radio buttons
+function applyRadioColors() {
+    const radioContainer = document.querySelector('#manual-map-toggle');
+    if (!radioContainer) return;
+    
+    const labels = radioContainer.querySelectorAll('label');
+    const inputs = radioContainer.querySelectorAll('input[type="radio"]');
+    
+    inputs.forEach((input, index) => {
+        const label = labels[index];
+        if (!label) return;
+        
+        if (input.checked) {
+            if (input.value === 'no') {
+                label.style.backgroundColor = '#E02020'; // Red
+                label.style.borderColor = '#E02020';
+                label.style.color = 'white';
+            } else if (input.value === 'yes') {
+                label.style.backgroundColor = '#2196F3'; // Blue  
+                label.style.borderColor = '#2196F3';
+                label.style.color = 'white';
+            }
+        } else {
+            label.style.backgroundColor = '#2D3748'; // Gray
+            label.style.borderColor = '#4A5568';
+            label.style.color = '#A0AEC0';
+        }
+    });
+}
+
+// Apply colors on page load and radio change
+document.addEventListener('DOMContentLoaded', applyRadioColors);
+document.addEventListener('change', applyRadioColors);
+
 // Expose debug function
 window.debugToggle = debugToggleState;
 

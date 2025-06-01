@@ -88,7 +88,7 @@ class ClassificationComponent:
                 marks={i: str(i) for i in range(1, 21, 2)},
                 tooltip={"always_visible": False, "placement": "bottom"},
                 updatemode="drag",
-                className="modern-floor-slider"
+                className="ui-slider"
             ),
             
             # Live display of slider value
@@ -142,23 +142,10 @@ class ClassificationComponent:
                 ],
                 value='no',  # Default to No
                 inline=True,
+                # Remove all inline styling - let CSS handle everything
                 style={'textAlign': 'center'},
-                labelStyle={
-                    'display': 'inline-block',
-                    'backgroundColor': COLORS['surface'],
-                    'color': COLORS['text_secondary'],
-                    'border': f'1px solid {COLORS["border"]}',
-                    'borderRadius': '20px',
-                    'padding': '8px 24px',
-                    'margin': '0 8px',
-                    'cursor': 'pointer',
-                    'transition': 'all 0.3s ease',
-                    'fontWeight': '500',
-                    'minWidth': '80px',
-                    'textAlign': 'center'
-                },
-                inputStyle={'display': 'none'}  # Hide the actual radio buttons
-            ),
+                className='radio-toggle-buttons'
+        ),
             
             html.Small(
                 "Choose 'Yes' to manually set security levels for each door, or 'No' for automatic classification.", 
@@ -370,7 +357,7 @@ class ClassificationComponent:
                         }
                     } for i in [0, 2, 4, 6, 8, 10]},
                     tooltip={"placement": "bottom", "always_visible": False},
-                    className="security-range-slider"
+                    className="ui-slider variant-security"
                 )
             ], style={'flex': '1', 'minWidth': '150px', 'paddingTop': '10px'})
             

@@ -795,21 +795,21 @@ input[type="file"] {
 }
 
 /* 1) Dark rail background, 8px tall, rounded corners */
-.floor-slider .rc-slider-rail {
+.ui-slider .rc-slider-rail {
   background-color: #333;   /* very dark gray */
   height: 8px;
   border-radius: 4px;
 }
 
 /* 2) Filled portion (track before handle) in lighter gray */
-.floor-slider .rc-slider-track {
+.ui-slider .rc-slider-track {
   background-color: #555;   /* lighter gray */
   height: 8px;
   border-radius: 4px;
 }
 
 /* 3) Style the handle: white border, bright blue fill, 18×18px circle */
-.floor-slider .rc-slider-handle {
+.ui-slider .rc-slider-handle {
   border: 2px solid #FFF;       /* white outer border */
   background-color: #00BFFF;    /* bright blue accent */
   width: 18px;
@@ -820,18 +820,18 @@ input[type="file"] {
 }
 
 /* 4) On :hover or :active, add a subtle blue glow around the handle */
-.floor-slider .rc-slider-handle:hover,
-.floor-slider .rc-slider-handle:active {
+.ui-slider .rc-slider-handle:hover,
+.ui-slider .rc-slider-handle:active {
   box-shadow: 0 0 8px rgba(0, 191, 255, 0.6);
 }
 
 /* 5) Hide the default dot markers (we only want the numeric tick labels) */
-.floor-slider .rc-slider-dot {
+.ui-slider .rc-slider-dot {
   display: none;
 }
 
 /* 6) Style the tick‐mark labels (1, 2, …, 20) in a muted light color */
-.floor-slider .rc-slider-mark-text {
+.ui-slider .rc-slider-mark-text {
   color: #DDD;
   font-size: 0.8rem;
   top: 16px;    /* push labels slightly below the 8px track */
@@ -844,21 +844,21 @@ input[type="file"] {
    ═══════════════════════════════════════════════════════════════════════════════ */
 
 /* 1) Dark rail background, 8px tall, rounded corners */
-.modern-floor-slider .rc-slider-rail {
+.ui-slider .rc-slider-rail {
   background-color: #333;
   height: 8px;
   border-radius: 4px;
 }
 
 /* 2) Filled portion (track before handle) in lighter gray */
-.modern-floor-slider .rc-slider-track {
+.ui-slider .rc-slider-track {
   background-color: #555;
   height: 8px;
   border-radius: 4px;
 }
 
 /* 3) Style the handle: white border, bright blue fill, 18×18px */
-.modern-floor-slider .rc-slider-handle {
+.ui-slider .rc-slider-handle {
   border: 2px solid #FFF;
   background-color: #2196F3; /* Match COLORS['accent'] */
   width: 18px;
@@ -870,20 +870,20 @@ input[type="file"] {
 }
 
 /* 4) On :hover or :active, add a subtle blue glow behind handle */
-.modern-floor-slider .rc-slider-handle:hover,
-.modern-floor-slider .rc-slider-handle:active,
-.modern-floor-slider .rc-slider-handle:focus {
+.ui-slider .rc-slider-handle:hover,
+.ui-slider .rc-slider-handle:active,
+.ui-slider .rc-slider-handle:focus {
   box-shadow: 0 0 12px rgba(33, 150, 243, 0.6);
   background-color: #42A5F5; /* Lighter blue on hover */
 }
 
 /* 5) Hide the default dot markers (we only want the numeric tick labels) */
-.modern-floor-slider .rc-slider-dot {
+.ui-slider .rc-slider-dot {
   display: none;
 }
 
 /* 6) Style the tick‐mark labels (1, 2, …, 20) */
-.modern-floor-slider .rc-slider-mark-text {
+.ui-slider .rc-slider-mark-text {
   color: #E2E8F0; /* COLORS['text_secondary'] */
   font-size: 0.8rem;
   top: 16px; /* push labels slightly below the track */
@@ -891,7 +891,7 @@ input[type="file"] {
 }
 
 /* 7) Active/selected tick mark styling */
-.modern-floor-slider .rc-slider-mark-text-active {
+.ui-slider .rc-slider-mark-text-active {
   color: #2196F3; /* Highlight current value */
   font-weight: 600;
 }
@@ -1022,7 +1022,7 @@ input[type="file"] {
     left: calc(100% - 31px);
   }
   
-  .modern-floor-slider .rc-slider-mark-text {
+  .ui-slider .rc-slider-mark-text {
     font-size: 0.7rem;
   }
 }
@@ -1032,22 +1032,22 @@ input[type="file"] {
    ═══════════════════════════════════════════════════════════════════════════════ */
 
 /* Ensure the new components work well with existing door classification table */
-.door-classification-card .modern-floor-slider {
+.door-classification-card .ui-slider {
   margin: 8px 0;
 }
 
 /* Security level sliders in door rows */
-.security-range-slider .rc-slider-rail {
+.ui-slider variant-security .rc-slider-rail {
   background-color: #2D3748;
   height: 6px;
 }
 
-.security-range-slider .rc-slider-track {
+.ui-slider variant-security .rc-slider-track {
   background-color: #2196F3;
   height: 6px;
 }
 
-.security-range-slider .rc-slider-handle {
+.ui-slider variant-security .rc-slider-handle {
   border: 1px solid #fff;
   background-color: #2196F3;
   width: 14px;
@@ -1055,7 +1055,7 @@ input[type="file"] {
   margin-top: -4px;
 }
 
-.security-range-slider .rc-slider-handle:hover {
+.ui-slider variant-security .rc-slider-handle:hover {
   box-shadow: 0 0 6px rgba(33, 150, 243, 0.6);
 }
 
@@ -1084,131 +1084,115 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
-   SIMPLIFIED RADIO TOGGLE STYLES (No Circular Dependencies)
-   Add this to the END of your assets/custom.css file
+   FIXED RADIO TOGGLE STYLES for Dash RadioItems
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-/* Style the manual classification toggle radio items to look like toggle buttons */
-#manual-map-toggle .form-check-input {
-    display: none !important; /* Hide the actual radio buttons */
+/* Target Dash RadioItems structure for manual classification toggle */
+#manual-map-toggle {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 16px !important;
+    margin: 12px 0 !important;
 }
 
-#manual-map-toggle .form-check-label {
-    display: inline-block;
-    background-color: #1A2332; /* COLORS['surface'] */
-    color: #E2E8F0; /* COLORS['text_secondary'] */
-    border: 1px solid #2D3748; /* COLORS['border'] */
-    border-radius: 20px;
-    padding: 8px 24px;
-    margin: 0 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    min-width: 80px;
-    text-align: center;
-    user-select: none;
-    font-size: 0.9rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+/* Hide the actual radio input elements */
+#manual-map-toggle input[type="radio"] {
+    display: none !important;
 }
 
-#manual-map-toggle .form-check-label:hover {
-    background-color: #2D3748; /* Slightly lighter on hover */
-    border-color: #4A5568;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+/* Style the label elements as toggle buttons - DEFAULT GRAY */
+#manual-map-toggle label {
+    display: inline-block !important;
+    background-color: #2D3748 !important; /* Theme gray - COLORS['border'] */
+    color: #A0AEC0 !important; /* COLORS['text_tertiary'] */
+    border: 1px solid #4A5568 !important;
+    border-radius: 20px !important;
+    padding: 8px 24px !important;
+    margin: 0 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    font-weight: 500 !important;
+    min-width: 80px !important;
+    text-align: center !important;
+    user-select: none !important;
+    font-size: 0.9rem !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Style for selected (checked) radio button labels - DEFAULT BLUE for "Yes" */
-#manual-map-toggle .form-check-input:checked + .form-check-label {
+/* Hover state for all labels */
+#manual-map-toggle label:hover {
+    background-color: #4A5568 !important; /* Slightly lighter gray on hover */
+    border-color: #718096 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+    color: #E2E8F0 !important; /* COLORS['text_secondary'] */
+}
+
+/* "No" button when selected - RED */
+#manual-map-toggle label:has(input[value="no"]:checked) {
+    background-color: #E02020 !important; /* COLORS['critical'] - Red */
+    border-color: #E02020 !important;
+    color: white !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(224, 32, 32, 0.3) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* "Yes" button when selected - BLUE */
+#manual-map-toggle label:has(input[value="yes"]:checked) {
     background-color: #2196F3 !important; /* COLORS['accent'] - Blue */
     border-color: #2196F3 !important;
     color: white !important;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
-    transform: translateY(-1px);
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3) !important;
+    transform: translateY(-1px) !important;
 }
 
-/* Special styling for "No" option when selected - RED */
-#manual-map-toggle .form-check-input[value="no"]:checked + .form-check-label {
-    background-color: #E02020 !important; /* COLORS['critical'] - Red */
+/* Fallback for browsers that don't support :has() */
+#manual-map-toggle input[type="radio"]:checked ~ label,
+#manual-map-toggle input[type="radio"]:checked + label {
+    background-color: #2196F3 !important; /* Default blue */
+    border-color: #2196F3 !important;
+    color: white !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Override for "no" value specifically */
+#manual-map-toggle input[value="no"]:checked ~ label,
+#manual-map-toggle input[value="no"]:checked + label {
+    background-color: #E02020 !important; /* Red for No */
     border-color: #E02020 !important;
-    box-shadow: 0 2px 8px rgba(224, 32, 32, 0.3);
+    box-shadow: 0 2px 8px rgba(224, 32, 32, 0.3) !important;
 }
 
 /* Animation effects */
-#manual-map-toggle .form-check-label {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+#manual-map-toggle label {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-#manual-map-toggle .form-check-label:active {
-    transform: translateY(0) scale(0.98);
-}
-
-/* Container spacing */
-#manual-map-toggle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 16px;
-    margin: 12px 0;
-}
-
-/* Responsive design for smaller screens */
-@media (max-width: 768px) {
-    #manual-map-toggle .form-check-label {
-        padding: 6px 20px;
-        font-size: 0.85rem;
-        min-width: 70px;
-        margin: 0 4px;
-    }
-    
-    #manual-map-toggle {
-        gap: 8px;
-    }
+#manual-map-toggle label:active {
+    transform: translateY(0) scale(0.98) !important;
 }
 
 /* Focus states for accessibility */
-#manual-map-toggle .form-check-input:focus + .form-check-label {
-    outline: 2px solid #2196F3;
-    outline-offset: 2px;
+#manual-map-toggle input[type="radio"]:focus ~ label,
+#manual-map-toggle input[type="radio"]:focus + label {
+    outline: 2px solid #2196F3 !important;
+    outline-offset: 2px !important;
 }
 
-/* Ensure proper contrast in light themes (if you ever switch) */
-@media (prefers-color-scheme: light) {
-    #manual-map-toggle .form-check-label {
-        background-color: #f8f9fa;
-        color: #495057;
-        border-color: #dee2e6;
+/* Responsive design */
+@media (max-width: 768px) {
+    #manual-map-toggle label {
+        padding: 6px 20px !important;
+        font-size: 0.85rem !important;
+        min-width: 70px !important;
     }
     
-    #manual-map-toggle .form-check-label:hover {
-        background-color: #e9ecef;
-        border-color: #adb5bd;
+    #manual-map-toggle {
+        gap: 8px !important;
     }
-}
-
-/* Smooth transitions when toggling between states */
-#manual-map-toggle .form-check-label {
-    position: relative;
-    overflow: hidden;
-}
-
-#manual-map-toggle .form-check-label::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s;
-}
-
-#manual-map-toggle .form-check-label:hover::before {
-    left: 100%;
-}
-
-/* Ensure the toggle works well with existing door classification styles */
-#manual-map-toggle + .door-classification-table-container {
-    margin-top: 20px;
 }

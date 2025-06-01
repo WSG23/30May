@@ -2,6 +2,7 @@
 """
 Mapping callback handlers - extracted from mapping_callbacks.py
 Separated business logic from UI definitions
+FIXED: Removed duplicate callback that conflicts with classification_handlers.py
 """
 
 import json
@@ -24,10 +25,10 @@ class MappingHandlers:
     def register_callbacks(self):
         """Register all mapping-related callbacks"""
         self._register_mapping_confirmation_handler()
-        self._register_classification_toggle_handler()
+        # REMOVED: _register_classification_toggle_handler() - handled by classification_handlers.py
         # Temporarily comment out validation handler until layout is updated
         # self._register_mapping_validation_handler()
-        
+    
     def _register_mapping_confirmation_handler(self):
         """Handles mapping confirmation and shows next step"""
         @self.app.callback(
@@ -59,23 +60,8 @@ class MappingHandlers:
             else:
                 return self._create_mapping_error_response(result)
     
-    def _register_classification_toggle_handler(self):
-        """Handles the manual door classification toggle functionality"""
-        @self.app.callback(
-            Output('door-classification-table-container', 'style'),
-            Input('manual-map-toggle', 'value'),
-            prevent_initial_call=False
-        )
-        def toggle_classification_tools(manual_map_choice):
-            """Show/hide classification tools based on toggle selection"""
-            # Define the styles for visibility
-            hide_style = {'display': 'none'}
-            show_style = {'display': 'block'}
-
-            if manual_map_choice == 'yes':
-                return show_style
-            else:
-                return hide_style
+    # REMOVED: _register_classification_toggle_handler method
+    # This is now handled exclusively by classification_handlers.py to avoid conflicts
     
     def _process_mapping_confirmation(self, values, ids, csv_headers, existing_json):
         """Process the mapping confirmation logic"""

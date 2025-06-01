@@ -1,6 +1,6 @@
-# ui/components/classification.py - FIXED VERSION
+# ui/components/classification.py - SIMPLIFIED VERSION (No circular dependencies)
 """
-Door classification component with working toggle switch
+Door classification component with simplified toggle switch
 """
 
 from dash import html, dcc, callback, Input, Output
@@ -9,7 +9,7 @@ from ui.themes.style_config import COLORS, SPACING, BORDER_RADIUS, SHADOWS, TYPO
 
 
 class ClassificationComponent:
-    """Centralized classification component with working modern toggle"""
+    """Centralized classification component with simplified toggle"""
     
     def __init__(self):
         # Define Security Levels for the slider (0-10 range)
@@ -31,7 +31,7 @@ class ClassificationComponent:
         self.reverse_security_map = {v['value']: k for k, v in self.security_levels_map.items()}
     
     def create_entrance_verification_section(self):
-        """Creates the complete entrance verification UI section with working toggle"""
+        """Creates the complete entrance verification UI section with simplified toggle"""
         return html.Div(
             id='entrance-verification-ui-section', 
             style={'display': 'none', 'padding': '0', 'margin': '0 auto', 'textAlign': 'center'}, 
@@ -42,7 +42,7 @@ class ClassificationComponent:
         )
     
     def create_facility_setup_card(self):
-        """Creates Step 2: Facility Setup card with modern slider and toggle"""
+        """Creates Step 2: Facility Setup card with modern slider and simplified toggle"""
         return html.Div([
             html.H4("Step 2: Facility Setup", 
                    style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '16px'}),
@@ -50,8 +50,8 @@ class ClassificationComponent:
             # Floors Slider Row
             self.create_floors_slider_row(),
             
-            # Fixed Toggle Row with proper structure
-            self.create_working_toggle_row()
+            # Simplified Toggle Row (no Bootstrap switch)
+            self.create_simplified_toggle_row()
             
         ], style={
             'padding': '20px',
@@ -118,8 +118,8 @@ class ClassificationComponent:
             )
         ])
     
-    def create_working_toggle_row(self):
-        """Creates the working toggle switch for manual classification"""
+    def create_simplified_toggle_row(self):
+        """Creates a simplified toggle using styled radio items (no circular dependencies)"""
         return html.Div([
             html.Label(
                 "Enable Manual Door Classification?", 
@@ -133,41 +133,43 @@ class ClassificationComponent:
                 }
             ),
             
-            html.Div([
-                html.Span("No", style={
+            # Styled Radio Items that look like a toggle switch
+            dcc.RadioItems(
+                id='manual-map-toggle',
+                options=[
+                    {'label': 'No', 'value': 'no'}, 
+                    {'label': 'Yes', 'value': 'yes'}
+                ],
+                value='no',  # Default to No
+                inline=True,
+                style={'textAlign': 'center'},
+                labelStyle={
+                    'display': 'inline-block',
+                    'backgroundColor': COLORS['surface'],
                     'color': COLORS['text_secondary'],
-                    'marginRight': '10px',
-                    'fontWeight': '500'
-                }),
-                
-                # Simple Bootstrap Switch
-                dbc.Switch(
-                    id='manual-classification-switch',
-                    value=False,  # Default to No/False
-                    style={'transform': 'scale(1.2)'}
-                ),
-                
-                html.Span("Yes", style={
-                    'color': COLORS['text_secondary'],
-                    'marginLeft': '10px',
-                    'fontWeight': '500'
-                }),
-                
-                # Hidden RadioItems for backward compatibility with existing callbacks
-                dcc.RadioItems(
-                    id='manual-map-toggle',
-                    options=[
-                        {'label': '', 'value': 'no'}, 
-                        {'label': '', 'value': 'yes'}
-                    ],
-                    value='no',
-                    style={'display': 'none'}
-                )
-            ], style={
-                'display': 'flex',
-                'alignItems': 'center',
-                'justifyContent': 'center'
-            })
+                    'border': f'1px solid {COLORS["border"]}',
+                    'borderRadius': '20px',
+                    'padding': '8px 24px',
+                    'margin': '0 8px',
+                    'cursor': 'pointer',
+                    'transition': 'all 0.3s ease',
+                    'fontWeight': '500',
+                    'minWidth': '80px',
+                    'textAlign': 'center'
+                },
+                inputStyle={'display': 'none'}  # Hide the actual radio buttons
+            ),
+            
+            html.Small(
+                "Choose 'Yes' to manually set security levels for each door, or 'No' for automatic classification.", 
+                style={
+                    'color': COLORS['text_tertiary'],
+                    'fontSize': '0.8rem',
+                    'textAlign': 'center',
+                    'display': 'block',
+                    'marginTop': '8px'
+                }
+            )
         ])
     
     def create_door_classification_card(self):

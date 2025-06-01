@@ -1082,3 +1082,133 @@ body {
   --slider-rail-bg: #e9ecef;
   --slider-track-bg: #adb5bd;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SIMPLIFIED RADIO TOGGLE STYLES (No Circular Dependencies)
+   Add this to the END of your assets/custom.css file
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Style the manual classification toggle radio items to look like toggle buttons */
+#manual-map-toggle .form-check-input {
+    display: none !important; /* Hide the actual radio buttons */
+}
+
+#manual-map-toggle .form-check-label {
+    display: inline-block;
+    background-color: #1A2332; /* COLORS['surface'] */
+    color: #E2E8F0; /* COLORS['text_secondary'] */
+    border: 1px solid #2D3748; /* COLORS['border'] */
+    border-radius: 20px;
+    padding: 8px 24px;
+    margin: 0 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    min-width: 80px;
+    text-align: center;
+    user-select: none;
+    font-size: 0.9rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+#manual-map-toggle .form-check-label:hover {
+    background-color: #2D3748; /* Slightly lighter on hover */
+    border-color: #4A5568;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Style for selected (checked) radio button labels - DEFAULT BLUE for "Yes" */
+#manual-map-toggle .form-check-input:checked + .form-check-label {
+    background-color: #2196F3 !important; /* COLORS['accent'] - Blue */
+    border-color: #2196F3 !important;
+    color: white !important;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Special styling for "No" option when selected - RED */
+#manual-map-toggle .form-check-input[value="no"]:checked + .form-check-label {
+    background-color: #E02020 !important; /* COLORS['critical'] - Red */
+    border-color: #E02020 !important;
+    box-shadow: 0 2px 8px rgba(224, 32, 32, 0.3);
+}
+
+/* Animation effects */
+#manual-map-toggle .form-check-label {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#manual-map-toggle .form-check-label:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Container spacing */
+#manual-map-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin: 12px 0;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    #manual-map-toggle .form-check-label {
+        padding: 6px 20px;
+        font-size: 0.85rem;
+        min-width: 70px;
+        margin: 0 4px;
+    }
+    
+    #manual-map-toggle {
+        gap: 8px;
+    }
+}
+
+/* Focus states for accessibility */
+#manual-map-toggle .form-check-input:focus + .form-check-label {
+    outline: 2px solid #2196F3;
+    outline-offset: 2px;
+}
+
+/* Ensure proper contrast in light themes (if you ever switch) */
+@media (prefers-color-scheme: light) {
+    #manual-map-toggle .form-check-label {
+        background-color: #f8f9fa;
+        color: #495057;
+        border-color: #dee2e6;
+    }
+    
+    #manual-map-toggle .form-check-label:hover {
+        background-color: #e9ecef;
+        border-color: #adb5bd;
+    }
+}
+
+/* Smooth transitions when toggling between states */
+#manual-map-toggle .form-check-label {
+    position: relative;
+    overflow: hidden;
+}
+
+#manual-map-toggle .form-check-label::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+#manual-map-toggle .form-check-label:hover::before {
+    left: 100%;
+}
+
+/* Ensure the toggle works well with existing door classification styles */
+#manual-map-toggle + .door-classification-table-container {
+    margin-top: 20px;
+}

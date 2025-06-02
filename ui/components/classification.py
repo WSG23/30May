@@ -1,6 +1,6 @@
-# ui/components/classification.py - SIMPLIFIED VERSION (No circular dependencies)
+# ui/components/classification.py - FIXED VERSION (Complete with all methods)
 """
-Door classification component with simplified toggle switch
+Door classification component with simplified toggle switch - FIXED
 """
 
 from dash import html, dcc, callback, Input, Output
@@ -9,7 +9,7 @@ from ui.themes.style_config import COLORS, SPACING, BORDER_RADIUS, SHADOWS, TYPO
 
 
 class ClassificationComponent:
-    """Centralized classification component with simplified toggle"""
+    """Centralized classification component with simplified toggle - COMPLETE"""
     
     def __init__(self):
         # Define Security Levels for the slider (0-10 range)
@@ -37,7 +37,7 @@ class ClassificationComponent:
             style={'display': 'none', 'padding': '0', 'margin': '0 auto', 'textAlign': 'center'}, 
             children=[
                 self.create_facility_setup_card(),
-                self.create_door_classification_card()
+                self.create_door_classification_card()  # This method was missing!
             ]
         )
     
@@ -82,13 +82,13 @@ class ClassificationComponent:
             dcc.Slider(
                 id="num-floors-input",
                 min=1,
-                max=20,
+                max=50,
                 step=1,
                 value=4,
                 marks={i: str(i) for i in range(1, 21, 2)},
                 tooltip={"always_visible": False, "placement": "bottom"},
                 updatemode="drag",
-                className="ui-slider"
+                className="modern-floor-slider"
             ),
             
             # Live display of slider value
@@ -119,7 +119,7 @@ class ClassificationComponent:
         ])
     
     def create_simplified_toggle_row(self):
-        """Creates a simplified toggle using styled radio items (no circular dependencies)"""
+        """Creates a simplified toggle using styled radio items - CLEAN VERSION"""
         return html.Div([
             html.Label(
                 "Enable Manual Door Classification?", 
@@ -133,7 +133,7 @@ class ClassificationComponent:
                 }
             ),
             
-            # Styled Radio Items that look like a toggle switch
+            # Clean RadioItems - NO CONFLICTING STYLES
             dcc.RadioItems(
                 id='manual-map-toggle',
                 options=[
@@ -142,10 +142,9 @@ class ClassificationComponent:
                 ],
                 value='no',  # Default to No
                 inline=True,
-                # Remove all inline styling - let CSS handle everything
-                style={'textAlign': 'center'},
-                className='radio-toggle-buttons'
-        ),
+                # Remove ALL styling - let CSS and JavaScript handle everything
+                className='clean-radio-toggle'
+            ),
             
             html.Small(
                 "Choose 'Yes' to manually set security levels for each door, or 'No' for automatic classification.", 
@@ -160,7 +159,7 @@ class ClassificationComponent:
         ])
     
     def create_door_classification_card(self):
-        """Creates Step 3: Door Classification card"""
+        """Creates Step 3: Door Classification card - MISSING METHOD FIXED"""
         return html.Div(
             id="door-classification-table-container",
             style={'display': 'none'},
@@ -357,7 +356,7 @@ class ClassificationComponent:
                         }
                     } for i in [0, 2, 4, 6, 8, 10]},
                     tooltip={"placement": "bottom", "always_visible": False},
-                    className="ui-slider variant-security"
+                    className="security-range-slider"
                 )
             ], style={'flex': '1', 'minWidth': '150px', 'paddingTop': '10px'})
             

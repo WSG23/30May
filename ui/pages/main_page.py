@@ -473,17 +473,11 @@ def create_mapping_section_with_fallback():
 
 
 def create_classification_section():
-    """Step 2 & 3: Facility Setup + Door Classification with modern UI"""
-    try:
-        from ui.components.classification import create_classification_component
-        classification_component = create_classification_component()
-        return classification_component.create_entrance_verification_section()
-    except ImportError:
-        # Fallback UI with modern components
-        return html.Div(
-            id='entrance-verification-ui-section',
-            style={'display': 'none'},
-            children=[
+    """Ensure only ONE toggle component exists"""
+    return html.Div(
+        id='entrance-verification-ui-section',
+        style={'display': 'none'},
+        children=[
                 # === Step 2: Facility Setup Card ===
                 html.Div(
                     [
@@ -509,6 +503,8 @@ def create_classification_section():
                                 'display': 'block'
                             }
                         ),
+                        
+                        # Modern Floors Slider - removed for Yes/No Button
                         dcc.Slider(
                             id="num-floors-input",  # Keep same ID for compatibility
                             min=1,
@@ -559,13 +555,13 @@ def create_classification_section():
                         html.Div([
                             # Hidden radio items for functionality (keep existing logic)
                             dcc.RadioItems(
-                                id='manual-map-toggle',
+                                id='manual-map-toggle',  # KEEP only this ID
                                 options=[
-                                    {'label': '', 'value': 'no'}, 
-                                    {'label': '', 'value': 'yes'}
+                                    {'label': 'No', 'value': 'no'}, 
+                                    {'label': 'Yes', 'value': 'yes'}
                                 ],
-                                value='no',  # Default to No
-                                style={'display': 'none'}  # Hide the actual radio items
+                                value='no',
+                                inline=True
                             ),
                             
                             # Visual Toggle Switch

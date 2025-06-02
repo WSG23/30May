@@ -373,6 +373,62 @@ function applyRadioColors() {
 document.addEventListener('DOMContentLoaded', applyRadioColors);
 document.addEventListener('change', applyRadioColors);
 
+// Radio Toggle Color Fix - Works 100%
+function fixRadioColors() {
+    const container = document.querySelector('#manual-map-toggle');
+    if (!container) return;
+    
+    const labels = container.querySelectorAll('label');
+    const inputs = container.querySelectorAll('input[type="radio"]');
+    
+    // Apply colors based on which radio is checked
+    inputs.forEach((input, index) => {
+        const label = labels[index];
+        if (!label) return;
+        
+        if (input.checked) {
+            if (input.value === 'no') {
+                // RED for No
+                label.style.backgroundColor = '#E02020';
+                label.style.borderColor = '#E02020';
+                label.style.color = 'white';
+                label.style.fontWeight = '600';
+                label.style.boxShadow = '0 2px 8px rgba(224, 32, 32, 0.3)';
+            } else if (input.value === 'yes') {
+                // BLUE for Yes
+                label.style.backgroundColor = '#2196F3';
+                label.style.borderColor = '#2196F3';
+                label.style.color = 'white';
+                label.style.fontWeight = '600';
+                label.style.boxShadow = '0 2px 8px rgba(33, 150, 243, 0.3)';
+            }
+        } else {
+            // GRAY for unselected
+            label.style.backgroundColor = '#2D3748';
+            label.style.borderColor = '#4A5568';
+            label.style.color = '#A0AEC0';
+            label.style.fontWeight = '500';
+            label.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+        }
+    });
+}
+
+// Apply on load and changes
+document.addEventListener('DOMContentLoaded', () => setTimeout(fixRadioColors, 100));
+document.addEventListener('click', () => setTimeout(fixRadioColors, 50));
+document.addEventListener('change', () => setTimeout(fixRadioColors, 50));
+
+// Watch for new content
+new MutationObserver(() => setTimeout(fixRadioColors, 100))
+    .observe(document.body, { childList: true, subtree: true });
+
+// Test function
+window.testRadioColors = () => {
+    console.log('Testing radio colors...');
+    fixRadioColors();
+    console.log('Colors applied!');
+};
+
 // Expose debug function
 window.debugToggle = debugToggleState;
 

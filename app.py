@@ -144,3 +144,13 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"Failed to start server: {e}")
         raise
+
+    # Debug - add this temporarily
+@app.callback(
+    Output('debug-div', 'children'),
+    [Input('manual-map-toggle', 'value')],
+    prevent_initial_call=True
+)
+def debug_callback(value):
+    print(f"DEBUG: manual-map-toggle changed to: {value}")
+    return f"Toggle value: {value}"

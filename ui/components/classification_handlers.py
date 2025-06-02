@@ -1,6 +1,7 @@
 # ui/components/classification_handlers.py
 """
-Classification callback handlers - SIMPLIFIED VERSION (No circular dependencies)
+Classification callback handlers - Updated with modern slider support
+FIXED VERSION with proper indentation and structure
 """
 
 import json
@@ -23,36 +24,53 @@ class ClassificationHandlers:
         self.classification_component = classification_component or create_classification_component()
         
     def register_callbacks(self):
-        """Register all classification-related callbacks - SIMPLIFIED"""
+        """Register ONLY non-conflicting callbacks"""
         self._register_door_table_generation_handler()
-        self._register_door_type_mutual_exclusion_handler()
+        self._register_door_type_mutual_exclusion_handler() 
         self._register_floor_slider_display_handler()
-        self._register_classification_toggle_handler()  # PRIMARY ownership of this callback
-        # NO circular dependency callbacks - completely clean!
         
+        # ONLY ONE callback should control the classification table visibility
+        self._register_classification_toggle_handler()
+        
+        # REMOVE any other callbacks that might be syncing components
+    
     def _register_classification_toggle_handler(self):
-        """
-        PRIMARY HANDLER for manual door classification toggle functionality
-        This is the main callback that controls the classification table visibility
-        """
+        """SINGLE callback - no conflicts"""
         @self.app.callback(
             Output('door-classification-table-container', 'style'),
-            Input('manual-map-toggle', 'value'),
+            Input('manual-map-toggle', 'value'),  # ONLY use this input
             prevent_initial_call=False
         )
         def toggle_classification_tools(manual_map_choice):
-            """Show/hide classification tools based on toggle selection"""
-            logger.info(f"DEBUG: Classification toggle received: {manual_map_choice}")
-            
-            hide_style = {'display': 'none'}
-            show_style = {'display': 'block'}
-
+            """Control classification table visibility"""
             if manual_map_choice == 'yes':
-                logger.info("DEBUG: Showing classification table")
-                return show_style
+                return {'display': 'block'}
             else:
-                logger.info("DEBUG: Hiding classification table") 
-                return hide_style
+                return {'display': 'none'}
+                
+    def _register_toggle_sync_handler(self):
+        """Sync the visual switch with the hidden radio items"""
+        @self.app.callback(
+            Output('manual-map-toggle', 'value'),
+            Input('manual-classification-switch', 'value'),
+            prevent_initial_call=False
+        )
+        def sync_switch_to_radio(switch_value):
+            """Convert switch boolean to radio string value"""
+            result = 'yes' if switch_value else 'no'
+            print(f"DEBUG: Switch value {switch_value} -> Radio value {result}")
+            return result
+        
+        @self.app.callback(
+            Output('manual-classification-switch', 'value'),
+            Input('manual-map-toggle', 'value'),
+            prevent_initial_call=False
+        )
+        def sync_radio_to_switch(radio_value):
+            """Convert radio string to switch boolean value"""
+            result = radio_value == 'yes'
+            print(f"DEBUG: Radio value {radio_value} -> Switch value {result}")
+            return result
 
     def _register_floor_slider_display_handler(self):
         """Update floor display when slider value changes"""

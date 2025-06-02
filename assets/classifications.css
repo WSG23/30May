@@ -655,8 +655,8 @@ input[type="file"] { display: none; }
 }
 
 /* Legacy class mappings for compatibility */
-.modern-floor-slider { @extend .ui-slider; }
-.security-range-slider { @extend .ui-slider, .variant-security; }
+/*.modern-floor-slider { @extend .ui-slider; }
+/*.security-range-slider { @extend .ui-slider, .variant-security; }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
    MODERN TOGGLE SWITCH STYLES

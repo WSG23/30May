@@ -23,21 +23,21 @@ class MappingHandlers:
         self.validator = create_mapping_validator()
         
     def register_callbacks(self):
-        """Register all mapping-related callbacks"""
+        """Register ONLY mapping callbacks"""
         self._register_mapping_confirmation_handler()
-        # REMOVED: _register_classification_toggle_handler() - handled by classification_handlers.py
-        # Temporarily comment out validation handler until layout is updated
-        # self._register_mapping_validation_handler()
+        # REMOVED: Any callback that outputs to 'door-classification-table-container'
     
     def _register_mapping_confirmation_handler(self):
-        """Handles mapping confirmation and shows next step"""
+        """Mapping confirmation - NO classification outputs"""
         @self.app.callback(
             [
-                Output('mapping-ui-section', 'style'),  
-                Output('entrance-verification-ui-section', 'style', allow_duplicate=True),
-                Output('column-mapping-store', 'data'),
-                Output('processing-status', 'children', allow_duplicate=True),
-                Output('confirm-header-map-button', 'style', allow_duplicate=True),
+                Output('mapping-ui-section', 'style', allow_duplicate=True),  
+                Output('entrance-verification-ui-section', 'style', allow_duplicate=True),  # Only show/hide the section
+                Output('column-mapping-store', 'data', allow_duplicate=True),  # Save updated mappings
+                Output('processing-status', 'children', allow_duplicate=True),  # Add this
+                Output('confirm-header-map-button', 'style', allow_duplicate=True),  # Add this
+ 
+                # REMOVED: Output('door-classification-table-container', 'style')  ← This was causing conflict
             ],
             Input('confirm-header-map-button', 'n_clicks'),
             [
@@ -49,16 +49,29 @@ class MappingHandlers:
             prevent_initial_call=True
         )
         def confirm_mapping_and_show_next_step(n_clicks, values, ids, csv_headers, existing_json):
+            # ... existing logic but DON'T control door-classification-table-container
             if not n_clicks:
                 return no_update, no_update, no_update, no_update, no_update
                 
-            # Process the mapping
             result = self._process_mapping_confirmation(values, ids, csv_headers, existing_json)
             
             if result['success']:
-                return self._create_mapping_success_response(result)
+                hide_mapping_style = {'display': 'none'}
+                show_entrance_verification_style = {'display': 'block', 'width': '95%', 'margin': '0 auto'}
+                hide_button_style = {'display': 'none'}
+                status_message = "Step 2: Set Classification Options"
+                
+                return (
+                    hide_mapping_style,                    # Hide mapping UI
+                    show_entrance_verification_style,      # Show entrance verification UI  
+                    result['updated_mappings'],            # Save updated mappings
+                    status_message,                        # Update status message
+                    hide_button_style                      # Hide confirm button
+                )
             else:
-                return self._create_mapping_error_response(result)
+                error_message = f"Mapping Error: {result.get('error', 'Unknown error')}"
+                return no_update, no_update, no_update, error_message, no_update
+
     
     # REMOVED: _register_classification_toggle_handler method
     # This is now handled exclusively by classification_handlers.py to avoid conflicts

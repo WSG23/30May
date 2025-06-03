@@ -9,6 +9,7 @@ from dash.dependencies import Input, Output
 import dash_cytoscape as cyto
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
+from plotly.graph_objs import Figure
 
 # Import your theme constants
 try:
@@ -265,14 +266,38 @@ def create_charts_section_hidden():
     """
     NEW: Interactive charts section - HIDDEN by default
     """
-    # Create default empty chart
-    empty_fig = go.Figure()
-    empty_fig.add_annotation(text="No data available", showarrow=False)
-    empty_fig.update_layout(
-        plot_bgcolor=COLORS['background'],
-        paper_bgcolor=COLORS['surface'],
-        font_color=COLORS['text_primary']
-    )
+    # Create default empty chart - FIXED
+    def create_empty_chart():
+        """Helper to create empty chart with proper annotation"""
+        import plotly.express as px
+        
+        # Create base figure and clear it
+        fig = px.scatter(x=[0], y=[0])
+        fig.data = []  # Remove the scatter trace
+        
+        # Add annotation using layout
+        fig.update_layout(
+            annotations=[
+                dict(
+                    text="No data available",
+                    showarrow=False,
+                    xref="paper",
+                    yref="paper",
+                    x=0.5,
+                    y=0.5,
+                    font=dict(size=16, color=COLORS.get('text_secondary', '#E2E8F0'))
+                )
+            ],
+            plot_bgcolor=COLORS['background'],
+            paper_bgcolor=COLORS['surface'],
+            font_color=COLORS['text_primary'],
+            xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+            yaxis=dict(showgrid=False, showticklabels=False, zeroline=False)
+        )
+        
+        return fig
+    
+    empty_fig = create_empty_chart()
     
     return html.Div(
         id='charts-section',

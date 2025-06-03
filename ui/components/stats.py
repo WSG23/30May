@@ -1,4 +1,4 @@
-# ui/components/stats.py - ENHANCED VERSION
+# ui/components/stats.py - ENHANCED VERSION (FIXED)
 """
 Enhanced statistics component with advanced metrics, charts, and export features
 """
@@ -7,10 +7,12 @@ from dash import html, dcc
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from plotly.graph_objs import Figure  # For proper type hints
 import pandas as pd
 import base64
 import io
 from datetime import datetime
+from typing import Optional
 from ui.themes.style_config import COLORS, UI_VISIBILITY, SPACING, BORDER_RADIUS, SHADOWS
 
 
@@ -355,11 +357,39 @@ class EnhancedStatsComponent:
             ]
         )
     
-    # Chart generation methods
-    def create_hourly_activity_chart(self, df):
+    def _create_empty_figure(self, message: str = "No data available") -> Figure:
+        """Create an empty figure with a message"""
+        # Use plotly express to create a simple figure, then clear it
+        fig = px.scatter(x=[0], y=[0])
+        fig.data = []  # Remove the scatter trace
+        
+        # Add annotation using the layout
+        fig.update_layout(
+            annotations=[
+                dict(
+                    text=message,
+                    showarrow=False,
+                    xref="paper",
+                    yref="paper",
+                    x=0.5,
+                    y=0.5,
+                    font=dict(size=16, color=COLORS['text_secondary'])
+                )
+            ],
+            plot_bgcolor=COLORS['background'],
+            paper_bgcolor=COLORS['surface'],
+            font_color=COLORS['text_primary'],
+            xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+            yaxis=dict(showgrid=False, showticklabels=False, zeroline=False)
+        )
+        
+        return fig
+
+    # Chart generation methods - FIXED
+    def create_hourly_activity_chart(self, df) -> Figure:
         """Generate hourly activity chart"""
         if df is None or df.empty:
-            return go.Figure().add_annotation(text="No data available", showarrow=False)
+            return self._create_empty_figure("No data available")
         
         # Extract hour from timestamp
         df_copy = df.copy()
@@ -386,12 +416,12 @@ class EnhancedStatsComponent:
             
             return fig
         
-        return go.Figure().add_annotation(text="No timestamp data available", showarrow=False)
+        return self._create_empty_figure("No timestamp data available")
     
-    def create_security_pie_chart(self, device_attrs):
+    def create_security_pie_chart(self, device_attrs) -> Figure:
         """Generate security level distribution pie chart"""
         if device_attrs is None or device_attrs.empty:
-            return go.Figure().add_annotation(text="No security data", showarrow=False)
+            return self._create_empty_figure("No security data")
         
         if 'SecurityLevel' in device_attrs.columns:
             security_counts = device_attrs['SecurityLevel'].value_counts()
@@ -412,12 +442,12 @@ class EnhancedStatsComponent:
             
             return fig
         
-        return go.Figure().add_annotation(text="No security level data", showarrow=False)
+        return self._create_empty_figure("No security level data")
     
-    def create_activity_heatmap(self, df):
+    def create_activity_heatmap(self, df) -> Figure:
         """Generate day/hour activity heatmap"""
         if df is None or df.empty:
-            return go.Figure().add_annotation(text="No data for heatmap", showarrow=False)
+            return self._create_empty_figure("No data for heatmap")
         
         timestamp_col = 'Timestamp (Event Time)'
         if timestamp_col in df.columns:
@@ -454,7 +484,7 @@ class EnhancedStatsComponent:
             
             return fig
         
-        return go.Figure().add_annotation(text="No timestamp data for heatmap", showarrow=False)
+        return self._create_empty_figure("No timestamp data for heatmap")
     
     # Enhanced data processing methods
     def calculate_enhanced_metrics(self, df, device_attrs=None):
@@ -485,22 +515,23 @@ class EnhancedStatsComponent:
             metrics['avg_events_per_day'] = f"Avg: {metrics['total_events'] / max(unique_days, 1):.1f} events/day"
             
             # Peak analysis
-            df['Hour'] = df[timestamp_col].dt.hour
-            df['DayOfWeek'] = df[timestamp_col].dt.day_name()
-            df['Date'] = df[timestamp_col].dt.date
+            df_copy = df.copy()
+            df_copy['Hour'] = df_copy[timestamp_col].dt.hour
+            df_copy['DayOfWeek'] = df_copy[timestamp_col].dt.day_name()
+            df_copy['Date'] = df_copy[timestamp_col].dt.date
             
             # Peak hour
-            hour_counts = df['Hour'].value_counts()
+            hour_counts = df_copy['Hour'].value_counts()
             peak_hour = hour_counts.index[0] if not hour_counts.empty else "N/A"
             metrics['peak_hour'] = f"Peak: {peak_hour}:00" if peak_hour != "N/A" else "N/A"
             
             # Peak day
-            day_counts = df['DayOfWeek'].value_counts()
+            day_counts = df_copy['DayOfWeek'].value_counts()
             peak_day = day_counts.index[0] if not day_counts.empty else "N/A"
             metrics['peak_day'] = f"Busiest: {peak_day}"
             
             # Daily activity breakdown
-            daily_counts = df.groupby('Date').size()
+            daily_counts = df_copy.groupby('Date').size()
             busiest_date = daily_counts.idxmax() if not daily_counts.empty else None
             metrics['peak_activity_day'] = f"Peak: {busiest_date}" if busiest_date else "N/A"
         
@@ -564,9 +595,10 @@ class EnhancedStatsComponent:
         
         # Traffic pattern analysis
         if timestamp_col in df.columns:
-            df['Hour'] = df[timestamp_col].dt.hour
-            business_hours = df[(df['Hour'] >= 8) & (df['Hour'] <= 18)]
-            business_ratio = len(business_hours) / len(df)
+            df_copy = df.copy()
+            df_copy['Hour'] = df_copy[timestamp_col].dt.hour
+            business_hours = df_copy[(df_copy['Hour'] >= 8) & (df_copy['Hour'] <= 18)]
+            business_ratio = len(business_hours) / len(df_copy)
             
             if business_ratio > 0.8:
                 insights['traffic_pattern'] = "Business Hours"
@@ -602,10 +634,11 @@ class EnhancedStatsComponent:
         if timestamp_col in df.columns:
             # Detect unusual activity patterns (very basic)
             daily_counts = df.groupby(df[timestamp_col].dt.date).size()
-            mean_daily = daily_counts.mean()
-            std_daily = daily_counts.std()
-            anomaly_threshold = mean_daily + (2 * std_daily)
-            anomaly_count = len(daily_counts[daily_counts > anomaly_threshold])
+            if len(daily_counts) > 1:
+                mean_daily = daily_counts.mean()
+                std_daily = daily_counts.std()
+                anomaly_threshold = mean_daily + (2 * std_daily)
+                anomaly_count = len(daily_counts[daily_counts > anomaly_threshold])
         
         insights['anomaly_count'] = anomaly_count
         

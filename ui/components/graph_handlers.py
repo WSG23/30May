@@ -379,22 +379,27 @@ class EnhancedGraphHandlers:
             )
             return error_values
     
-    def _create_empty_figure(self, message: str = "No data available") -> Figure:
-        """FIXED: Create empty figure with proper type annotation"""
+    def _create_empty_figure(self, message: str = "No data available") -> go.Figure:
+        """Create empty figure with message - FIXED: Uses update_layout for annotations"""
         fig = go.Figure()
-        fig.add_annotation(  # FIXED: This method exists on go.Figure
-            text=message,
-            showarrow=False,
-            xref="paper",
-            yref="paper",
-            x=0.5,
-            y=0.5,
-            font=dict(size=16)
-        )
+        # Use update_layout with annotations instead of add_annotation for better compatibility
         fig.update_layout(
+            annotations=[
+                dict(
+                    text=message,
+                    showarrow=False,
+                    xref="paper",
+                    yref="paper",
+                    x=0.5,
+                    y=0.5,
+                    font=dict(size=16, color='#F7FAFC')
+                )
+            ],
             plot_bgcolor='#0F1419',
             paper_bgcolor='#1A2332',
-            font_color='#F7FAFC'
+            font_color='#F7FAFC',
+            xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+            yaxis=dict(showgrid=False, showticklabels=False, zeroline=False)
         )
         return fig
     

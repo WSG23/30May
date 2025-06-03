@@ -1,13 +1,14 @@
-# ui/pages/main_page.py - FIXED VERSION (Remove duplicate callback)
+# ui/pages/main_page.py - ENHANCED VERSION with Advanced Analytics
 
 """
-Main page layout - FIXED to remove duplicate floor callback
+Enhanced main page layout with advanced analytics, charts, and export features
 """
 
 from dash import Dash, html, dcc
 from dash.dependencies import Input, Output
 import dash_cytoscape as cyto
 import dash_bootstrap_components as dbc
+import plotly.graph_objects as go
 
 # Import your theme constants
 try:
@@ -46,7 +47,7 @@ except ImportError:
 
 def create_main_layout(app_instance, main_logo_path, icon_upload_default, upload_component=None):
     """
-    Creates the main application layout with properly hidden stats panels
+    Creates the enhanced main application layout with advanced analytics
     """
     # If no upload component provided, create fallback
     if upload_component is None:
@@ -66,11 +67,20 @@ def create_main_layout(app_instance, main_logo_path, icon_upload_default, upload
             # Processing Status Indicator (hidden until needed)
             create_processing_status(),
 
-            # Custom Header (HIDDEN until after processing)
-            create_custom_header_hidden(main_logo_path),
+            # Enhanced Custom Header (HIDDEN until after processing)
+            create_enhanced_custom_header_hidden(main_logo_path),
 
-            # Statistics Panels (HIDDEN until after processing)
-            create_stats_panels_hidden(),
+            # Enhanced Statistics Panels with Analytics (HIDDEN until after processing)
+            create_enhanced_stats_panels_hidden(),
+
+            # NEW: Advanced Analytics Section (HIDDEN until after processing)
+            create_analytics_section_hidden(),
+
+            # NEW: Interactive Charts Section (HIDDEN until after processing)
+            create_charts_section_hidden(),
+
+            # NEW: Export and Reports Section (HIDDEN until after processing)
+            create_export_section_hidden(),
 
             # Graph Output Container (HIDDEN until after processing)
             create_graph_container_hidden(),
@@ -84,9 +94,9 @@ def create_main_layout(app_instance, main_logo_path, icon_upload_default, upload
     return layout
 
 
-def create_custom_header_hidden(main_logo_path):
+def create_enhanced_custom_header_hidden(main_logo_path):
     """
-    Custom header that is HIDDEN by default - only shown after processing
+    Enhanced custom header with analytics toggle - HIDDEN by default
     """
     return html.Div(
         id='yosai-custom-header',
@@ -102,9 +112,9 @@ def create_custom_header_hidden(main_logo_path):
                         'verticalAlign': 'middle'
                     }
                 ),
-                # Data Overview text
+                # Enhanced title
                 html.Span(
-                    "Data Overview",
+                    "Enhanced Analytics Dashboard",  # UPDATED TITLE
                     style={
                         'fontSize': '18px',
                         'fontWeight': '400',
@@ -112,7 +122,25 @@ def create_custom_header_hidden(main_logo_path):
                         'fontFamily': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                         'verticalAlign': 'middle'
                     }
-                )
+                ),
+                # NEW: Analytics toggle button
+                html.Div([
+                    html.Button(
+                        "📊 Advanced View",
+                        id='toggle-advanced-analytics',
+                        style={
+                            'marginLeft': '20px',
+                            'padding': '5px 10px',
+                            'backgroundColor': COLORS['accent'],
+                            'color': 'white',
+                            'border': 'none',
+                            'borderRadius': '4px',
+                            'fontSize': '0.8rem',
+                            'cursor': 'pointer',
+                            'transition': 'all 0.3s ease'
+                        }
+                    )
+                ], style={'display': 'inline-block', 'verticalAlign': 'middle'})
             ], style={
                 'display': 'flex',
                 'alignItems': 'center',
@@ -124,9 +152,9 @@ def create_custom_header_hidden(main_logo_path):
     )
 
 
-def create_stats_panels_hidden():
+def create_enhanced_stats_panels_hidden():
     """
-    Statistics panels that are HIDDEN by default - only shown after processing
+    Enhanced statistics panels with additional metrics - HIDDEN by default
     """
     panel_style_base = {
         'flex': '1',
@@ -135,42 +163,302 @@ def create_stats_panels_hidden():
         'backgroundColor': COLORS['surface'],
         'borderRadius': '8px',
         'textAlign': 'center',
-        'boxShadow': '2px 2px 5px rgba(0,0,0,0.2)'
+        'boxShadow': '2px 2px 5px rgba(0,0,0,0.2)',
+        'minWidth': '200px'  # Ensure minimum width
     }
     
     return html.Div(
         id='stats-panels-container',
         style={'display': 'none'},  # EXPLICITLY HIDDEN
         children=[
-            # Access Events Panel
+            # Enhanced Access Events Panel
             html.Div([
-                html.H3("Access events", style={'color': COLORS['text_primary']}),
+                html.H3("Access Events", style={'color': COLORS['text_primary'], 'fontSize': '1.1rem'}),
                 html.H1(id="total-access-events-H1", style={'color': COLORS['text_primary']}),
-                html.P(id="event-date-range-P", style={'color': COLORS['text_secondary']})
+                html.P(id="event-date-range-P", style={'color': COLORS['text_secondary'], 'fontSize': '0.9rem'}),
+                # NEW: Additional metrics
+                html.P(id="avg-events-per-day", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
+                html.P(id="peak-activity-day", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'})
             ], style={**panel_style_base, 'borderLeft': f'5px solid {COLORS["accent"]}'}),
             
-            # Statistics Panel
+            # Enhanced User Analytics Panel (replaces old Statistics panel)
             html.Div([
-                html.H3("Statistics", style={'color': COLORS['text_primary']}),
-                html.P(id="stats-date-range-P", style={'color': COLORS['text_secondary']}),
-                html.P(id="stats-days-with-data-P", style={'color': COLORS['text_secondary']}),
-                html.P(id="stats-num-devices-P", style={'color': COLORS['text_secondary']}),
-                html.P(id="stats-unique-tokens-P", style={'color': COLORS['text_secondary']})
+                html.H3("User Analytics", style={'color': COLORS['text_primary'], 'fontSize': '1.1rem'}),
+                html.P(id="stats-unique-users", style={'color': COLORS['text_secondary'], 'fontSize': '0.9rem'}),
+                html.P(id="stats-avg-events-per-user", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
+                html.P(id="stats-most-active-user", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
+                html.P(id="stats-devices-per-user", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
+                html.P(id="stats-peak-hour", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'})
             ], style={**panel_style_base, 'borderLeft': f'5px solid {COLORS["warning"]}'}),
             
-            # Active Devices Panel
+            # Enhanced Device Analytics Panel (replaces Active Devices panel)
             html.Div([
-                html.H3("Most active devices", style={'color': COLORS['text_primary']}),
+                html.H3("Device Analytics", style={'color': COLORS['text_primary'], 'fontSize': '1.1rem'}),
+                html.P(id="total-devices-count", style={'color': COLORS['text_secondary'], 'fontSize': '0.9rem'}),
+                html.P(id="entrance-devices-count", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
+                html.P(id="high-security-devices", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
                 html.Table([
                     html.Thead(html.Tr([
-                        html.Th("DEVICE", style={'color': COLORS['text_primary']}),
-                        html.Th("EVENTS", style={'color': COLORS['text_primary']})
+                        html.Th("DEVICE", style={'color': COLORS['text_primary'], 'fontSize': '0.7rem'}),
+                        html.Th("EVENTS", style={'color': COLORS['text_primary'], 'fontSize': '0.7rem'})
                     ])),
                     html.Tbody(id='most-active-devices-table-body')
-                ])
-            ], style={**panel_style_base, 'borderLeft': f'5px solid {COLORS["critical"]}'})
+                ], style={'fontSize': '0.75rem', 'width': '100%'})
+            ], style={**panel_style_base, 'borderLeft': f'5px solid {COLORS["critical"]}'}),
+            
+            # NEW: Peak Activity Panel
+            html.Div([
+                html.H3("Peak Activity", style={'color': COLORS['text_primary'], 'fontSize': '1.1rem'}),
+                html.P(id="peak-hour-display", style={'color': COLORS['text_secondary'], 'fontSize': '0.9rem'}),
+                html.P(id="peak-day-display", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
+                html.P(id="busiest-floor", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
+                html.P(id="entry-exit-ratio", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
+                html.P(id="weekend-vs-weekday", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'})
+            ], style={**panel_style_base, 'borderLeft': f'5px solid {COLORS["success"]}'}),
+            
+            # NEW: Security Overview Panel
+            html.Div([
+                html.H3("Security Overview", style={'color': COLORS['text_primary'], 'fontSize': '1.1rem'}),
+                html.Div(id="security-level-breakdown", children=[
+                    html.P("Loading...", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'})
+                ]),
+                html.P(id="compliance-score", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
+                html.P(id="anomaly-alerts", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'})
+            ], style={**panel_style_base, 'borderLeft': f'5px solid {COLORS["info"]}'})
         ]
     )
+
+
+def create_analytics_section_hidden():
+    """
+    NEW: Advanced analytics section with key insights - HIDDEN by default
+    """
+    return html.Div(
+        id='analytics-section',
+        style={'display': 'none'},  # EXPLICITLY HIDDEN
+        children=[
+            html.H4("Advanced Analytics", 
+                   style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '20px'}),
+            
+            html.Div([
+                # Insights cards
+                create_insight_card("Traffic Pattern", "traffic-pattern-insight", COLORS['accent']),
+                create_insight_card("Security Score", "security-score-insight", COLORS['success']),
+                create_insight_card("Usage Efficiency", "efficiency-insight", COLORS['warning']),
+                create_insight_card("Anomaly Detection", "anomaly-insight", COLORS['critical'])
+            ], style={
+                'display': 'flex',
+                'justifyContent': 'space-around',
+                'marginBottom': '20px',
+                'flexWrap': 'wrap',
+                'gap': '10px'
+            }),
+            
+            # Detailed breakdown (initially hidden, toggled by Advanced View button)
+            html.Div(id="analytics-detailed-breakdown", style={'marginTop': '20px'})
+            
+        ]
+    )
+
+
+def create_charts_section_hidden():
+    """
+    NEW: Interactive charts section - HIDDEN by default
+    """
+    # Create default empty chart
+    empty_fig = go.Figure()
+    empty_fig.add_annotation(text="No data available", showarrow=False)
+    empty_fig.update_layout(
+        plot_bgcolor=COLORS['background'],
+        paper_bgcolor=COLORS['surface'],
+        font_color=COLORS['text_primary']
+    )
+    
+    return html.Div(
+        id='charts-section',
+        style={'display': 'none'},  # EXPLICITLY HIDDEN
+        children=[
+            html.H4("Data Visualization", 
+                   style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '20px'}),
+            
+            # Chart controls
+            html.Div([
+                html.Label("Chart Type:", style={'color': COLORS['text_primary'], 'marginRight': '10px'}),
+                dcc.Dropdown(
+                    id='chart-type-selector',
+                    options=[
+                        {'label': 'Hourly Activity', 'value': 'hourly'},
+                        {'label': 'Daily Trends', 'value': 'daily'},
+                        {'label': 'Security Distribution', 'value': 'security'},
+                        {'label': 'Floor Activity', 'value': 'floor'},
+                        {'label': 'User Patterns', 'value': 'users'},
+                        {'label': 'Device Usage', 'value': 'devices'}
+                    ],
+                    value='hourly',
+                    style={
+                        'width': '200px', 
+                        'color': COLORS['text_primary'],
+                        'backgroundColor': COLORS['surface']
+                    }
+                )
+            ], style={'marginBottom': '20px', 'textAlign': 'center'}),
+            
+            # Main chart container
+            html.Div([
+                dcc.Graph(
+                    id='main-analytics-chart',
+                    figure=empty_fig,
+                    config={'displayModeBar': True, 'toImageButtonOptions': {'format': 'png'}},
+                    style={'height': '400px'}
+                )
+            ], style={
+                'backgroundColor': COLORS['background'], 
+                'borderRadius': '8px', 
+                'padding': '10px',
+                'border': f'1px solid {COLORS["border"]}'
+            }),
+            
+            # Secondary charts row
+            html.Div([
+                html.Div([
+                    html.H6("Security Distribution", style={'color': COLORS['text_primary'], 'textAlign': 'center'}),
+                    dcc.Graph(id='security-pie-chart', figure=empty_fig, style={'height': '300px'})
+                ], style={
+                    'flex': '1', 
+                    'margin': '0 10px',
+                    'backgroundColor': COLORS['background'],
+                    'borderRadius': '8px',
+                    'padding': '10px',
+                    'border': f'1px solid {COLORS["border"]}'
+                }),
+                
+                html.Div([
+                    html.H6("Activity Heatmap", style={'color': COLORS['text_primary'], 'textAlign': 'center'}),
+                    dcc.Graph(id='heatmap-chart', figure=empty_fig, style={'height': '300px'})
+                ], style={
+                    'flex': '1', 
+                    'margin': '0 10px',
+                    'backgroundColor': COLORS['background'],
+                    'borderRadius': '8px',
+                    'padding': '10px',
+                    'border': f'1px solid {COLORS["border"]}'
+                })
+            ], style={'display': 'flex', 'marginTop': '20px', 'gap': '10px'})
+            
+        ]
+    )
+
+
+def create_export_section_hidden():
+    """
+    NEW: Export and download section - HIDDEN by default
+    """
+    return html.Div(
+        id='export-section',
+        style={'display': 'none'},  # EXPLICITLY HIDDEN
+        children=[
+            html.H4("Export & Reports", 
+                   style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '20px'}),
+            
+            html.Div([
+                html.Button(
+                    "📊 Export Stats CSV",
+                    id='export-stats-csv',
+                    className='export-button',
+                    style=get_export_button_style('secondary')
+                ),
+                html.Button(
+                    "📈 Download Charts",
+                    id='export-charts-png',
+                    className='export-button',
+                    style=get_export_button_style('secondary')
+                ),
+                html.Button(
+                    "📄 Generate Report",
+                    id='generate-pdf-report',
+                    className='export-button',
+                    style=get_export_button_style('primary')
+                ),
+                html.Button(
+                    "🔄 Refresh Data",
+                    id='refresh-analytics',
+                    className='export-button',
+                    style=get_export_button_style('secondary')
+                )
+            ], style={
+                'display': 'flex',
+                'justifyContent': 'center',
+                'gap': '15px',
+                'flexWrap': 'wrap'
+            }),
+            
+            # Download components (hidden)
+            dcc.Download(id="download-stats-csv"),
+            dcc.Download(id="download-charts"),
+            dcc.Download(id="download-report"),
+            
+            # Export status
+            html.Div(id="export-status", style={'textAlign': 'center', 'marginTop': '10px'})
+            
+        ]
+    )
+
+
+def create_insight_card(title, content_id, color):
+    """Create a small insight card"""
+    return html.Div([
+        html.H6(title, style={
+            'color': COLORS['text_primary'], 
+            'margin': '0', 
+            'fontSize': '0.9rem',
+            'marginBottom': '5px'
+        }),
+        html.H4(id=content_id, style={
+            'color': color, 
+            'margin': '5px 0', 
+            'fontSize': '1.2rem',
+            'fontWeight': 'bold'
+        })
+    ], style={
+        'padding': '15px',
+        'backgroundColor': COLORS['background'],
+        'borderRadius': '6px',
+        'border': f'1px solid {color}',
+        'textAlign': 'center',
+        'flex': '1',
+        'margin': '0 5px',
+        'minWidth': '150px',
+        'boxShadow': '0 2px 4px rgba(0,0,0,0.1)',
+        'transition': 'transform 0.2s ease'
+    })
+
+
+def get_export_button_style(variant='secondary'):
+    """Get export button styles"""
+    base_style = {
+        'padding': '8px 16px',
+        'border': 'none',
+        'borderRadius': '5px',
+        'fontSize': '0.9rem',
+        'fontWeight': '500',
+        'cursor': 'pointer',
+        'transition': 'all 0.3s ease',
+        'minWidth': '140px'
+    }
+    
+    if variant == 'primary':
+        base_style.update({
+            'backgroundColor': COLORS['accent'],
+            'color': 'white'
+        })
+    else:
+        base_style.update({
+            'backgroundColor': COLORS['surface'],
+            'color': COLORS['text_primary'],
+            'border': f'1px solid {COLORS["border"]}'
+        })
+    
+    return base_style
 
 
 def create_graph_container_hidden():
@@ -209,7 +497,7 @@ def create_graph_container_hidden():
         style={'display': 'none'},  # EXPLICITLY HIDDEN
         children=[
             html.H2(
-                "Area Layout Model",
+                "Network Topology Model",  # ENHANCED TITLE
                 id="area-layout-model-title",
                 style={
                     'textAlign': 'center',
@@ -250,7 +538,7 @@ def create_graph_container_hidden():
             html.Pre(
                 id='tap-node-data-output',
                 style=tap_node_data_centered_style,
-                children="Upload CSV, map headers, (optionally classify doors), then Confirm & Generate. Tap a node for its details."
+                children="Upload CSV, map headers, (optionally classify doors), then Confirm & Generate. Tap a node for enhanced details."
             )
         ]
     )
@@ -270,9 +558,9 @@ def create_interactive_setup_container_fixed():
             # Step 2 & 3: Facility Setup + Door Classification
             create_classification_section(),
 
-            # Final "Generate" Button
+            # Final "Generate" Button (enhanced)
             html.Button(
-                'Confirm Selections & Generate Onion Model',
+                '🚀 Confirm Selections & Generate Enhanced Analytics',  # ENHANCED BUTTON TEXT
                 id='confirm-and-generate-button',
                 n_clicks=0,
                 style={
@@ -285,16 +573,21 @@ def create_interactive_setup_container_fixed():
                     'borderRadius': '5px',
                     'fontSize': '1rem',
                     'fontWeight': 'bold',
-                    'cursor': 'pointer'
+                    'cursor': 'pointer',
+                    'transition': 'all 0.3s ease',
+                    'boxShadow': '0 4px 8px rgba(33, 150, 243, 0.3)'
                 }
             )
         ]
     )
 
 
+# ALL OTHER FUNCTIONS REMAIN THE SAME (for brevity, I'll reference the key ones)
+
 def _create_fallback_upload_component(app_instance, icon_upload_default):
     """
     Creates a simple CSV‐upload component if no custom upload UI is provided.
+    (Same as original - no changes needed)
     """
     class SimpleUploadComponent:
         def __init__(self, default_icon, success_icon, fail_icon):
@@ -411,13 +704,13 @@ def create_upload_section(upload_component):
 
 
 def create_mapping_section_with_fallback():
-    """Step 1: Map CSV Headers - with fallback UI"""
+    """Step 1: Map CSV Headers - with fallback UI (same as original)"""
     try:
         from ui.components.mapping import create_mapping_component
         mapping_component = create_mapping_component()
         return mapping_component.create_mapping_section()
     except ImportError:
-        # Fallback UI
+        # Fallback UI (same as original)
         return html.Div(
             id='mapping-ui-section',
             style={'marginBottom': '40px'},
@@ -442,14 +735,8 @@ def create_mapping_section_with_fallback():
                         'marginBottom': '8px'
                     })
                 ], style={'marginBottom': '12px'}),
-
-                # Placeholder for dropdowns
                 html.Div(id='dropdown-mapping-area'),
-
-                # Hidden validation message div
                 html.Div(id='mapping-validation-message', style={'display': 'none'}),
-
-                # Confirm button
                 html.Button(
                     'Confirm Header Mapping & Proceed',
                     id='confirm-header-map-button',
@@ -473,164 +760,151 @@ def create_mapping_section_with_fallback():
 
 
 def create_classification_section():
-    """Ensure only ONE toggle component exists"""
+    """Enhanced classification section (same structure as original)"""
     return html.Div(
         id='entrance-verification-ui-section',
         style={'display': 'none'},
         children=[
-                # === Step 2: Facility Setup Card ===
-                html.Div(
-                    [
-                        html.H4(
-                            "Step 2: Facility Setup",
-                            style={
-                                'color': COLORS['text_primary'],
-                                'textAlign': 'center',
-                                'marginBottom': '16px',
-                                'fontSize': '1.3rem'
-                            }
-                        ),
-
-                        # ── Modern Floors Slider (replacing dropdown) ─────────────────────────
-                        html.Label(
-                            "How many floors are in the facility?",
-                            style={
-                                'color': COLORS['text_primary'],
-                                'fontWeight': 'bold',
-                                'fontSize': '1rem',
-                                'marginBottom': '8px',
-                                'textAlign': 'center',
-                                'display': 'block'
-                            }
-                        ),
-                        
-                        # Modern Floors Slider - removed for Yes/No Button
-                        dcc.Slider(
-                            id="num-floors-input",  # Keep same ID for compatibility
-                            min=1,
-                            max=20,
-                            step=1,
-                            value=1,  # Default 1 floors
-                            marks={i: str(i) for i in range(1, 21, 5)},  # Every 5th number
-                            tooltip={"always_visible": False, "placement": "bottom"},
-                            updatemode="drag",
-                            className="ui-slider"
-                        ),
-                        html.Div(
-                            id="num-floors-display",
-                            style={
-                                "fontSize": "0.9rem",
-                                "color": COLORS['text_secondary'],
-                                "marginTop": "6px",
-                                "textAlign": "center",
-                                "fontWeight": "600"
-                            }
-                        ),
-                        html.Div(
-                            "Count floors above ground including mezzanines and secure zones",
-                            style={
-                                "fontSize": "0.8rem",
-                                "color": COLORS['text_tertiary'],
-                                "marginTop": "4px",
-                                "textAlign": "center",
-                                "marginBottom": "24px"
-                            }
-                        ),
-                        # ── End Modern Floors Slider ──────────────────────────────────────────
-
-                        # ── Modern Toggle Switch (replacing radio items) ──────────────────────
-                        html.Label(
-                            "Enable Manual Door Classification?",
-                            style={
-                                'color': COLORS['text_primary'],
-                                'fontWeight': 'bold',
-                                'fontSize': '1rem',
-                                'marginBottom': '12px',
-                                'textAlign': 'center',
-                                'display': 'block'
-                            }
-                        ),
-                        
-                        # Modern Toggle Switch Container
-                        html.Div([
-                            # Hidden radio items for functionality (keep existing logic)
-                            dcc.RadioItems(
-                                id='manual-map-toggle',  # KEEP only this ID
-                                options=[
-                                    {'label': 'No', 'value': 'no'}, 
-                                    {'label': 'Yes', 'value': 'yes'}
-                                ],
-                                value='no',
-                                inline=True
-                            ),
-                            
-                            # Visual Toggle Switch
-                            html.Div([
-                                html.Div([
-                                    html.Span("No", className="toggle-label-left"),
-                                    html.Div([
-                                        html.Div(className="toggle-slider")
-                                    ], className="toggle-switch"),
-                                    html.Span("Yes", className="toggle-label-right")
-                                ], className="toggle-container", id="visual-toggle")
-                            ], className="modern-toggle-wrapper")
-                        ], style={
-                            'display': 'flex',
-                            'justifyContent': 'center',
-                            'alignItems': 'center'
-                        })
-                        # ── End Modern Toggle Switch ───────────────────────────────────────────
-                    ],
+            # === Step 2: Facility Setup Card ===
+            html.Div([
+                html.H4(
+                    "Step 2: Facility Setup",
                     style={
-                        'padding': '20px',
-                        'backgroundColor': COLORS['surface'],
-                        'borderRadius': '8px',
-                        'marginBottom': '20px',
-                        'border': f'1px solid {COLORS["border"]}',
-                        'maxWidth': '550px',
-                        'margin': '0 auto'
+                        'color': COLORS['text_primary'],
+                        'textAlign': 'center',
+                        'marginBottom': '16px',
+                        'fontSize': '1.3rem'
                     }
                 ),
 
-                # === Step 3: Door Classification Table Container (hidden initially) ===
+                # Modern Floors Slider
+                html.Label(
+                    "How many floors are in the facility?",
+                    style={
+                        'color': COLORS['text_primary'],
+                        'fontWeight': 'bold',
+                        'fontSize': '1rem',
+                        'marginBottom': '8px',
+                        'textAlign': 'center',
+                        'display': 'block'
+                    }
+                ),
+                
+                dcc.Slider(
+                    id="num-floors-input",
+                    min=1,
+                    max=20,
+                    step=1,
+                    value=1,
+                    marks={i: str(i) for i in range(1, 21, 5)},
+                    tooltip={"always_visible": False, "placement": "bottom"},
+                    updatemode="drag",
+                    className="ui-slider"
+                ),
                 html.Div(
-                    id="door-classification-table-container",
-                    style={'display': 'none'},
-                    children=[
-                        html.H4(
-                            "Step 3: Door Classification",
-                            style={
-                                'color': COLORS['text_primary'],
-                                'textAlign': 'center',
-                                'marginBottom': '12px',
-                                'fontSize': '1.3rem'
-                            }
-                        ),
-                        html.P(
-                            "Assign a security level to each door below:",
-                            style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '8px'}
-                        ),
-                        html.Div(id="door-classification-table")
-                    ]
-                )
-            ]
-        )
+                    id="num-floors-display",
+                    style={
+                        "fontSize": "0.9rem",
+                        "color": COLORS['text_secondary'],
+                        "marginTop": "6px",
+                        "textAlign": "center",
+                        "fontWeight": "600"
+                    }
+                ),
+                html.Div(
+                    "Count floors above ground including mezzanines and secure zones",
+                    style={
+                        "fontSize": "0.8rem",
+                        "color": COLORS['text_tertiary'],
+                        "marginTop": "4px",
+                        "textAlign": "center",
+                        "marginBottom": "24px"
+                    }
+                ),
+
+                # Enhanced Toggle Switch
+                html.Label(
+                    "Enable Manual Door Classification?",
+                    style={
+                        'color': COLORS['text_primary'],
+                        'fontWeight': 'bold',
+                        'fontSize': '1rem',
+                        'marginBottom': '12px',
+                        'textAlign': 'center',
+                        'display': 'block'
+                    }
+                ),
+                
+                html.Div([
+                    dcc.RadioItems(
+                        id='manual-map-toggle',
+                        options=[
+                            {'label': 'No', 'value': 'no'}, 
+                            {'label': 'Yes', 'value': 'yes'}
+                        ],
+                        value='no',
+                        inline=True
+                    ),
+                ], style={
+                    'display': 'flex',
+                    'justifyContent': 'center',
+                    'alignItems': 'center'
+                })
+            ], style={
+                'padding': '20px',
+                'backgroundColor': COLORS['surface'],
+                'borderRadius': '8px',
+                'marginBottom': '20px',
+                'border': f'1px solid {COLORS["border"]}',
+                'maxWidth': '550px',
+                'margin': '0 auto'
+            }),
+
+            # === Step 3: Door Classification Table Container ===
+            html.Div(
+                id="door-classification-table-container",
+                style={'display': 'none'},
+                children=[
+                    html.H4(
+                        "Step 3: Door Classification",
+                        style={
+                            'color': COLORS['text_primary'],
+                            'textAlign': 'center',
+                            'marginBottom': '12px',
+                            'fontSize': '1.3rem'
+                        }
+                    ),
+                    html.P(
+                        "Assign security levels and properties to each door:",  # ENHANCED TEXT
+                        style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '8px'}
+                    ),
+                    html.Div(id="door-classification-table")
+                ]
+            )
+        ]
+    )
 
 
 def create_processing_status():
-    """Processing status indicator"""
+    """Enhanced processing status indicator"""
     return html.Div(
         id='processing-status',
         style={
             'marginTop': '10px',
             'color': COLORS['accent'],
-            'textAlign': 'center'
+            'textAlign': 'center',
+            'padding': '8px 16px',
+            'backgroundColor': f"{COLORS['accent']}20",
+            'borderRadius': '6px',
+            'border': f'1px solid {COLORS["accent"]}40',
+            'fontSize': '0.95rem',
+            'fontWeight': '500'
         }
     )
 
 
 def create_data_stores():
-    """Create all dcc.Store() components for state management"""
+    """Create all dcc.Store() components for state management (same as original)"""
     return html.Div([
         dcc.Store(id='uploaded-file-store'),
         dcc.Store(id='csv-headers-store', storage_type='session'),
@@ -640,25 +914,61 @@ def create_data_stores():
         dcc.Store(id='manual-door-classifications-store', storage_type='local'),
         dcc.Store(id='num-floors-store', storage_type='session', data=1),
         dcc.Store(id='all-doors-from-csv-store', storage_type='session'),
+        # NEW: Enhanced data stores
+        dcc.Store(id='analytics-data-store', storage_type='session'),
+        dcc.Store(id='chart-preferences-store', storage_type='local'),
     ])
 
 
 def get_main_container_style():
-    """Returns the style for the main container"""
+    """Returns the enhanced style for the main container"""
     return {
         'backgroundColor': COLORS['background'],
         'padding': '20px',
         'minHeight': '100vh',
-        'fontFamily': 'Arial, sans-serif'
+        'fontFamily': 'Inter, Arial, sans-serif',  # Enhanced font
+        'lineHeight': '1.5'
     }
 
 
 def register_page_callbacks(app):
     """
-    Register page-specific callbacks
-    
-    NOTE: Floor slider callback removed - handled by classification_handlers.py
+    Register enhanced page-specific callbacks
     """
-    # REMOVED: Duplicate floor slider callback that was causing conflicts
-    # The floor slider is now handled by ui/components/classification_handlers.py
-    pass
+    # Floor slider callback (if not handled elsewhere)
+    @app.callback(
+        Output("num-floors-display", "children"),
+        Input("num-floors-input", "value"),
+        prevent_initial_call=False
+    )
+    def update_floor_display(value):
+        """Update the floor display text based on slider value"""
+        if value is None:
+            value = 1
+        
+        floors = int(value)
+        if floors == 1:
+            return "1 floor"
+        else:
+            return f"{floors} floors"
+    
+    # NEW: Analytics section visibility callback
+    @app.callback(
+        [
+            Output('analytics-section', 'style'),
+            Output('charts-section', 'style'),
+            Output('export-section', 'style')
+        ],
+        Input('yosai-custom-header', 'style'),
+        prevent_initial_call=True
+    )
+    def show_enhanced_sections_when_header_visible(header_style):
+        """Show enhanced sections when header becomes visible"""
+        if header_style and header_style.get('display') != 'none':
+            show_style = {'display': 'block', 'margin': '20px auto', 'maxWidth': '1200px', 'width': '90%',
+                         'padding': '20px', 'backgroundColor': COLORS['surface'], 'borderRadius': '8px',
+                         'border': f'1px solid {COLORS["border"]}'}
+            return show_style, show_style, show_style
+        else:
+            hide_style = {'display': 'none'}
+            return hide_style, hide_style, hide_style

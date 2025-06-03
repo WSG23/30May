@@ -1,15 +1,21 @@
-# ui/components/stats.py
+# ui/components/stats.py - ENHANCED VERSION
 """
-Statistics component for data overview and metrics display
-Extracted from core_layout.py and graph_callbacks.py
+Enhanced statistics component with advanced metrics, charts, and export features
 """
 
-from dash import html
-from ui.themes.style_config import COLORS, UI_VISIBILITY
+from dash import html, dcc
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import pandas as pd
+import base64
+import io
+from datetime import datetime
+from ui.themes.style_config import COLORS, UI_VISIBILITY, SPACING, BORDER_RADIUS, SHADOWS
 
 
-class StatsComponent:
-    """Centralized statistics component with all metrics and data display"""
+class EnhancedStatsComponent:
+    """Enhanced statistics component with advanced analytics and visualizations"""
     
     def __init__(self):
         self.panel_style_base = {
@@ -21,133 +27,259 @@ class StatsComponent:
             'textAlign': 'center',
             'boxShadow': '2px 2px 5px rgba(0,0,0,0.2)'
         }
+        
+        # Chart color palette matching theme
+        self.chart_colors = [
+            COLORS['accent'], COLORS['success'], COLORS['warning'], 
+            COLORS['critical'], '#42A5F5', '#66BB6A', '#FFA726', '#EF5350'
+        ]
     
-    def create_stats_container(self):
-        """Creates the complete statistics panels container"""
+    def create_enhanced_stats_container(self):
+        """Creates the complete enhanced statistics container with charts and export"""
+        return html.Div([
+            # Original stats panels (enhanced)
+            self.create_enhanced_stats_panels(),
+            
+            # New analytics section
+            self.create_analytics_section(),
+            
+            # Charts section
+            self.create_charts_section(),
+            
+            # Export section
+            self.create_export_section()
+        ], id='enhanced-stats-container', style=UI_VISIBILITY['show_flex_stats'])
+    
+    def create_enhanced_stats_panels(self):
+        """Enhanced version of original stats panels with additional metrics"""
         return html.Div(
             id='stats-panels-container',
             style=UI_VISIBILITY['show_flex_stats'],
             children=[
-                self.create_access_events_panel(),
-                self.create_statistics_panel(),
-                self.create_active_devices_panel()
+                self.create_enhanced_access_events_panel(),
+                self.create_enhanced_statistics_panel(),
+                self.create_enhanced_active_devices_panel(),
+                self.create_peak_activity_panel(),  # NEW
+                self.create_security_overview_panel()  # NEW
             ]
         )
     
-    def create_custom_header(self, main_logo_path):
-        """Creates the custom header shown after processing - matches Analytics Dashboard exactly"""
-        return html.Div(
-            id='yosai-custom-header',
-            style=UI_VISIBILITY['show_header'],
-            children=[
-                html.Div([
-                    # Logo matching the top header exactly
-                    html.Img(
-                        src=main_logo_path, 
-                        style={
-                            'height': '24px',        # Same height as Analytics Dashboard logo
-                            'marginRight': '10px',   # Same spacing as top header
-                            'verticalAlign': 'middle'
-                        }
-                    ),
-                    # Data Overview text matching Analytics Dashboard style
-                    html.Span(
-                        "Data Overview",
-                        style={
-                            'fontSize': '18px',      # Same font size as "Analytics Dashboard"
-                            'fontWeight': '400',     # Same font weight (normal)
-                            'color': '#ffffff',      # Same white color
-                            'fontFamily': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-                            'verticalAlign': 'middle'
-                        }
-                    )
-                ], style={
-                    'display': 'flex',
-                    'alignItems': 'center',
-                    'justifyContent': 'center',  # Center horizontally like Analytics Dashboard
-                    'padding': '16px 0',         # Same padding as top header
-                    'margin': '0'
-                })
-            ]
-        )
-    
-    def create_access_events_panel(self):
-        """Creates the access events statistics panel"""
+    def create_enhanced_access_events_panel(self):
+        """Enhanced access events panel with additional metrics"""
         panel_style = self.panel_style_base.copy()
         panel_style['borderLeft'] = f'5px solid {COLORS["accent"]}'
         
         return html.Div([
-            html.H3("Access events", style={'color': COLORS['text_primary']}),
+            html.H3("Access Events", style={'color': COLORS['text_primary']}),
             html.H1(id="total-access-events-H1", style={'color': COLORS['text_primary']}),
-            html.P(id="event-date-range-P", style={'color': COLORS['text_secondary']})
+            html.P(id="event-date-range-P", style={'color': COLORS['text_secondary']}),
+            # NEW: Additional metrics
+            html.P(id="avg-events-per-day", style={'color': COLORS['text_secondary'], 'fontSize': '0.9rem'}),
+            html.P(id="peak-activity-day", style={'color': COLORS['text_secondary'], 'fontSize': '0.9rem'})
         ], style=panel_style)
     
-    def create_statistics_panel(self):
-        """Creates the general statistics panel"""
+    def create_enhanced_statistics_panel(self):
+        """Enhanced statistics panel with user analytics"""
         panel_style = self.panel_style_base.copy()
         panel_style['borderLeft'] = f'5px solid {COLORS["warning"]}'
         
         return html.Div([
-            html.H3("Statistics", style={'color': COLORS['text_primary']}),
-            html.P(id="stats-date-range-P", style={'color': COLORS['text_secondary']}),
-            html.P(id="stats-days-with-data-P", style={'color': COLORS['text_secondary']}),
-            html.P(id="stats-num-devices-P", style={'color': COLORS['text_secondary']}),
-            html.P(id="stats-unique-tokens-P", style={'color': COLORS['text_secondary']})
+            html.H3("User Analytics", style={'color': COLORS['text_primary']}),
+            html.P(id="stats-unique-users", style={'color': COLORS['text_secondary']}),
+            html.P(id="stats-avg-events-per-user", style={'color': COLORS['text_secondary']}),
+            html.P(id="stats-most-active-user", style={'color': COLORS['text_secondary']}),
+            html.P(id="stats-devices-per-user", style={'color': COLORS['text_secondary']}),
+            html.P(id="stats-peak-hour", style={'color': COLORS['text_secondary']})
         ], style=panel_style)
     
-    def create_active_devices_panel(self):
-        """Creates the most active devices panel"""
+    def create_enhanced_active_devices_panel(self):
+        """Enhanced active devices panel with floor breakdown"""
         panel_style = self.panel_style_base.copy()
         panel_style['borderLeft'] = f'5px solid {COLORS["critical"]}'
         
         return html.Div([
-            html.H3("Most active devices", style={'color': COLORS['text_primary']}),
+            html.H3("Device Analytics", style={'color': COLORS['text_primary']}),
+            html.P(id="total-devices-count", style={'color': COLORS['text_secondary']}),
+            html.P(id="entrance-devices-count", style={'color': COLORS['text_secondary']}),
+            html.P(id="high-security-devices", style={'color': COLORS['text_secondary']}),
             html.Table([
                 html.Thead(html.Tr([
-                    html.Th("DEVICE", style={'color': COLORS['text_primary']}),
-                    html.Th("EVENTS", style={'color': COLORS['text_primary']})
+                    html.Th("DEVICE", style={'color': COLORS['text_primary'], 'fontSize': '0.8rem'}),
+                    html.Th("EVENTS", style={'color': COLORS['text_primary'], 'fontSize': '0.8rem'})
                 ])),
                 html.Tbody(id='most-active-devices-table-body')
-            ])
+            ], style={'fontSize': '0.85rem'})
         ], style=panel_style)
     
-    def create_enhanced_stats_panel(self):
-        """Creates an enhanced statistics panel with more metrics"""
+    def create_peak_activity_panel(self):
+        """NEW: Peak activity analysis panel"""
+        panel_style = self.panel_style_base.copy()
+        panel_style['borderLeft'] = f'5px solid {COLORS["success"]}'
+        
         return html.Div([
-            html.H4("Enhanced Analytics", style={'color': COLORS['text_primary'], 'marginBottom': '15px'}),
+            html.H3("Peak Activity", style={'color': COLORS['text_primary']}),
+            html.P(id="peak-hour-display", style={'color': COLORS['text_secondary']}),
+            html.P(id="peak-day-display", style={'color': COLORS['text_secondary']}),
+            html.P(id="busiest-floor", style={'color': COLORS['text_secondary']}),
+            html.P(id="entry-exit-ratio", style={'color': COLORS['text_secondary']}),
+            html.P(id="weekend-vs-weekday", style={'color': COLORS['text_secondary']})
+        ], style=panel_style)
+    
+    def create_security_overview_panel(self):
+        """NEW: Security metrics panel"""
+        panel_style = self.panel_style_base.copy()
+        panel_style['borderLeft'] = f'5px solid {COLORS["info"]}'
+        
+        return html.Div([
+            html.H3("Security Overview", style={'color': COLORS['text_primary']}),
+            html.Div(id="security-level-breakdown", children=[
+                html.P("Security analysis loading...", style={'color': COLORS['text_secondary']})
+            ]),
+            html.P(id="compliance-score", style={'color': COLORS['text_secondary']}),
+            html.P(id="anomaly-alerts", style={'color': COLORS['text_secondary']})
+        ], style=panel_style)
+    
+    def create_analytics_section(self):
+        """NEW: Advanced analytics section with key insights"""
+        return html.Div([
+            html.H4("Advanced Analytics", 
+                   style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '20px'}),
             
-            # Key Metrics Row
             html.Div([
-                self.create_metric_card("Unique Users", "unique-users-metric", COLORS['success']),
-                self.create_metric_card("Peak Hour", "peak-hour-metric", COLORS['warning']),
-                self.create_metric_card("Avg. Daily Events", "avg-daily-events-metric", COLORS['accent'])
-            ], style={'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '20px'}),
+                # Insights cards
+                self.create_insight_card("Traffic Pattern", "traffic-pattern-insight", COLORS['accent']),
+                self.create_insight_card("Security Score", "security-score-insight", COLORS['success']),
+                self.create_insight_card("Usage Efficiency", "efficiency-insight", COLORS['warning']),
+                self.create_insight_card("Anomaly Detection", "anomaly-insight", COLORS['critical'])
+            ], style={
+                'display': 'flex',
+                'justifyContent': 'space-around',
+                'marginBottom': '20px',
+                'flexWrap': 'wrap'
+            }),
             
-            # Security Breakdown
-            html.Div([
-                html.H5("Security Level Distribution", style={'color': COLORS['text_primary']}),
-                html.Div(id='security-distribution-chart')
-            ], style={'marginBottom': '20px'}),
-            
-            # Access Patterns
-            html.Div([
-                html.H5("Access Patterns", style={'color': COLORS['text_primary']}),
-                html.Div(id='access-patterns-summary')
-            ])
+            # Detailed breakdown
+            html.Div(id="analytics-detailed-breakdown")
             
         ], style={
             'padding': '20px',
             'backgroundColor': COLORS['surface'],
             'borderRadius': '8px',
-            'border': f'1px solid {COLORS["border"]}',
-            'margin': '20px 0'
+            'margin': '20px 0',
+            'border': f'1px solid {COLORS["border"]}'
         })
     
-    def create_metric_card(self, title, metric_id, color):
-        """Creates a single metric card"""
+    def create_charts_section(self):
+        """NEW: Interactive charts section"""
         return html.Div([
-            html.H6(title, style={'color': COLORS['text_secondary'], 'margin': '0', 'fontSize': '0.9em'}),
-            html.H3(id=metric_id, style={'color': color, 'margin': '5px 0'})
+            html.H4("Data Visualization", 
+                   style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '20px'}),
+            
+            # Chart controls
+            html.Div([
+                html.Label("Chart Type:", style={'color': COLORS['text_primary'], 'marginRight': '10px'}),
+                dcc.Dropdown(
+                    id='chart-type-selector',
+                    options=[
+                        {'label': 'Hourly Activity', 'value': 'hourly'},
+                        {'label': 'Daily Trends', 'value': 'daily'},
+                        {'label': 'Security Distribution', 'value': 'security'},
+                        {'label': 'Floor Activity', 'value': 'floor'},
+                        {'label': 'User Patterns', 'value': 'users'},
+                        {'label': 'Device Usage', 'value': 'devices'}
+                    ],
+                    value='hourly',
+                    style={'width': '200px', 'color': COLORS['text_primary']}
+                )
+            ], style={'marginBottom': '20px', 'textAlign': 'center'}),
+            
+            # Chart container
+            html.Div([
+                dcc.Graph(
+                    id='main-analytics-chart',
+                    config={'displayModeBar': True, 'toImageButtonOptions': {'format': 'png'}},
+                    style={'height': '400px'}
+                )
+            ], style={'backgroundColor': COLORS['background'], 'borderRadius': '8px', 'padding': '10px'}),
+            
+            # Secondary charts row
+            html.Div([
+                html.Div([
+                    dcc.Graph(id='security-pie-chart', style={'height': '300px'})
+                ], style={'flex': '1', 'margin': '0 10px'}),
+                
+                html.Div([
+                    dcc.Graph(id='heatmap-chart', style={'height': '300px'})
+                ], style={'flex': '1', 'margin': '0 10px'})
+            ], style={'display': 'flex', 'marginTop': '20px'})
+            
+        ], style={
+            'padding': '20px',
+            'backgroundColor': COLORS['surface'],
+            'borderRadius': '8px',
+            'margin': '20px 0',
+            'border': f'1px solid {COLORS["border"]}'
+        })
+    
+    def create_export_section(self):
+        """NEW: Export and download section"""
+        return html.Div([
+            html.H4("Export & Reports", 
+                   style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '20px'}),
+            
+            html.Div([
+                html.Button(
+                    "📊 Export Stats CSV",
+                    id='export-stats-csv',
+                    className='btn-secondary',
+                    style=self.get_export_button_style()
+                ),
+                html.Button(
+                    "📈 Download Charts",
+                    id='export-charts-png',
+                    className='btn-secondary',
+                    style=self.get_export_button_style()
+                ),
+                html.Button(
+                    "📄 Generate Report",
+                    id='generate-pdf-report',
+                    className='btn-primary',
+                    style=self.get_export_button_style()
+                ),
+                html.Button(
+                    "🔄 Refresh Data",
+                    id='refresh-analytics',
+                    className='btn-secondary',
+                    style=self.get_export_button_style()
+                )
+            ], style={
+                'display': 'flex',
+                'justifyContent': 'center',
+                'gap': '15px',
+                'flexWrap': 'wrap'
+            }),
+            
+            # Download components (hidden)
+            dcc.Download(id="download-stats-csv"),
+            dcc.Download(id="download-charts"),
+            dcc.Download(id="download-report"),
+            
+            # Export status
+            html.Div(id="export-status", style={'textAlign': 'center', 'marginTop': '10px'})
+            
+        ], style={
+            'padding': '20px',
+            'backgroundColor': COLORS['surface'],
+            'borderRadius': '8px',
+            'margin': '20px 0',
+            'border': f'1px solid {COLORS["border"]}'
+        })
+    
+    def create_insight_card(self, title, content_id, color):
+        """Create a small insight card"""
+        return html.Div([
+            html.H6(title, style={'color': COLORS['text_primary'], 'margin': '0', 'fontSize': '0.9rem'}),
+            html.H4(id=content_id, style={'color': color, 'margin': '5px 0', 'fontSize': '1.2rem'})
         ], style={
             'padding': '15px',
             'backgroundColor': COLORS['background'],
@@ -155,196 +287,456 @@ class StatsComponent:
             'border': f'1px solid {color}',
             'textAlign': 'center',
             'flex': '1',
-            'margin': '0 5px'
+            'margin': '0 5px',
+            'minWidth': '120px'
         })
     
-    def create_classification_summary_panel(self):
-        """Creates a summary panel for door classifications"""
-        return html.Div([
-            html.H4("Door Classification Summary", style={'color': COLORS['text_primary']}),
-            html.Div(id='classification-summary-content', children=[
-                html.P("No classification data available", style={'color': COLORS['text_secondary']})
-            ])
-        ], style={
-            'padding': '20px',
-            'backgroundColor': COLORS['surface'],
-            'borderRadius': '8px',
-            'border': f'1px solid {COLORS["border"]}',
-            'margin': '20px 0'
-        })
-    
-    def format_access_events_data(self, total_events, date_range=None):
-        """Formats access events data for display"""
+    def get_export_button_style(self):
+        """Standard export button styling"""
         return {
-            'total': f"{total_events:,}",
-            'date_range': date_range or "N/A"
+            'padding': '8px 16px',
+            'border': 'none',
+            'borderRadius': '5px',
+            'fontSize': '0.9rem',
+            'fontWeight': '500',
+            'cursor': 'pointer',
+            'transition': 'all 0.3s ease'
         }
     
-    def format_statistics_data(self, stats_dict):
-        """Formats general statistics data for display"""
-        return {
-            'date_range': f"Date range: {stats_dict.get('date_range', 'N/A')}",
-            'days_with_data': f"Days: {stats_dict.get('days', 'N/A')}",
-            'num_devices': f"Devices: {stats_dict.get('devices', 'N/A')}",
-            'unique_tokens': f"Tokens: {stats_dict.get('tokens', 'N/A')}"
-        }
-    
-    def format_active_devices_table(self, device_counts):
-        """Formats active devices data for table display"""
-        if not device_counts:
-            return [html.Tr([html.Td("N/A", colSpan=2)])]
-        
-        table_rows = []
-        for device, count in device_counts.items():
-            table_rows.append(
-                html.Tr([
-                    html.Td(device),
-                    html.Td(f"{count:,}", style={'textAlign': 'right'})
-                ])
-            )
-        
-        return table_rows
-    
-    def create_security_distribution_chart(self, security_counts):
-        """Creates a simple security distribution display"""
-        if not security_counts:
-            return html.P("No security data available", style={'color': COLORS['text_secondary']})
-        
-        total = sum(security_counts.values())
-        if total == 0:
-            return html.P("No security data available", style={'color': COLORS['text_secondary']})
-        
-        distribution_items = []
-        colors = {
-            'green': COLORS['success'],
-            'yellow': COLORS['warning'],
-            'red': COLORS['critical'],
-            'unclassified': COLORS['border']
-        }
-        
-        for level, count in security_counts.items():
-            percentage = (count / total) * 100
-            color = colors.get(level, COLORS['text_secondary'])
-            
-            distribution_items.append(
+    def create_custom_header(self, main_logo_path):
+        """Enhanced custom header with analytics toggle"""
+        return html.Div(
+            id='yosai-custom-header',
+            style=UI_VISIBILITY['show_header'],
+            children=[
                 html.Div([
-                    html.Span(f"{level.title()}: ", style={'color': COLORS['text_primary']}),
-                    html.Span(f"{count} ({percentage:.1f}%)", style={'color': color, 'fontWeight': 'bold'})
-                ], style={'marginBottom': '5px'})
-            )
-        
-        return html.Div(distribution_items)
+                    html.Img(
+                        src=main_logo_path, 
+                        style={
+                            'height': '24px',
+                            'marginRight': '10px',
+                            'verticalAlign': 'middle'
+                        }
+                    ),
+                    html.Span(
+                        "Enhanced Analytics Dashboard",  # Updated title
+                        style={
+                            'fontSize': '18px',
+                            'fontWeight': '400',
+                            'color': '#ffffff',
+                            'fontFamily': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                            'verticalAlign': 'middle'
+                        }
+                    ),
+                    # NEW: Analytics toggle
+                    html.Div([
+                        html.Button(
+                            "📊 Advanced View",
+                            id='toggle-advanced-analytics',
+                            style={
+                                'marginLeft': '20px',
+                                'padding': '5px 10px',
+                                'backgroundColor': COLORS['accent'],
+                                'color': 'white',
+                                'border': 'none',
+                                'borderRadius': '4px',
+                                'fontSize': '0.8rem',
+                                'cursor': 'pointer'
+                            }
+                        )
+                    ], style={'display': 'inline-block', 'verticalAlign': 'middle'})
+                ], style={
+                    'display': 'flex',
+                    'alignItems': 'center',
+                    'justifyContent': 'center',
+                    'padding': '16px 0',
+                    'margin': '0'
+                })
+            ]
+        )
     
-    def create_access_patterns_summary(self, patterns_data):
-        """Creates access patterns summary"""
-        if not patterns_data:
-            return html.P("No pattern data available", style={'color': COLORS['text_secondary']})
-        
-        return html.Div([
-            html.P(f"Peak access time: {patterns_data.get('peak_hour', 'N/A')}", 
-                   style={'color': COLORS['text_secondary']}),
-            html.P(f"Most common path: {patterns_data.get('common_path', 'N/A')}", 
-                   style={'color': COLORS['text_secondary']}),
-            html.P(f"Average session length: {patterns_data.get('avg_session', 'N/A')}", 
-                   style={'color': COLORS['text_secondary']})
-        ])
-    
-    def get_default_stats_values(self):
-        """Returns default values for all statistics"""
-        return {
-            'total_access_events': "0",
-            'event_date_range': "N/A",
-            'stats_date_range': "N/A",
-            'stats_days_with_data': "0",
-            'stats_num_devices': "0",
-            'stats_unique_tokens': "0",
-            'most_active_devices_table': [html.Tr([html.Td("N/A", colSpan=2)])]
-        }
-    
-    def process_dataframe_for_stats(self, df, device_attrs=None):
-        """Processes DataFrame to extract statistics"""
+    # Chart generation methods
+    def create_hourly_activity_chart(self, df):
+        """Generate hourly activity chart"""
         if df is None or df.empty:
-            return self.get_default_stats_values()
+            return go.Figure().add_annotation(text="No data available", showarrow=False)
         
-        # This would contain the logic to extract stats from the DataFrame
-        # For now, return default values as the actual processing is in the callbacks
-        return self.get_default_stats_values()
-
-
-class StatsDataProcessor:
-    """Processes data for statistics display"""
+        # Extract hour from timestamp
+        df_copy = df.copy()
+        timestamp_col = 'Timestamp (Event Time)'
+        if timestamp_col in df_copy.columns:
+            df_copy['Hour'] = df_copy[timestamp_col].dt.hour
+            hourly_counts = df_copy['Hour'].value_counts().sort_index()
+            
+            fig = px.bar(
+                x=hourly_counts.index,
+                y=hourly_counts.values,
+                title="Access Events by Hour",
+                labels={'x': 'Hour of Day', 'y': 'Number of Events'},
+                color=hourly_counts.values,
+                color_continuous_scale=['#1A2332', COLORS['accent']]
+            )
+            
+            fig.update_layout(
+                plot_bgcolor=COLORS['background'],
+                paper_bgcolor=COLORS['surface'],
+                font_color=COLORS['text_primary'],
+                title_font_color=COLORS['text_primary']
+            )
+            
+            return fig
+        
+        return go.Figure().add_annotation(text="No timestamp data available", showarrow=False)
     
-    def __init__(self):
-        self.stats_component = StatsComponent()
+    def create_security_pie_chart(self, device_attrs):
+        """Generate security level distribution pie chart"""
+        if device_attrs is None or device_attrs.empty:
+            return go.Figure().add_annotation(text="No security data", showarrow=False)
+        
+        if 'SecurityLevel' in device_attrs.columns:
+            security_counts = device_attrs['SecurityLevel'].value_counts()
+            
+            fig = px.pie(
+                values=security_counts.values,
+                names=security_counts.index,
+                title="Security Level Distribution",
+                color_discrete_sequence=self.chart_colors
+            )
+            
+            fig.update_layout(
+                plot_bgcolor=COLORS['background'],
+                paper_bgcolor=COLORS['surface'],
+                font_color=COLORS['text_primary'],
+                title_font_color=COLORS['text_primary']
+            )
+            
+            return fig
+        
+        return go.Figure().add_annotation(text="No security level data", showarrow=False)
     
-    def extract_basic_stats(self, enriched_df, device_attrs_df=None):
-        """Extracts basic statistics from processed data"""
-        if enriched_df is None or enriched_df.empty:
-            return self.stats_component.get_default_stats_values()
+    def create_activity_heatmap(self, df):
+        """Generate day/hour activity heatmap"""
+        if df is None or df.empty:
+            return go.Figure().add_annotation(text="No data for heatmap", showarrow=False)
         
-        # Extract date range
-        timestamp_col = 'Timestamp (Event Time)'  # Use display name
-        if timestamp_col in enriched_df.columns:
-            min_date = enriched_df[timestamp_col].min()
-            max_date = enriched_df[timestamp_col].max()
-            date_range = f"{min_date.strftime('%d.%m.%Y')} - {max_date.strftime('%d.%m.%Y')}"
-            days_count = enriched_df[timestamp_col].dt.date.nunique()
+        timestamp_col = 'Timestamp (Event Time)'
+        if timestamp_col in df.columns:
+            df_copy = df.copy()
+            df_copy['Hour'] = df_copy[timestamp_col].dt.hour
+            df_copy['DayOfWeek'] = df_copy[timestamp_col].dt.day_name()
+            
+            # Create pivot table for heatmap
+            heatmap_data = df_copy.groupby(['DayOfWeek', 'Hour']).size().unstack(fill_value=0)
+            
+            # Reorder days
+            days_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            heatmap_data = heatmap_data.reindex(days_order)
+            
+            fig = go.Figure(data=go.Heatmap(
+                z=heatmap_data.values,
+                x=list(range(24)),
+                y=days_order,
+                colorscale='Blues',
+                text=heatmap_data.values,
+                texttemplate="%{text}",
+                textfont={"size": 10}
+            ))
+            
+            fig.update_layout(
+                title="Activity Heatmap (Day vs Hour)",
+                xaxis_title="Hour of Day",
+                yaxis_title="Day of Week",
+                plot_bgcolor=COLORS['background'],
+                paper_bgcolor=COLORS['surface'],
+                font_color=COLORS['text_primary'],
+                title_font_color=COLORS['text_primary']
+            )
+            
+            return fig
+        
+        return go.Figure().add_annotation(text="No timestamp data for heatmap", showarrow=False)
+    
+    # Enhanced data processing methods
+    def calculate_enhanced_metrics(self, df, device_attrs=None):
+        """Calculate all enhanced metrics from data"""
+        if df is None or df.empty:
+            return self.get_default_enhanced_stats()
+        
+        timestamp_col = 'Timestamp (Event Time)'
+        user_col = 'UserID (Person Identifier)'
+        door_col = 'DoorID (Device Name)'
+        
+        metrics = {}
+        
+        # Basic metrics
+        metrics['total_events'] = len(df)
+        metrics['unique_users'] = df[user_col].nunique() if user_col in df.columns else 0
+        metrics['unique_devices'] = df[door_col].nunique() if door_col in df.columns else 0
+        
+        if timestamp_col in df.columns:
+            # Date range
+            min_date = df[timestamp_col].min()
+            max_date = df[timestamp_col].max()
+            metrics['date_range'] = f"{min_date.strftime('%d.%m.%Y')} - {max_date.strftime('%d.%m.%Y')}"
+            
+            # Days and averages
+            unique_days = df[timestamp_col].dt.date.nunique()
+            metrics['unique_days'] = unique_days
+            metrics['avg_events_per_day'] = f"Avg: {metrics['total_events'] / max(unique_days, 1):.1f} events/day"
+            
+            # Peak analysis
+            df['Hour'] = df[timestamp_col].dt.hour
+            df['DayOfWeek'] = df[timestamp_col].dt.day_name()
+            df['Date'] = df[timestamp_col].dt.date
+            
+            # Peak hour
+            hour_counts = df['Hour'].value_counts()
+            peak_hour = hour_counts.index[0] if not hour_counts.empty else "N/A"
+            metrics['peak_hour'] = f"Peak: {peak_hour}:00" if peak_hour != "N/A" else "N/A"
+            
+            # Peak day
+            day_counts = df['DayOfWeek'].value_counts()
+            peak_day = day_counts.index[0] if not day_counts.empty else "N/A"
+            metrics['peak_day'] = f"Busiest: {peak_day}"
+            
+            # Daily activity breakdown
+            daily_counts = df.groupby('Date').size()
+            busiest_date = daily_counts.idxmax() if not daily_counts.empty else None
+            metrics['peak_activity_day'] = f"Peak: {busiest_date}" if busiest_date else "N/A"
+        
+        # User analytics
+        if user_col in df.columns and metrics['unique_users'] > 0:
+            user_event_counts = df[user_col].value_counts()
+            metrics['avg_events_per_user'] = f"Avg: {user_event_counts.mean():.1f} events/user"
+            most_active_user = user_event_counts.index[0] if not user_event_counts.empty else "N/A"
+            metrics['most_active_user'] = f"Top: {most_active_user} ({user_event_counts.iloc[0]} events)"
+            
+            # Users per device analysis
+            if door_col in df.columns:
+                users_per_device = df.groupby(door_col)[user_col].nunique().mean()
+                metrics['avg_users_per_device'] = f"Avg: {users_per_device:.1f} users/device"
+        
+        # Device analytics with enhanced features
+        if device_attrs is not None and not device_attrs.empty:
+            total_devices = len(device_attrs)
+            entrance_devices = device_attrs['IsOfficialEntrance'].sum() if 'IsOfficialEntrance' in device_attrs.columns else 0
+            high_security_devices = 0
+            
+            if 'SecurityLevel' in device_attrs.columns:
+                high_security_devices = len(device_attrs[device_attrs['SecurityLevel'].isin(['red', 'critical'])])
+                
+                # Security distribution
+                security_dist = device_attrs['SecurityLevel'].value_counts()
+                metrics['security_breakdown'] = security_dist.to_dict()
+            
+            metrics['total_devices_count'] = f"Total: {total_devices} devices"
+            metrics['entrance_devices_count'] = f"Entrances: {entrance_devices}"
+            metrics['high_security_devices'] = f"High Security: {high_security_devices}"
+            
+            # Floor analysis
+            if 'Floor' in device_attrs.columns:
+                floor_activity = df.groupby(df[door_col].map(
+                    device_attrs.set_index('DoorID')['Floor'].to_dict()
+                )).size()
+                busiest_floor = floor_activity.idxmax() if not floor_activity.empty else "N/A"
+                metrics['busiest_floor'] = f"Floor {busiest_floor}" if busiest_floor != "N/A" else "N/A"
+        
+        # Advanced analytics
+        metrics.update(self.calculate_advanced_insights(df, device_attrs))
+        
+        return metrics
+    
+    def calculate_advanced_insights(self, df, device_attrs=None):
+        """Calculate advanced insights and scores"""
+        insights = {}
+        
+        if df is None or df.empty:
+            return {
+                'traffic_pattern': "No Data",
+                'security_score': "N/A",
+                'efficiency_score': "N/A", 
+                'anomaly_count': 0
+            }
+        
+        timestamp_col = 'Timestamp (Event Time)'
+        user_col = 'UserID (Person Identifier)'
+        door_col = 'DoorID (Device Name)'
+        
+        # Traffic pattern analysis
+        if timestamp_col in df.columns:
+            df['Hour'] = df[timestamp_col].dt.hour
+            business_hours = df[(df['Hour'] >= 8) & (df['Hour'] <= 18)]
+            business_ratio = len(business_hours) / len(df)
+            
+            if business_ratio > 0.8:
+                insights['traffic_pattern'] = "Business Hours"
+            elif business_ratio > 0.6:
+                insights['traffic_pattern'] = "Mixed Schedule"
+            else:
+                insights['traffic_pattern'] = "24/7 Operation"
+        
+        # Security score calculation
+        security_score = 85  # Base score
+        if device_attrs is not None and 'SecurityLevel' in device_attrs.columns:
+            high_security_ratio = len(device_attrs[device_attrs['SecurityLevel'] == 'red']) / len(device_attrs)
+            security_score = min(100, 70 + (high_security_ratio * 30))
+        
+        insights['security_score'] = f"{security_score:.0f}%"
+        
+        # Efficiency analysis
+        if user_col in df.columns and door_col in df.columns:
+            user_device_pairs = df.groupby([user_col, door_col]).size()
+            avg_accesses_per_pair = user_device_pairs.mean()
+            
+            if avg_accesses_per_pair > 10:
+                insights['efficiency_score'] = "High"
+            elif avg_accesses_per_pair > 5:
+                insights['efficiency_score'] = "Medium"
+            else:
+                insights['efficiency_score'] = "Low"
         else:
-            date_range = "N/A"
-            days_count = 0
+            insights['efficiency_score'] = "N/A"
         
-        # Extract device and user counts
-        door_col = 'DoorID (Device Name)'  # Use display name
-        user_col = 'UserID (Person Identifier)'  # Use display name
+        # Simple anomaly detection (placeholder)
+        anomaly_count = 0
+        if timestamp_col in df.columns:
+            # Detect unusual activity patterns (very basic)
+            daily_counts = df.groupby(df[timestamp_col].dt.date).size()
+            mean_daily = daily_counts.mean()
+            std_daily = daily_counts.std()
+            anomaly_threshold = mean_daily + (2 * std_daily)
+            anomaly_count = len(daily_counts[daily_counts > anomaly_threshold])
         
-        device_count = enriched_df[door_col].nunique() if door_col in enriched_df.columns else 0
-        user_count = enriched_df[user_col].nunique() if user_col in enriched_df.columns else 0
+        insights['anomaly_count'] = anomaly_count
         
-        # Get most active devices
-        if door_col in enriched_df.columns:
-            device_counts = enriched_df[door_col].value_counts().nlargest(5).to_dict()
-        else:
-            device_counts = {}
-        
+        return insights
+    
+    def get_default_enhanced_stats(self):
+        """Default values for enhanced statistics"""
         return {
-            'total_events': len(enriched_df),
-            'date_range': date_range,
-            'days_with_data': days_count,
-            'num_devices': device_count,
-            'unique_tokens': user_count,
-            'device_counts': device_counts
+            'total_events': 0,
+            'unique_users': 0,
+            'unique_devices': 0,
+            'date_range': "N/A",
+            'avg_events_per_day': "N/A",
+            'peak_hour': "N/A",
+            'peak_day': "N/A",
+            'peak_activity_day': "N/A",
+            'avg_events_per_user': "N/A",
+            'most_active_user': "N/A",
+            'avg_users_per_device': "N/A",
+            'total_devices_count': "0 devices",
+            'entrance_devices_count': "0 entrances",
+            'high_security_devices': "0 high security",
+            'busiest_floor': "N/A",
+            'traffic_pattern': "No Data",
+            'security_score': "N/A",
+            'efficiency_score': "N/A",
+            'anomaly_count': 0,
+            'security_breakdown': {}
         }
     
-    def calculate_enhanced_metrics(self, enriched_df):
-        """Calculates enhanced metrics for display"""
-        if enriched_df is None or enriched_df.empty:
-            return {}
+    # Export functionality
+    def export_stats_to_csv(self, metrics_data):
+        """Export statistics to CSV format"""
+        if not metrics_data:
+            return None
         
-        # Calculate additional metrics here
-        # This is a placeholder for more complex analytics
-        return {
-            'avg_daily_events': 0,
-            'peak_hour': 'N/A',
-            'access_patterns': {}
-        }
+        # Convert metrics to DataFrame
+        data = []
+        for key, value in metrics_data.items():
+            if isinstance(value, dict):
+                for sub_key, sub_value in value.items():
+                    data.append({'Metric': f"{key}_{sub_key}", 'Value': sub_value})
+            else:
+                data.append({'Metric': key, 'Value': value})
+        
+        df = pd.DataFrame(data)
+        
+        # Convert to CSV
+        csv_string = df.to_csv(index=False, encoding='utf-8')
+        csv_bytes = csv_string.encode('utf-8')
+        csv_b64 = base64.b64encode(csv_bytes).decode()
+        
+        return csv_b64
+    
+    def generate_summary_report(self, metrics_data, charts_data=None):
+        """Generate a comprehensive text report"""
+        if not metrics_data:
+            return "No data available for report generation."
+        
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        report = f"""
+# Enhanced Analytics Report
+Generated: {timestamp}
+
+## Summary Statistics
+- Total Access Events: {metrics_data.get('total_events', 'N/A')}
+- Unique Users: {metrics_data.get('unique_users', 'N/A')}
+- Unique Devices: {metrics_data.get('unique_devices', 'N/A')}
+- Date Range: {metrics_data.get('date_range', 'N/A')}
+
+## Activity Analysis
+- {metrics_data.get('avg_events_per_day', 'N/A')}
+- {metrics_data.get('peak_hour', 'N/A')}
+- {metrics_data.get('peak_day', 'N/A')}
+- Peak Activity Day: {metrics_data.get('peak_activity_day', 'N/A')}
+
+## User Analytics
+- {metrics_data.get('avg_events_per_user', 'N/A')}
+- {metrics_data.get('most_active_user', 'N/A')}
+- {metrics_data.get('avg_users_per_device', 'N/A')}
+
+## Device & Security
+- {metrics_data.get('total_devices_count', 'N/A')}
+- {metrics_data.get('entrance_devices_count', 'N/A')}
+- {metrics_data.get('high_security_devices', 'N/A')}
+- Busiest Floor: {metrics_data.get('busiest_floor', 'N/A')}
+
+## Advanced Insights
+- Traffic Pattern: {metrics_data.get('traffic_pattern', 'N/A')}
+- Security Score: {metrics_data.get('security_score', 'N/A')}
+- Efficiency Rating: {metrics_data.get('efficiency_score', 'N/A')}
+- Anomaly Alerts: {metrics_data.get('anomaly_count', 0)} detected
+
+## Security Level Distribution
+"""
+        
+        if 'security_breakdown' in metrics_data:
+            for level, count in metrics_data['security_breakdown'].items():
+                report += f"- {level.title()}: {count} devices\n"
+        
+        report += f"""
+## Recommendations
+Based on the analysis, consider:
+1. Monitor peak hours ({metrics_data.get('peak_hour', 'N/A')}) for capacity planning
+2. Review security policies for {metrics_data.get('high_security_devices', '0')} high-security devices
+3. Investigate {metrics_data.get('anomaly_count', 0)} anomalous activity patterns
+4. Optimize access flows on busiest floor: {metrics_data.get('busiest_floor', 'N/A')}
+
+---
+Report generated by Enhanced Analytics Dashboard
+"""
+        
+        return report
 
 
 # Factory functions for easy component creation
-def create_stats_component():
-    """Factory function to create stats component instance"""
-    return StatsComponent()
+def create_enhanced_stats_component():
+    """Factory function to create enhanced stats component instance"""
+    return EnhancedStatsComponent()
 
-def create_stats_data_processor():
-    """Factory function to create stats data processor instance"""
-    return StatsDataProcessor()
+# Backward compatibility
+StatsComponent = EnhancedStatsComponent  # Alias for existing code
 
-# Convenience functions for individual elements (backward compatibility)
+# Convenience functions
 def create_stats_container():
-    """Create the stats container"""
-    component = StatsComponent()
-    return component.create_stats_container()
+    """Create the enhanced stats container"""
+    component = EnhancedStatsComponent()
+    return component.create_enhanced_stats_container()
 
 def create_custom_header(main_logo_path):
-    """Create the custom header"""
-    component = StatsComponent()
+    """Create the enhanced custom header"""
+    component = EnhancedStatsComponent()
     return component.create_custom_header(main_logo_path)

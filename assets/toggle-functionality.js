@@ -422,6 +422,8 @@ document.addEventListener('change', () => setTimeout(fixRadioColors, 50));
 new MutationObserver(() => setTimeout(fixRadioColors, 100))
     .observe(document.body, { childList: true, subtree: true });
 
+
+    
 // Test function
 window.testRadioColors = () => {
     console.log('Testing radio colors...');
@@ -431,7 +433,211 @@ window.testRadioColors = () => {
 
 // Expose debug function
 window.debugToggle = debugToggleState;
+// ═══════════════════════════════════════════════════════════════════════════════
+// RADIO TOGGLE FIX - ADD THIS TO THE END OF YOUR EXISTING toggle-functionality.js
+// ═══════════════════════════════════════════════════════════════════════════════
 
-console.log('🎛️ Toggle functionality script loaded and initialized');
-console.log('💡 Use window.toggleFunctionality.test() to test the toggle');
-console.log('🐛 Use window.debugToggle() to debug toggle state');
+// Fix for radio toggle color and functionality issues
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Radio toggle fix loading...');
+    setTimeout(fixRadioToggleIssues, 300);
+});
+
+function fixRadioToggleIssues() {
+    const radioContainer = document.querySelector('#manual-map-toggle');
+    
+    if (!radioContainer) {
+        console.warn('❌ Radio container not found, retrying...');
+        setTimeout(fixRadioToggleIssues, 500);
+        return;
+    }
+    
+    console.log('✅ Fixing radio toggle issues...');
+    
+    // Apply initial styling
+    applyRadioToggleFix();
+    
+    // Set up event listeners for real-time updates
+    setupRadioToggleListeners(radioContainer);
+    
+    // Watch for changes
+    observeRadioToggleChanges(radioContainer);
+}
+
+function applyRadioToggleFix() {
+    const radioContainer = document.querySelector('#manual-map-toggle');
+    if (!radioContainer) return;
+    
+    const radioInputs = radioContainer.querySelectorAll('input[type="radio"]');
+    const labels = radioContainer.querySelectorAll('label');
+    
+    console.log(`🎨 Styling ${radioInputs.length} radio inputs`);
+    
+    radioInputs.forEach((input, index) => {
+        const label = labels[index];
+        if (!label) return;
+        
+        // Hide radio input completely
+        input.style.display = 'none';
+        input.style.opacity = '0';
+        input.style.position = 'absolute';
+        input.style.left = '-9999px';
+        
+        // Style the label as button
+        applyLabelStyling(label);
+        
+        // Apply checked state
+        if (input.checked) {
+            applyCheckedStyling(label, input.value);
+            console.log(`✅ Applied checked styling for: ${input.value}`);
+        }
+    });
+}
+
+function applyLabelStyling(label) {
+    Object.assign(label.style, {
+        display: 'inline-block',
+        backgroundColor: '#2D3748',
+        color: '#A0AEC0',
+        border: '2px solid #4A5568',
+        borderRadius: '20px',
+        padding: '10px 24px',
+        margin: '0 8px',
+        cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        fontWeight: '500',
+        minWidth: '80px',
+        textAlign: 'center',
+        userSelect: 'none',
+        fontSize: '0.9rem',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+    });
+}
+
+function applyCheckedStyling(label, value) {
+    label.style.color = 'white';
+    label.style.fontWeight = '600';
+    label.style.transform = 'translateY(-1px)';
+    
+    if (value === 'yes') {
+        label.style.backgroundColor = '#2196F3';
+        label.style.borderColor = '#2196F3';
+        label.style.boxShadow = '0 2px 8px rgba(33, 150, 243, 0.4)';
+    } else if (value === 'no') {
+        label.style.backgroundColor = '#E02020';
+        label.style.borderColor = '#E02020';
+        label.style.boxShadow = '0 2px 8px rgba(224, 32, 32, 0.4)';
+    }
+}
+
+function setupRadioToggleListeners(container) {
+    // Listen for changes on the container
+    container.addEventListener('change', function(e) {
+        if (e.target.type === 'radio') {
+            console.log('📻 Radio changed to:', e.target.value);
+            setTimeout(applyRadioToggleFix, 50);
+        }
+    });
+    
+    // Add click handlers to labels
+    const labels = container.querySelectorAll('label');
+    labels.forEach((label, index) => {
+        label.addEventListener('click', function(e) {
+            const radioInputs = container.querySelectorAll('input[type="radio"]');
+            const targetInput = radioInputs[index];
+            
+            if (targetInput && !targetInput.checked) {
+                targetInput.checked = true;
+                
+                // Trigger Dash callback
+                ['change', 'input', 'click'].forEach(eventType => {
+                    const event = new Event(eventType, { bubbles: true, cancelable: true });
+                    targetInput.dispatchEvent(event);
+                });
+                
+                // Update styling
+                setTimeout(applyRadioToggleFix, 50);
+                console.log(`🖱️ Manually selected: ${targetInput.value}`);
+            }
+        });
+    });
+}
+
+function observeRadioToggleChanges(container) {
+    const observer = new MutationObserver(function(mutations) {
+        let shouldUpdate = false;
+        
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && 
+                (mutation.attributeName === 'checked' || mutation.attributeName === 'value')) {
+                shouldUpdate = true;
+            }
+        });
+        
+        if (shouldUpdate) {
+            console.log('🔄 Radio state mutated, updating...');
+            setTimeout(applyRadioToggleFix, 50);
+        }
+    });
+    
+    observer.observe(container, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+        attributeFilter: ['checked', 'value']
+    });
+}
+
+// Debug functions
+window.debugRadioToggleFixed = function() {
+    console.log('=== RADIO TOGGLE DEBUG (FIXED) ===');
+    
+    const container = document.querySelector('#manual-map-toggle');
+    if (!container) {
+        console.log('❌ Container not found');
+        return;
+    }
+    
+    const radios = container.querySelectorAll('input[type="radio"]');
+    const labels = container.querySelectorAll('label');
+    
+    console.log(`📊 Found ${radios.length} radios, ${labels.length} labels`);
+    
+    radios.forEach((radio, i) => {
+        console.log(`Radio ${i}: value=${radio.value}, checked=${radio.checked}`);
+    });
+    
+    labels.forEach((label, i) => {
+        console.log(`Label ${i}: bg=${label.style.backgroundColor}, color=${label.style.color}`);
+    });
+};
+
+window.forceRadioToggleUpdate = function() {
+    console.log('🔄 Forcing radio toggle update...');
+    applyRadioToggleFix();
+};
+
+// Auto-fix on page mutations
+const pageObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (mutation.addedNodes.length > 0) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) {
+                    const hasRadioToggle = node.querySelector && node.querySelector('#manual-map-toggle');
+                    const isRadioToggle = node.id === 'manual-map-toggle';
+                    
+                    if (hasRadioToggle || isRadioToggle) {
+                        console.log('🆕 New radio toggle detected, applying fix...');
+                        setTimeout(fixRadioToggleIssues, 100);
+                    }
+                }
+            });
+        }
+    });
+});
+
+pageObserver.observe(document.body, { childList: true, subtree: true });
+
+console.log('🎛️ Radio toggle fix script loaded');
+console.log('💡 Use window.debugRadioToggleFixed() to debug');
+console.log('🔧 Use window.forceRadioToggleUpdate() to force update');

@@ -1074,3 +1074,128 @@ input[type="file"] { display: none; }
     break-inside: avoid;
   }
 }
+/* ═══════════════════════════════════════════════════════════════════════════════
+   RADIO TOGGLE FIX - ADD TO EXISTING classification.css
+   Just append this to the end of your existing 1000+ line classification.css
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* RADIO TOGGLE PATCH - Fixes blue selection and classification section visibility */
+
+/* Step 1: Force hide radio inputs (override any existing styles) */
+#manual-map-toggle input[type="radio"] {
+  display: none !important;
+  opacity: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+  pointer-events: none !important;
+}
+
+/* Step 2: Override any existing label styles for the toggle */
+#manual-map-toggle label {
+  display: inline-block !important;
+  background-color: #2D3748 !important;
+  color: #A0AEC0 !important;
+  border: 2px solid #4A5568 !important;
+  border-radius: 20px !important;
+  padding: 10px 24px !important;
+  margin: 0 8px !important;
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  font-weight: 500 !important;
+  min-width: 80px !important;
+  text-align: center !important;
+  user-select: none !important;
+  font-size: 0.9rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Step 3: Hover state for labels */
+#manual-map-toggle label:hover {
+  background-color: #4A5568 !important;
+  border-color: #718096 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  color: #E2E8F0 !important;
+}
+
+/* Step 4: CRITICAL - Selected state styling */
+#manual-map-toggle input[type="radio"]:checked + label {
+  color: white !important;
+  font-weight: 600 !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Step 5: "Yes" selection = BLUE */
+#manual-map-toggle input[value="yes"]:checked + label {
+  background-color: #2196F3 !important;
+  border-color: #2196F3 !important;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4) !important;
+}
+
+/* Step 6: "No" selection = RED */
+#manual-map-toggle input[value="no"]:checked + label {
+  background-color: #E02020 !important;
+  border-color: #E02020 !important;
+  box-shadow: 0 2px 8px rgba(224, 32, 32, 0.4) !important;
+}
+
+/* Step 7: Active/click animation */
+#manual-map-toggle label:active {
+  transform: translateY(0) scale(0.98) !important;
+  transition: transform 0.1s ease !important;
+}
+
+/* Step 8: Focus accessibility */
+#manual-map-toggle input[type="radio"]:focus + label {
+  outline: 2px solid #2196F3 !important;
+  outline-offset: 2px !important;
+}
+
+/* Step 9: Ensure classification container shows properly */
+#door-classification-table-container {
+  transition: all 0.3s ease !important;
+  overflow: hidden !important;
+}
+
+#door-classification-table-container[style*="display: block"] {
+  animation: slideDown 0.3s ease-out !important;
+}
+
+/* Step 10: Slide animation for classification section */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 1000px;
+  }
+}
+
+/* Step 11: Mobile responsive fixes */
+@media (max-width: 768px) {
+  #manual-map-toggle {
+    gap: 8px !important;
+  }
+  
+  #manual-map-toggle label {
+    padding: 8px 20px !important;
+    font-size: 0.85rem !important;
+    min-width: 70px !important;
+    margin: 0 4px !important;
+  }
+}
+
+/* Step 12: Extra specificity overrides if needed */
+.form-check-input:checked + .form-check-label,
+.form-check-input[type="radio"]:checked + .form-check-label {
+  background-color: inherit !important;
+  border-color: inherit !important;
+}
+
+/* END RADIO TOGGLE PATCH */

@@ -28,13 +28,15 @@ class ClassificationHandlers:
         self._register_door_type_mutual_exclusion_handler() 
         self._register_floor_slider_display_handler()
         self._register_classification_toggle_handler()
+        self._register_debug_toggle_handler()  # Add this line
+
         
     def _register_classification_toggle_handler(self):
         """SINGLE callback - controls classification table visibility"""
         @self.app.callback(
             Output('door-classification-table-container', 'style', allow_duplicate=True),
             Input('manual-map-toggle', 'value'),
-            prevent_initial_call=False
+            prevent_initial_call='initial_duplicate'  # FIXED: Use 'initial_duplicate' with allow_duplicate
         )
         def toggle_classification_tools(manual_map_choice):
             """Control classification table visibility"""
@@ -48,7 +50,7 @@ class ClassificationHandlers:
         @self.app.callback(
             Output("num-floors-display", "children", allow_duplicate=True),
             Input("num-floors-input", "value"),
-            prevent_initial_call=False
+            prevent_initial_call='initial_duplicate'  # FIXED: Use 'initial_duplicate' with allow_duplicate
         )
         def update_floor_display(value):
             """Update the floor display text based on slider value"""
@@ -62,32 +64,37 @@ class ClassificationHandlers:
                 return f"{floors} floors"
         
     def _register_door_table_generation_handler(self):
-        """Generates door classification table when conditions are met"""
+        """Generates door classification table when conditions are met - FIXED"""
         @self.app.callback(
             Output('door-classification-table', 'children', allow_duplicate=True),
             [
-                Input('confirm-header-map-button', 'n_clicks'),
                 Input('manual-map-toggle', 'value'),
-                Input('num-floors-input', 'value')
+                Input('num-floors-input', 'value'),
+                Input('all-doors-from-csv-store', 'data')  # Listen to door data changes
             ],
             [
-                State('all-doors-from-csv-store', 'data'),
                 State('manual-door-classifications-store', 'data')
             ],
-            prevent_initial_call=True
+            prevent_initial_call='initial_duplicate'  # FIXED: Use 'initial_duplicate' with allow_duplicate
         )
         def generate_door_classification_table_content(
-            n_clicks_confirm_map, manual_map_choice, num_floors, 
-            all_doors_from_store_data, existing_saved_classifications
+            manual_map_choice, num_floors, all_doors_from_store_data,
+            existing_saved_classifications
         ):
             # Only generate if manual mapping is chosen and there are doors
-            if manual_map_choice != 'yes' or not all_doors_from_store_data:
-                logger.info("DEBUG: Not in manual mode or no doors available for classification table.")
+            if manual_map_choice != 'yes':
+                logger.info("DEBUG: Manual classification disabled, clearing table.")
                 return []
+                
+            if not all_doors_from_store_data:
+                logger.info("DEBUG: No doors available for classification table yet.")
+                return [html.P("Upload and map CSV headers first to see door classification options.", 
+                              style={'textAlign': 'center', 'color': '#A0AEC0', 'padding': '20px'})]
                 
             # Handle slider value (ensure it's an integer)
             num_floors_int = int(num_floors) if num_floors is not None else 4
                 
+            logger.info(f"DEBUG: Generating classification table for {len(all_doors_from_store_data)} doors.")
             return self._generate_classification_table(
                 all_doors_from_store_data,
                 existing_saved_classifications,
@@ -109,7 +116,7 @@ class ClassificationHandlers:
                 State({'type': 'door-type-toggle', 'index': ALL}, 'id'),
                 State({'type': 'stairway-toggle', 'index': ALL}, 'id')
             ],
-            prevent_initial_call=True
+            prevent_initial_call='initial_duplicate'  # FIXED: Use 'initial_duplicate' with allow_duplicate
         )
         def handle_mutual_exclusion(door_type_values, stairway_values, door_type_ids, stairway_ids):
             """Ensure only one type can be selected per door"""
@@ -386,7 +393,16 @@ class ClassificationDataProcessor:
                 distribution['regular'] += 1
         
         return distribution
-
+def _register_debug_toggle_handler(self):
+    """Debug callback to see what's happening with the toggle"""
+    @self.app.callback(
+        Output('processing-status', 'children', allow_duplicate=True),
+        Input('manual-map-toggle', 'value'),
+        prevent_initial_call='initial_duplicate'
+    )
+    def debug_toggle_change(value):
+        logger.info(f"DEBUG: Toggle changed to: {value}")
+        return f"Debug: Toggle is now '{value}'"
 
 # Factory functions for easy handler creation
 def create_classification_handlers(app, classification_component=None):

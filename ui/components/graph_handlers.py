@@ -1,543 +1,400 @@
-# ui/components/graph_handlers.py - FIXED to work with existing main_page.py layout
+# ui/components/classification_handlers.py
 """
-Graph callback handlers - FIXED to only output to elements that exist in the layout
+Classification callback handlers - FIXED VERSION with allow_duplicate for conflicting outputs
 """
 
 import json
-import traceback
-import pandas as pd
-from datetime import datetime
-from typing import Dict, List, Tuple, Any, Optional
-from dash import Input, Output, State, html, no_update
+from dash import Input, Output, State, html, callback, no_update
 from dash.dependencies import ALL
 
 # Import UI components
-try:
-    from ui.components.graph import create_graph_component
-except ImportError:
-    create_graph_component = None
+from ui.components.classification import create_classification_component
+from ui.themes.style_config import COLORS
+from utils.logging_config import get_logger
 
-# Import processing modules
-try:
-    from services.onion_model import run_onion_model_processing
-    from services.cytoscape_prep import prepare_cytoscape_elements
-    from services.graph_config import GRAPH_PROCESSING_CONFIG, UI_STYLES
-    from utils.constants import REQUIRED_INTERNAL_COLUMNS
-    from services.file_utils import decode_uploaded_csv
-    from services.csv_loader import load_csv_event_log
-except ImportError as e:
-    print(f"⚠️ Import error in graph handlers: {e}")
-    # Set defaults if imports fail
-    GRAPH_PROCESSING_CONFIG = {'num_floors': 1}
-    UI_STYLES = {
-        'hide': {'display': 'none'},
-        'show_block': {'display': 'block'},
-        'show_flex_stats': {'display': 'flex', 'justifyContent': 'space-around'}
-    }
-    REQUIRED_INTERNAL_COLUMNS = {
-        'Timestamp': 'Timestamp (Event Time)',
-        'UserID': 'UserID (Person Identifier)',
-        'DoorID': 'DoorID (Device Name)',
-        'EventType': 'EventType (Access Result)'
-    }
+logger = get_logger(__name__)
 
 
-class GraphHandlers:
-    """Graph handlers that work with the existing main_page.py layout"""
+class ClassificationHandlers:
+    """Handles all classification-related callbacks and business logic"""
     
-    def __init__(self, app):
+    def __init__(self, app, classification_component=None):
         self.app = app
-        if create_graph_component:
-            self.graph_component = create_graph_component()
-        else:
-            self.graph_component = None
-        
-        # Define display names for consistency
-        self.DOORID_COL_DISPLAY = REQUIRED_INTERNAL_COLUMNS['DoorID']
-        self.USERID_COL_DISPLAY = REQUIRED_INTERNAL_COLUMNS['UserID']
-        self.EVENTTYPE_COL_DISPLAY = REQUIRED_INTERNAL_COLUMNS['EventType']
-        self.TIMESTAMP_COL_DISPLAY = REQUIRED_INTERNAL_COLUMNS['Timestamp']
+        self.classification_component = classification_component or create_classification_component()
         
     def register_callbacks(self):
-        """Register graph-related callbacks that match existing layout"""
-        self._register_main_generation_handler()
-        self._register_node_interaction_handlers()
+        """Register classification callbacks with duplicate handling"""
+        self._register_door_table_generation_handler()
+        self._register_door_type_mutual_exclusion_handler() 
+        self._register_floor_slider_display_handler()
+        self._register_classification_toggle_handler()
         
-    def _register_main_generation_handler(self):
-        """Main callback that ONLY outputs to elements that exist in main_page.py"""
+    def _register_classification_toggle_handler(self):
+        """SINGLE callback - controls classification table visibility"""
         @self.app.callback(
+            Output('door-classification-table-container', 'style', allow_duplicate=True),
+            Input('manual-map-toggle', 'value'),
+            prevent_initial_call=False
+        )
+        def toggle_classification_tools(manual_map_choice):
+            """Control classification table visibility"""
+            if manual_map_choice == 'yes':
+                return {'display': 'block'}
+            else:
+                return {'display': 'none'}
+
+    def _register_floor_slider_display_handler(self):
+        """Update floor display when slider value changes - FIXED with allow_duplicate"""
+        @self.app.callback(
+            Output("num-floors-display", "children", allow_duplicate=True),
+            Input("num-floors-input", "value"),
+            prevent_initial_call=False
+        )
+        def update_floor_display(value):
+            """Update the floor display text based on slider value"""
+            if value is None:
+                value = 4
+            
+            floors = int(value)
+            if floors == 1:
+                return "1 floor"
+            else:
+                return f"{floors} floors"
+        
+    def _register_door_table_generation_handler(self):
+        """Generates door classification table when conditions are met"""
+        @self.app.callback(
+            Output('door-classification-table', 'children', allow_duplicate=True),
             [
-                # Core outputs that exist in layout
-                Output('onion-graph', 'elements', allow_duplicate=True),
-                Output('processing-status', 'children', allow_duplicate=True),
-                Output('graph-output-container', 'style', allow_duplicate=True),
-                Output('stats-panels-container', 'style', allow_duplicate=True),
-                Output('yosai-custom-header', 'style', allow_duplicate=True),
-                
-                # Statistics outputs that exist in main_page.py
-                Output('total-access-events-H1', 'children'),
-                Output('event-date-range-P', 'children'),
-                Output('stats-date-range-P', 'children'),
-                Output('stats-days-with-data-P', 'children'),
-                Output('stats-num-devices-P', 'children'),
-                Output('stats-unique-tokens-P', 'children'),
-                Output('most-active-devices-table-body', 'children'),
-                
-                # Storage outputs
-                Output('manual-door-classifications-store', 'data', allow_duplicate=True),
-                Output('column-mapping-store', 'data', allow_duplicate=True)
+                Input('confirm-header-map-button', 'n_clicks'),
+                Input('manual-map-toggle', 'value'),
+                Input('num-floors-input', 'value')
             ],
-            Input('confirm-and-generate-button', 'n_clicks'),
             [
-                State('uploaded-file-store', 'data'),
-                State('column-mapping-store', 'data'),
                 State('all-doors-from-csv-store', 'data'),
-                State({'type': 'floor-select', 'index': ALL}, 'value'),
-                State({'type': 'floor-select', 'index': ALL}, 'id'),
-                State({'type': 'door-type-toggle', 'index': ALL}, 'value'),
-                State({'type': 'door-type-toggle', 'index': ALL}, 'id'),
-                State({'type': 'stairway-toggle', 'index': ALL}, 'value'),
-                State({'type': 'stairway-toggle', 'index': ALL}, 'id'),
-                State({'type': 'security-level-slider', 'index': ALL}, 'value'),
-                State({'type': 'security-level-slider', 'index': ALL}, 'id'),
-                State('num-floors-input', 'value'),
-                State('manual-map-toggle', 'value'),
-                State('csv-headers-store', 'data'),
                 State('manual-door-classifications-store', 'data')
             ],
             prevent_initial_call=True
         )
-        def generate_graph_model(n_clicks, file_contents_b64, stored_column_mapping_json, all_door_ids_from_store,
-                                floor_values, floor_ids, door_type_values, door_type_ids, 
-                                stairway_values, stairway_ids, security_slider_values, security_slider_ids, 
-                                num_floors_from_input, manual_map_choice, csv_headers, existing_saved_classifications_json):
-
-            return self._process_graph_generation(
-                n_clicks, file_contents_b64, stored_column_mapping_json, all_door_ids_from_store,
-                floor_values, floor_ids, door_type_values, door_type_ids, stairway_values, stairway_ids,
-                security_slider_values, security_slider_ids, num_floors_from_input, manual_map_choice,
-                csv_headers, existing_saved_classifications_json
+        def generate_door_classification_table_content(
+            n_clicks_confirm_map, manual_map_choice, num_floors, 
+            all_doors_from_store_data, existing_saved_classifications
+        ):
+            # Only generate if manual mapping is chosen and there are doors
+            if manual_map_choice != 'yes' or not all_doors_from_store_data:
+                logger.info("DEBUG: Not in manual mode or no doors available for classification table.")
+                return []
+                
+            # Handle slider value (ensure it's an integer)
+            num_floors_int = int(num_floors) if num_floors is not None else 4
+                
+            return self._generate_classification_table(
+                all_doors_from_store_data,
+                existing_saved_classifications,
+                num_floors_int
             )
     
-    def _register_node_interaction_handlers(self):
-        """Register node tap handlers"""
+    def _register_door_type_mutual_exclusion_handler(self):
+        """Ensures Entry/Exit and Stairway are mutually exclusive"""
         @self.app.callback(
-            Output('tap-node-data-output', 'children'),
-            Input('onion-graph', 'tapNodeData')
+            [
+                Output({'type': 'door-type-toggle', 'index': ALL}, 'value', allow_duplicate=True),
+                Output({'type': 'stairway-toggle', 'index': ALL}, 'value', allow_duplicate=True)
+            ],
+            [
+                Input({'type': 'door-type-toggle', 'index': ALL}, 'value'),
+                Input({'type': 'stairway-toggle', 'index': ALL}, 'value')
+            ],
+            [
+                State({'type': 'door-type-toggle', 'index': ALL}, 'id'),
+                State({'type': 'stairway-toggle', 'index': ALL}, 'id')
+            ],
+            prevent_initial_call=True
         )
-        def display_tap_node_data(data):
-            """Display node data when tapped"""
-            if not data or data.get('is_layer_parent'):
-                return "Upload CSV, map headers, (optionally classify doors), then Confirm & Generate. Tap a node for its details."
+        def handle_mutual_exclusion(door_type_values, stairway_values, door_type_ids, stairway_ids):
+            """Ensure only one type can be selected per door"""
+            from dash import ctx
             
-            details = [f"🎯 {data.get('label', data.get('id'))}"]
+            if not ctx.triggered:
+                return no_update, no_update
             
-            if 'layer' in data:
-                details.append(f"Layer: {data['layer']}")
-            if 'floor' in data:
-                details.append(f"Floor: {data['floor']}")
-            if data.get('is_entrance'):
-                details.append("🚪 Entry/Exit Point")
-            if data.get('is_stair'):
-                details.append("🏢 Stairway")
-            if 'security_level' in data:
-                security_emoji = {'green': '🟢', 'yellow': '🟡', 'red': '🔴', 'unclassified': '⚪'}.get(data['security_level'], '⚪')
-                details.append(f"{security_emoji} Security: {data['security_level'].title()}")
-            if data.get('is_critical'):
-                details.append("⭐ Critical Device")
-            if 'most_common_next' in data:
-                details.append(f"→ Next: {data['most_common_next']}")
+            # Get the trigger info
+            trigger = ctx.triggered[0]
+            trigger_id = trigger['prop_id']
             
-            return " | ".join(details)
+            # Initialize return values
+            new_door_type_values = list(door_type_values) if door_type_values else [None] * len(door_type_ids)
+            new_stairway_values = list(stairway_values) if stairway_values else [None] * len(stairway_ids)
+            
+            # Find which door was clicked
+            if 'door-type-toggle' in trigger_id:
+                # Entry/Exit was clicked - clear corresponding stairway
+                for i, door_type_id in enumerate(door_type_ids):
+                    if door_type_id['index'] in trigger_id:
+                        # Clear the corresponding stairway toggle
+                        for j, stairway_id in enumerate(stairway_ids):
+                            if stairway_id['index'] == door_type_id['index']:
+                                new_stairway_values[j] = None
+                                break
+                        break
+            
+            elif 'stairway-toggle' in trigger_id:
+                # Stairway was clicked - clear corresponding entry/exit
+                for i, stairway_id in enumerate(stairway_ids):
+                    if stairway_id['index'] in trigger_id:
+                        # Clear the corresponding door-type toggle
+                        for j, door_type_id in enumerate(door_type_ids):
+                            if door_type_id['index'] == stairway_id['index']:
+                                new_door_type_values[j] = None
+                                break
+                        break
+            
+            return new_door_type_values, new_stairway_values
     
-    def _process_graph_generation(self, n_clicks, file_contents_b64, stored_column_mapping_json, all_door_ids_from_store,
-                                 floor_values, floor_ids, door_type_values, door_type_ids, stairway_values, stairway_ids,
-                                 security_slider_values, security_slider_ids, num_floors_from_input, manual_map_choice,
-                                 csv_headers, existing_saved_classifications_json):
-        """Process graph generation with outputs that match the existing layout"""
-        
-        # Initialize default values
-        hide_style = UI_STYLES['hide']
-        show_style = UI_STYLES['show_block']
-        show_stats_style = UI_STYLES['show_flex_stats']
-        
-        # Default return values that match existing layout
-        default_values = self._get_default_outputs(hide_style)
-        
-        if not n_clicks or not file_contents_b64:
-            return default_values
-        
+    def _generate_classification_table(self, all_doors_data, existing_classifications, num_floors):
+        """Generate the door classification table content with new scrollable design"""
         try:
-            # Process classifications
-            result = self._process_classifications(
-                manual_map_choice, all_door_ids_from_store, floor_values, floor_ids,
-                door_type_values, door_type_ids, stairway_values, stairway_ids,
-                security_slider_values, security_slider_ids, csv_headers, existing_saved_classifications_json
-            )
-            
-            current_door_classifications = result['classifications']
-            confirmed_entrances = result['entrances']
-            all_manual_classifications = result['all_classifications']
-            
-            # Process CSV data
-            if decode_uploaded_csv and load_csv_event_log:
-                processed_data = self._process_csv_data(
-                    file_contents_b64, stored_column_mapping_json, csv_headers
-                )
-                
-                if not processed_data['success']:
-                    return self._create_error_response(
-                        processed_data['error'], hide_style, stored_column_mapping_json
-                    )
-                
-                df_final = processed_data['dataframe']
-                
-                # Run onion model processing
-                if run_onion_model_processing:
-                    model_result = self._run_onion_model(
-                        df_final, num_floors_from_input, confirmed_entrances, current_door_classifications
-                    )
-                    
-                    if model_result['success']:
-                        # Calculate metrics that match existing layout
-                        metrics = self._calculate_metrics(
-                            model_result['enriched_df'], 
-                            model_result['device_attrs']
-                        )
-                        
-                        # Create success response
-                        return self._create_success_response(
-                            model_result['graph_elements'], metrics,
-                            show_style, show_stats_style, all_manual_classifications, stored_column_mapping_json
-                        )
-                    else:
-                        return self._create_error_response(
-                            model_result['error'], hide_style, stored_column_mapping_json
-                        )
-                else:
-                    # Demo mode if processing not available
-                    demo_metrics = self._get_demo_metrics()
-                    return self._create_success_response(
-                        [], demo_metrics, show_style, show_stats_style, 
-                        all_manual_classifications, stored_column_mapping_json
-                    )
+            # Parse existing classifications if they're in JSON format
+            if isinstance(existing_classifications, str):
+                existing_classifications = json.loads(existing_classifications)
             else:
-                # Demo mode if CSV processing not available
-                demo_metrics = self._get_demo_metrics()
-                return self._create_success_response(
-                    [], demo_metrics, show_style, show_stats_style, 
-                    all_manual_classifications, stored_column_mapping_json
-                )
-                
-        except Exception as e:
-            traceback.print_exc()
-            return self._create_error_response(
-                str(e), hide_style, stored_column_mapping_json
+                existing_classifications = existing_classifications or {}
+            
+            # Generate scrollable table content using the classification component
+            table_content = self.classification_component.create_scrollable_door_list(
+                doors_to_classify=all_doors_data,
+                existing_classifications=existing_classifications,
+                num_floors=num_floors
             )
-    
-    def _calculate_metrics(self, df, device_attrs=None):
-        """Calculate metrics that match the existing layout structure"""
-        if df is None or df.empty:
-            return self._get_default_metrics()
-        
-        metrics = {}
-        
-        # Basic event statistics
-        metrics['total_events'] = len(df)
-        
-        if self.TIMESTAMP_COL_DISPLAY in df.columns:
-            # Date range
-            min_date = df[self.TIMESTAMP_COL_DISPLAY].min()
-            max_date = df[self.TIMESTAMP_COL_DISPLAY].max()
-            metrics['date_range'] = f"{min_date.strftime('%d.%m.%Y')} - {max_date.strftime('%d.%m.%Y')}"
             
-            # Days with data
-            unique_days = df[self.TIMESTAMP_COL_DISPLAY].dt.date.nunique()
-            metrics['days_with_data'] = f"{unique_days} days"
-        else:
-            metrics['date_range'] = "N/A"
-            metrics['days_with_data'] = "N/A"
+            logger.info(f"DEBUG: Generated scrollable classification table with {len(all_doors_data)} doors.")
+            return table_content
+            
+        except Exception as e:
+            logger.info(f"Error generating classification table: {e}")
+            return [html.P(f"Error generating classification table: {str(e)}", 
+                          style={'color': 'red', 'textAlign': 'center'})]
+
+    def extract_current_classifications_from_inputs(self, floor_values, door_type_values, stairway_values, 
+                                                   security_slider_values, all_door_ids):
+        """Extract current classification values from form inputs - updated for new structure"""
+        classifications = {}
         
-        # Device statistics
-        if self.DOORID_COL_DISPLAY in df.columns:
-            metrics['num_devices'] = df[self.DOORID_COL_DISPLAY].nunique()
-            # Most active devices
-            device_counts = df[self.DOORID_COL_DISPLAY].value_counts().head(5)
-            metrics['most_active_devices'] = device_counts
-        else:
-            metrics['num_devices'] = 0
-            metrics['most_active_devices'] = pd.Series()
+        if not all_door_ids:
+            return classifications
         
-        # User statistics
-        if self.USERID_COL_DISPLAY in df.columns:
-            metrics['unique_tokens'] = df[self.USERID_COL_DISPLAY].nunique()
-        else:
-            metrics['unique_tokens'] = 0
+        # Create mappings for each door
+        for i, door_id in enumerate(all_door_ids):
+            # Get floor value
+            floor = floor_values[i] if floor_values and i < len(floor_values) else '1'
+            
+            # Determine door type (mutually exclusive)
+            door_type = 'none'
+            if door_type_values and i < len(door_type_values) and door_type_values[i] == 'entry_exit':
+                door_type = 'entry_exit'
+            elif stairway_values and i < len(stairway_values) and stairway_values[i] == 'stairway':
+                door_type = 'stairway'
+            
+            # Get security level (0-10 range)
+            security_level = security_slider_values[i] if security_slider_values and i < len(security_slider_values) else 5
+            
+            # Build classification
+            classifications[door_id] = {
+                'floor': str(floor),
+                'door_type': door_type,
+                'is_ee': door_type == 'entry_exit',
+                'is_stair': door_type == 'stairway',
+                'security_level': int(security_level),
+                'security': self._map_security_level_to_category(security_level)
+            }
         
-        return metrics
+        return classifications
     
-    def _get_default_metrics(self):
-        """Default metrics"""
+    def _map_security_level_to_category(self, level):
+        """Map 0-10 security level to category"""
+        level = int(level)
+        if level <= 2:
+            return 'unclassified'
+        elif level <= 5:
+            return 'green'
+        elif level <= 7:
+            return 'yellow'
+        else:
+            return 'red'
+    
+    def get_classification_summary(self, classifications):
+        """Get a summary of current classifications"""
+        if not classifications:
+            return {
+                'total_doors': 0,
+                'entrances': 0,
+                'stairways': 0,
+                'high_security': 0,
+                'avg_security_level': 0
+            }
+        
+        total_doors = len(classifications)
+        entrances = sum(1 for c in classifications.values() if c.get('is_ee', False))
+        stairways = sum(1 for c in classifications.values() if c.get('is_stair', False))
+        high_security = sum(1 for c in classifications.values() if c.get('security_level', 0) >= 8)
+        avg_security = sum(c.get('security_level', 0) for c in classifications.values()) / total_doors if total_doors > 0 else 0
+        
         return {
-            'total_events': 0,
-            'date_range': "N/A",
-            'days_with_data': "0 days",
-            'num_devices': 0,
-            'unique_tokens': 0,
-            'most_active_devices': pd.Series()
+            'total_doors': total_doors,
+            'entrances': entrances,
+            'stairways': stairways,
+            'high_security': high_security,
+            'avg_security_level': round(avg_security, 1)
         }
-    
-    def _get_demo_metrics(self):
-        """Demo metrics for when processing is not available"""
-        return {
-            'total_events': 1234,
-            'date_range': "01.01.2024 - 31.01.2024",
-            'days_with_data': "31 days",
-            'num_devices': 42,
-            'unique_tokens': 156,
-            'most_active_devices': pd.Series({
-                'Door_Main_Entrance': 234,
-                'Door_Back_Exit': 198,
-                'Door_Emergency_1': 145,
-                'Door_Loading_Bay': 123,
-                'Door_Side_Access': 98
-            })
-        }
-    
-    def _get_default_outputs(self, hide_style):
-        """Get default values that match existing layout outputs"""
-        return (
-            # Core outputs
-            [], "Missing data or button not clicked.", hide_style, hide_style, hide_style,
-            
-            # Statistics outputs that exist in main_page.py
-            "0", "N/A", "N/A", "0 days", "0 devices", "0 unique tokens",
-            [html.Tr([html.Td("N/A", colSpan=2)])],
-            
-            # Storage
-            no_update, no_update
-        )
-    
-    def _create_success_response(self, graph_elements, metrics, show_style, show_stats_style, 
-                               all_manual_classifications, stored_column_mapping_json):
-        """Create success response that matches existing layout"""
-        
-        # Format most active devices table
-        table_rows = []
-        if not metrics['most_active_devices'].empty:
-            for device, count in metrics['most_active_devices'].items():
-                device_str = str(device)
-                device_display = device_str[:20] + "..." if len(device_str) > 20 else device_str
-                table_rows.append(
-                    html.Tr([
-                        html.Td(device_display, style={'fontSize': '0.8rem'}),
-                        html.Td(f"{count:,}", style={'textAlign': 'right', 'fontSize': '0.8rem'})
-                    ])
-                )
+
+    def _get_validation_message(self, is_complete, missing_count, total_doors):
+        """Get user-friendly validation message"""
+        if is_complete:
+            return f"✓ All {total_doors} doors classified successfully"
+        elif missing_count == 1:
+            return f"⚠️ 1 door needs classification"
         else:
-            table_rows = [html.Tr([html.Td("No data", colSpan=2, style={'textAlign': 'center'})])]
-        
-        return (
-            # Core outputs
-            graph_elements, "Analysis complete! Explore the visualization above.", 
-            show_style, show_stats_style, show_style,
-            
-            # Statistics outputs that match main_page.py exactly
-            str(metrics['total_events']),                    # total-access-events-H1
-            metrics['date_range'],                           # event-date-range-P
-            metrics['date_range'],                           # stats-date-range-P (same as event)
-            metrics['days_with_data'],                       # stats-days-with-data-P
-            f"{metrics['num_devices']} devices",             # stats-num-devices-P
-            f"{metrics['unique_tokens']} unique tokens",     # stats-unique-tokens-P
-            table_rows,                                      # most-active-devices-table-body
-            
-            # Storage
-            json.dumps(all_manual_classifications) if all_manual_classifications else no_update,
-            stored_column_mapping_json
-        )
+            return f"⚠️ {missing_count} doors need classification"
     
-    def _create_error_response(self, error_msg, hide_style, stored_column_mapping_json):
-        """Create error response that matches existing layout"""
-        return (
-            # Core outputs
-            [], f"Error: {error_msg}", hide_style, hide_style, hide_style,
-            
-            # Statistics outputs
-            "0", "Error", "Error", "Error", "Error", "Error",
-            [html.Tr([html.Td("Error occurred", colSpan=2, style={'textAlign': 'center', 'color': 'red'})])],
-            
-            # Storage
-            no_update, stored_column_mapping_json
-        )
+    def export_classifications(self, classifications):
+        """Export classifications in a standardized format"""
+        if not classifications:
+            return {}
+        
+        exported = {}
+        for door_id, classification in classifications.items():
+            exported[door_id] = {
+                'floor': str(classification.get('floor', '1')),
+                'door_type': str(classification.get('door_type', 'none')),
+                'is_ee': bool(classification.get('is_ee', False)),
+                'is_stair': bool(classification.get('is_stair', False)),
+                'security_level': int(classification.get('security_level', 5)),
+                'security': str(classification.get('security', 'green'))
+            }
+        
+        return exported
     
-    def _process_classifications(self, manual_map_choice, all_door_ids_from_store, floor_values, floor_ids,
-                               door_type_values, door_type_ids, stairway_values, stairway_ids,
-                               security_slider_values, security_slider_ids, csv_headers, existing_saved_classifications_json):
-        """Process door classifications from form inputs"""
+    def import_classifications(self, classification_data, all_doors):
+        """Import and validate classification data"""
+        if not classification_data or not all_doors:
+            return {}
         
-        if isinstance(existing_saved_classifications_json, str):
-            all_manual_classifications = json.loads(existing_saved_classifications_json)
-        else:
-            all_manual_classifications = existing_saved_classifications_json or {}
-        
-        current_door_classifications = {}
-        confirmed_entrances = []
-        
-        if manual_map_choice == 'yes' and all_door_ids_from_store:
-            # Build mappings from form data
-            floor_map = {f_id['index']: f_val for f_id, f_val in zip(floor_ids or [], floor_values or [])}
-            
-            # Handle door type toggles (entry/exit)
-            door_type_map = {}
-            for dt_id, dt_val in zip(door_type_ids or [], door_type_values or []):
-                door_type_map[dt_id['index']] = 'entry_exit' if dt_val == 'entry_exit' else 'none'
-            
-            # Handle stairway toggles
-            stairway_map = {}
-            for st_id, st_val in zip(stairway_ids or [], stairway_values or []):
-                stairway_map[st_id['index']] = 'stairway' if st_val == 'stairway' else 'none'
-            
-            # Security level mapping (0-10 to category)
-            security_map = {}
-            for s_id, s_val in zip(security_slider_ids or [], security_slider_values or []):
-                if s_val is not None:
-                    if s_val <= 2:
-                        security_cat = 'unclassified'
-                    elif s_val <= 5:
-                        security_cat = 'green'
-                    elif s_val <= 7:
-                        security_cat = 'yellow'
-                    else:
-                        security_cat = 'red'
-                    security_map[s_id['index']] = security_cat
-            
-            # Build classifications for each door
-            for door_id in all_door_ids_from_store:
-                floor = floor_map.get(door_id, '1')
-                door_type = door_type_map.get(door_id, 'none')
-                stairway_type = stairway_map.get(door_id, 'none')
-                security = security_map.get(door_id, 'green')
-                
-                # Determine final door type (entry/exit takes precedence, then stairway)
-                if door_type == 'entry_exit':
-                    is_ee = True
-                    is_stair = False
-                elif stairway_type == 'stairway':
-                    is_ee = False
-                    is_stair = True
-                else:
-                    is_ee = False
-                    is_stair = False
-                
-                current_door_classifications[door_id] = {
-                    'floor': str(floor),
-                    'is_ee': is_ee,
-                    'is_stair': is_stair,
-                    'security': security
+        imported = {}
+        for door_id in all_doors:
+            if door_id in classification_data:
+                # Import existing classification
+                imported[door_id] = classification_data[door_id]
+            else:
+                # Set defaults for missing doors
+                imported[door_id] = {
+                    'floor': '1',
+                    'door_type': 'none',
+                    'is_ee': False,
+                    'is_stair': False,
+                    'security_level': 5,
+                    'security': 'green'
                 }
-                
-                if is_ee:
-                    confirmed_entrances.append(door_id)
-            
-            # Save classifications
-            if csv_headers:
-                key = json.dumps(sorted(csv_headers))
-                all_manual_classifications[key] = current_door_classifications
+        
+        return imported
+
+
+class ClassificationDataProcessor:
+    """Processes classification data for use in other components"""
+    
+    def __init__(self, classification_component):
+        self.classification_component = classification_component
+        
+    def process_for_onion_model(self, classifications):
+        """Process classifications for onion model processing"""
+        if not classifications:
+            return {}, []
+        
+        # Extract confirmed entrances
+        confirmed_entrances = [
+            door_id for door_id, classification in classifications.items()
+            if classification.get('is_ee', False)
+        ]
+        
+        # Prepare detailed door classifications
+        detailed_classifications = {}
+        for door_id, classification in classifications.items():
+            detailed_classifications[door_id] = {
+                'floor': str(classification.get('floor', '1')),
+                'is_ee': bool(classification.get('is_ee', False)),
+                'is_stair': bool(classification.get('is_stair', False)),
+                'security': str(classification.get('security', 'green')),
+                'security_level': int(classification.get('security_level', 5))
+            }
+        
+        return detailed_classifications, confirmed_entrances
+    
+    def get_entrance_summary(self, classifications):
+        """Get summary of entrance/exit classifications"""
+        if not classifications:
+            return {'count': 0, 'doors': []}
+        
+        entrances = [
+            door_id for door_id, classification in classifications.items()
+            if classification.get('is_ee', False)
+        ]
         
         return {
-            'classifications': current_door_classifications,
-            'entrances': confirmed_entrances,
-            'all_classifications': all_manual_classifications
+            'count': len(entrances),
+            'doors': sorted(entrances)
         }
     
-    def _process_csv_data(self, file_contents_b64, stored_column_mapping_json, csv_headers):
-        """Process CSV data for onion model"""
-        try:
-            # Decode CSV
-            csv_io_for_loader = decode_uploaded_csv(file_contents_b64)
-            
-            # Get column mapping
-            if isinstance(stored_column_mapping_json, str):
-                all_column_mappings = json.loads(stored_column_mapping_json)
-            else:
-                all_column_mappings = stored_column_mapping_json or {}
-            
-            header_key = json.dumps(sorted(csv_headers)) if csv_headers else None
-            stored_map = all_column_mappings.get(header_key) if header_key else None
-            
-            if not stored_map or set(stored_map.values()) < set(REQUIRED_INTERNAL_COLUMNS.keys()):
-                raise ValueError("No valid column mapping found. Please ensure all required columns are mapped.")
-            
-            # Prepare mapping for loader
-            mapping_for_loader_csv_to_display = {}
-            for csv_col_name, internal_key in stored_map.items():
-                if internal_key in REQUIRED_INTERNAL_COLUMNS:
-                    display_name = REQUIRED_INTERNAL_COLUMNS[internal_key]
-                    mapping_for_loader_csv_to_display[csv_col_name] = display_name
-                else:
-                    mapping_for_loader_csv_to_display[csv_col_name] = internal_key
-            
-            # Load DataFrame
-            df_final = load_csv_event_log(csv_io_for_loader, mapping_for_loader_csv_to_display)
-            
-            if df_final is None:
-                raise ValueError("Failed to load CSV for processing.")
-            
-            # Validate required columns
-            missing_display_columns = [
-                display_name for internal_key, display_name in REQUIRED_INTERNAL_COLUMNS.items()
-                if display_name not in df_final.columns
-            ]
-            
-            if missing_display_columns:
-                raise ValueError(f"Missing required columns: {', '.join(missing_display_columns)}")
-            
-            return {'success': True, 'dataframe': df_final}
-            
-        except Exception as e:
-            return {'success': False, 'error': str(e)}
+    def get_security_distribution(self, classifications):
+        """Get distribution of security levels"""
+        if not classifications:
+            return {}
+        
+        # Distribution by category
+        category_distribution = {}
+        for classification in classifications.values():
+            security_category = classification.get('security', 'green')
+            category_distribution[security_category] = category_distribution.get(security_category, 0) + 1
+        
+        # Distribution by numeric level
+        level_distribution = {}
+        for classification in classifications.values():
+            security_level = classification.get('security_level', 5)
+            level_distribution[security_level] = level_distribution.get(security_level, 0) + 1
+        
+        return {
+            'by_category': category_distribution,
+            'by_level': level_distribution
+        }
     
-    def _run_onion_model(self, df_final, num_floors_from_input, confirmed_entrances, current_door_classifications):
-        """Run the onion model processing"""
-        try:
-            config = GRAPH_PROCESSING_CONFIG.copy()
-            config['num_floors'] = num_floors_from_input or GRAPH_PROCESSING_CONFIG['num_floors']
-
-            enriched_df, device_attrs, path_viz, all_paths = run_onion_model_processing(
-                df_final.copy(),
-                config,
-                confirmed_official_entrances=confirmed_entrances,
-                detailed_door_classifications=current_door_classifications
-            )
-            
-            if enriched_df is not None:
-                # Generate graph elements
-                if prepare_cytoscape_elements:
-                    nodes, edges = prepare_cytoscape_elements(device_attrs, path_viz, all_paths)
-                    graph_elements = nodes + edges
-                else:
-                    graph_elements = []
-                
-                return {
-                    'success': True,
-                    'graph_elements': graph_elements,
-                    'enriched_df': enriched_df,
-                    'device_attrs': device_attrs,
-                    'path_viz': path_viz,
-                    'all_paths': all_paths
-                }
+    def get_door_type_distribution(self, classifications):
+        """Get distribution of door types"""
+        if not classifications:
+            return {}
+        
+        distribution = {
+            'entry_exit': 0,
+            'stairway': 0,
+            'regular': 0
+        }
+        
+        for classification in classifications.values():
+            door_type = classification.get('door_type', 'none')
+            if door_type == 'entry_exit':
+                distribution['entry_exit'] += 1
+            elif door_type == 'stairway':
+                distribution['stairway'] += 1
             else:
-                return {'success': False, 'error': "Error in processing: incomplete result."}
-                
-        except Exception as e:
-            return {'success': False, 'error': str(e)}
+                distribution['regular'] += 1
+        
+        return distribution
 
 
-# Factory functions for backward compatibility
-def create_graph_handlers(app):
-    """Factory function to create graph handlers"""
-    return GraphHandlers(app)
+# Factory functions for easy handler creation
+def create_classification_handlers(app, classification_component=None):
+    """Factory function to create classification handlers"""
+    return ClassificationHandlers(app, classification_component)
 
-def create_enhanced_graph_handlers(app):
-    """Alias for backward compatibility"""
-    return GraphHandlers(app)
+def create_classification_data_processor(classification_component=None):
+    """Factory function to create data processor"""
+    if classification_component is None:
+        classification_component = create_classification_component()
+    return ClassificationDataProcessor(classification_component)

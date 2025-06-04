@@ -75,7 +75,7 @@ class EnhancedGraphHandlers:
                 # Enhanced statistics outputs
                 Output('total-access-events-H1', 'children'),
                 Output('event-date-range-P', 'children'),
-                Output('avg-events-per-day', 'children'),
+                #Output('avg-events-per-day', 'children'),
                 Output('peak-activity-day', 'children'),
                 
                 # User analytics outputs

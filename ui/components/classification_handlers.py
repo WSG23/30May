@@ -1,7 +1,6 @@
 # ui/components/classification_handlers.py
 """
-Classification callback handlers - Updated with modern slider support
-FIXED VERSION with proper indentation and structure
+Classification callback handlers - FIXED VERSION with allow_duplicate for conflicting outputs
 """
 
 import json
@@ -24,21 +23,17 @@ class ClassificationHandlers:
         self.classification_component = classification_component or create_classification_component()
         
     def register_callbacks(self):
-        """Register ONLY non-conflicting callbacks"""
+        """Register classification callbacks with duplicate handling"""
         self._register_door_table_generation_handler()
         self._register_door_type_mutual_exclusion_handler() 
         self._register_floor_slider_display_handler()
-        
-        # ONLY ONE callback should control the classification table visibility
         self._register_classification_toggle_handler()
         
-        # REMOVE any other callbacks that might be syncing components
-    
     def _register_classification_toggle_handler(self):
-        """SINGLE callback - no conflicts"""
+        """SINGLE callback - controls classification table visibility"""
         @self.app.callback(
-            Output('door-classification-table-container', 'style'),
-            Input('manual-map-toggle', 'value'),  # ONLY use this input
+            Output('door-classification-table-container', 'style', allow_duplicate=True),
+            Input('manual-map-toggle', 'value'),
             prevent_initial_call=False
         )
         def toggle_classification_tools(manual_map_choice):
@@ -47,35 +42,11 @@ class ClassificationHandlers:
                 return {'display': 'block'}
             else:
                 return {'display': 'none'}
-                
-    def _register_toggle_sync_handler(self):
-        """Sync the visual switch with the hidden radio items"""
-        @self.app.callback(
-            Output('manual-map-toggle', 'value'),
-            Input('manual-classification-switch', 'value'),
-            prevent_initial_call=False
-        )
-        def sync_switch_to_radio(switch_value):
-            """Convert switch boolean to radio string value"""
-            result = 'yes' if switch_value else 'no'
-            print(f"DEBUG: Switch value {switch_value} -> Radio value {result}")
-            return result
-        
-        @self.app.callback(
-            Output('manual-classification-switch', 'value'),
-            Input('manual-map-toggle', 'value'),
-            prevent_initial_call=False
-        )
-        def sync_radio_to_switch(radio_value):
-            """Convert radio string to switch boolean value"""
-            result = radio_value == 'yes'
-            print(f"DEBUG: Radio value {radio_value} -> Switch value {result}")
-            return result
 
     def _register_floor_slider_display_handler(self):
-        """Update floor display when slider value changes"""
+        """Update floor display when slider value changes - FIXED with allow_duplicate"""
         @self.app.callback(
-            Output("num-floors-display", "children"),
+            Output("num-floors-display", "children", allow_duplicate=True),
             Input("num-floors-input", "value"),
             prevent_initial_call=False
         )
@@ -93,11 +64,11 @@ class ClassificationHandlers:
     def _register_door_table_generation_handler(self):
         """Generates door classification table when conditions are met"""
         @self.app.callback(
-            Output('door-classification-table', 'children'),
+            Output('door-classification-table', 'children', allow_duplicate=True),
             [
                 Input('confirm-header-map-button', 'n_clicks'),
                 Input('manual-map-toggle', 'value'),
-                Input('num-floors-input', 'value')  # Updated to handle slider
+                Input('num-floors-input', 'value')
             ],
             [
                 State('all-doors-from-csv-store', 'data'),

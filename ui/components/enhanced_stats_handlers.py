@@ -61,7 +61,7 @@ class EnhancedStatsHandlers:
                 Output('enhanced-event-date-range-P', 'children'),
                 Output('events-trend-indicator', 'children'),
                 Output('events-trend-indicator', 'style'),
-                Output('avg-events-per-day', 'children'),
+                #Output('avg-events-per-day', 'children'),
                 
                 # Enhanced statistics panel
                 Output('enhanced-stats-date-range-P', 'children'),

@@ -1,636 +1,552 @@
-# ui/pages/main_page.py - LAYOUT ONLY (NO CALLBACKS)
+# ui/pages/main_page.py - FIXED VERSION - Removes UI Conflicts
 
 """
-Main page layout - CONTAINS ONLY LAYOUTS, NO CALLBACKS
-All callbacks are handled by individual handler classes in app.py
+Main page layout - STREAMLINED AND CONFLICT-FREE
+All callbacks are handled by unified handler in app.py
 """
 
-from dash import Dash, html, dcc
+from dash import html, dcc
 import dash_cytoscape as cyto
-import dash_bootstrap_components as dbc
 
-# Import your theme constants
-try:
-    from ui.themes.style_config import COLORS, UI_VISIBILITY, UI_COMPONENTS, BORDER_RADIUS, SHADOWS
-except ImportError:
-    # Fallback colors if theme not available
-    COLORS = {
-        'primary': '#1B2A47',
-        'accent': '#2196F3',
-        'success': '#2DBE6C',
-        'warning': '#FFB020',
-        'critical': '#E02020',
-        'background': '#0F1419',
-        'surface': '#1A2332',
-        'border': '#2D3748',
-        'text_primary': '#F7FAFC',
-        'text_secondary': '#E2E8F0',
-        'text_tertiary': '#A0AEC0',
-    }
+# Fallback colors if theme not available
+COLORS = {
+    'primary': '#1B2A47',
+    'accent': '#2196F3',
+    'success': '#2DBE6C',
+    'warning': '#FFB020',
+    'critical': '#E02020',
+    'background': '#0F1419',
+    'surface': '#1A2332',
+    'border': '#2D3748',
+    'text_primary': '#F7FAFC',
+    'text_secondary': '#E2E8F0',
+    'text_tertiary': '#A0AEC0',
+}
 
-# Try to import constants; fallback if missing
-try:
-    from config import REQUIRED_INTERNAL_COLUMNS
-except ImportError:
-    try:
-        from utils.constants import REQUIRED_INTERNAL_COLUMNS
-    except ImportError:
-        # Fallback constants
-        REQUIRED_INTERNAL_COLUMNS = {
-            'Timestamp': 'Timestamp (Event Time)',
-            'UserID': 'UserID (Person Identifier)',
-            'DoorID': 'DoorID (Device Name)',
-            'EventType': 'EventType (Access Result)'
-        }
+# Fallback constants
+REQUIRED_INTERNAL_COLUMNS = {
+    'Timestamp': 'Timestamp (Event Time)',
+    'UserID': 'UserID (Person Identifier)',
+    'DoorID': 'DoorID (Device Name)',
+    'EventType': 'EventType (Access Result)'
+}
 
-
-def create_main_layout(app_instance, main_logo_path, icon_upload_default, upload_component=None):
+def create_main_layout(app_instance, main_logo_path, icon_upload_default):
     """
-    Creates the main application layout - LAYOUT ONLY, NO CALLBACKS
-    All callbacks are registered separately in app.py via handler classes
+    Creates the main application layout - STREAMLINED VERSION
     """
-    # If no upload component provided, create fallback
-    if upload_component is None:
-        upload_component = _create_fallback_upload_component(app_instance, icon_upload_default)
-
+    
     layout = html.Div(
         children=[
             # Main Header Bar
             create_main_header(main_logo_path),
 
-            # Upload Section
-            create_upload_section(upload_component),
+            # Upload Section - SIMPLIFIED
+            create_upload_section(icon_upload_default),
 
-            # Interactive Setup Container: Mapping + Classification + Generate Button
-            create_interactive_setup_container_fixed(),
+            # Interactive Setup Container - SIMPLIFIED
+            create_interactive_setup_container(),
 
-            # Processing Status Indicator (hidden until needed)
-            create_processing_status(),
+            # Processing Status
+            html.Div(
+                id='processing-status',
+                style={
+                    'marginTop': '20px',
+                    'color': COLORS['accent'],
+                    'textAlign': 'center',
+                    'fontSize': '1rem',
+                    'fontWeight': '500'
+                }
+            ),
 
-            # Custom Header (HIDDEN until after processing)
-            create_custom_header_hidden(main_logo_path),
+            # Results Section - HIDDEN until processing
+            create_results_section(),
 
-            # Statistics Panels (HIDDEN until after processing)
-            create_stats_panels_hidden(),
-
-            # Graph Output Container (HIDDEN until after processing)
-            create_graph_container_hidden(),
-
-            # Data Stores (dcc.Store elements)
+            # Data Stores
             create_data_stores(),
-
-            # REMOVED: Analytics sections that were causing conflicts
-            # These should be created in the enhanced app if needed:
-            # - analytics-section
-            # - charts-section  
-            # - export-section
         ],
-        style=get_main_container_style()
+        style={
+            'backgroundColor': COLORS['background'],
+            'padding': '20px',
+            'minHeight': '100vh',
+            'fontFamily': 'Inter, system-ui, sans-serif'
+        }
     )
 
     return layout
 
-
-def create_custom_header_hidden(main_logo_path):
-    """Custom header that is HIDDEN by default - only shown after processing"""
+def create_main_header(main_logo_path):
+    """Creates the main header bar"""
     return html.Div(
-        id='yosai-custom-header',
-        style={'display': 'none'},
-        children=[
-            html.Div([
-                html.Img(
-                    src=main_logo_path, 
-                    style={
-                        'height': '24px',
-                        'marginRight': '10px',
-                        'verticalAlign': 'middle'
-                    }
-                ),
-                html.Span(
-                    "Data Overview",
-                    style={
-                        'fontSize': '18px',
-                        'fontWeight': '400',
-                        'color': '#ffffff',
-                        'fontFamily': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-                        'verticalAlign': 'middle'
-                    }
-                )
-            ], style={
-                'display': 'flex',
-                'alignItems': 'center',
-                'justifyContent': 'center',
-                'padding': '16px 0',
-                'margin': '0'
-            })
-        ]
-    )
-
-
-def create_stats_panels_hidden():
-    """Statistics panels that are HIDDEN by default - only shown after processing"""
-    panel_style_base = {
-        'flex': '1',
-        'padding': '20px',
-        'margin': '0 10px',
-        'backgroundColor': COLORS['surface'],
-        'borderRadius': '8px',
-        'textAlign': 'center',
-        'boxShadow': '2px 2px 5px rgba(0,0,0,0.2)'
-    }
-    
-    return html.Div(
-        id='stats-panels-container',
-        style={'display': 'none'},
-        children=[
-            # Access Events Panel
-            html.Div([
-                html.H3("Access events", style={'color': COLORS['text_primary']}),
-                html.H1(id="total-access-events-H1", style={'color': COLORS['text_primary']}),
-                html.P(id="event-date-range-P", style={'color': COLORS['text_secondary']})
-            ], style={**panel_style_base, 'borderLeft': f'5px solid {COLORS["accent"]}'}),
-            
-            # Statistics Panel
-            html.Div([
-                html.H3("Statistics", style={'color': COLORS['text_primary']}),
-                html.P(id="stats-date-range-P", style={'color': COLORS['text_secondary']}),
-                html.P(id="stats-days-with-data-P", style={'color': COLORS['text_secondary']}),
-                html.P(id="stats-num-devices-P", style={'color': COLORS['text_secondary']}),
-                html.P(id="stats-unique-tokens-P", style={'color': COLORS['text_secondary']})
-            ], style={**panel_style_base, 'borderLeft': f'5px solid {COLORS["warning"]}'}),
-            
-            # Active Devices Panel
-            html.Div([
-                html.H3("Most active devices", style={'color': COLORS['text_primary']}),
-                html.Table([
-                    html.Thead(html.Tr([
-                        html.Th("DEVICE", style={'color': COLORS['text_primary']}),
-                        html.Th("EVENTS", style={'color': COLORS['text_primary']})
-                    ])),
-                    html.Tbody(id='most-active-devices-table-body')
-                ])
-            ], style={**panel_style_base, 'borderLeft': f'5px solid {COLORS["critical"]}'})
-        ]
-    )
-
-
-def create_graph_container_hidden():
-    """Graph container that is HIDDEN by default - only shown after processing"""
-    try:
-        from ui.themes.graph_styles import (
-            centered_graph_box_style,
-            cytoscape_inside_box_style,
-            tap_node_data_centered_style,
-            actual_default_stylesheet_for_graph
-        )
-    except ImportError:
-        # Fallback styles
-        centered_graph_box_style = {
-            'width': '90%',
-            'margin': '0 auto',
-            'padding': '20px',
+        style={
+            'display': 'flex',
+            'alignItems': 'center',
+            'justifyContent': 'center',
+            'padding': '20px 30px',
             'backgroundColor': COLORS['surface'],
-            'borderRadius': '8px'
-        }
-        cytoscape_inside_box_style = {
-            'width': '100%',
-            'height': '600px'
-        }
-        tap_node_data_centered_style = {
-            'textAlign': 'center',
-            'padding': '10px',
-            'color': COLORS['text_primary']
-        }
-        actual_default_stylesheet_for_graph = []
-
-    return html.Div(
-        id='graph-output-container',
-        style={'display': 'none'},
+            'borderBottom': f'1px solid {COLORS["border"]}',
+            'marginBottom': '30px',
+            'borderRadius': '8px',
+        },
         children=[
-            html.H2(
-                "Area Layout Model",
-                id="area-layout-model-title",
+            html.Img(src=main_logo_path, style={'height': '40px', 'marginRight': '15px'}),
+            html.H1(
+                "Enhanced Analytics Dashboard",
                 style={
-                    'textAlign': 'center',
+                    'fontSize': '1.8rem',
+                    'margin': '0',
                     'color': COLORS['text_primary'],
-                    'marginBottom': '20px',
-                    'fontSize': '1.8rem'
+                    'fontWeight': '600'
                 }
-            ),
-            html.Div(
-                id='cytoscape-graphs-area',
-                style=centered_graph_box_style,
-                children=[
-                    cyto.Cytoscape(
-                        id='onion-graph',
-                        layout={
-                            'name': 'cose',
-                            'idealEdgeLength': 100,
-                            'nodeOverlap': 20,
-                            'refresh': 20,
-                            'fit': True,
-                            'padding': 30,
-                            'randomize': False,
-                            'componentSpacing': 100,
-                            'nodeRepulsion': 400000,
-                            'edgeElasticity': 100,
-                            'nestingFactor': 5,
-                            'gravity': 80,
-                            'numIter': 1000,
-                            'coolingFactor': 0.95,
-                            'minTemp': 1.0
-                        },
-                        style=cytoscape_inside_box_style,
-                        elements=[],
-                        stylesheet=actual_default_stylesheet_for_graph
-                    )
-                ]
-            ),
-            html.Pre(
-                id='tap-node-data-output',
-                style=tap_node_data_centered_style,
-                children="Upload CSV, map headers, (optionally classify doors), then Confirm & Generate. Tap a node for its details."
             )
         ]
     )
 
+def create_upload_section(icon_upload_default):
+    """Upload section - SIMPLIFIED"""
+    return html.Div([
+        dcc.Upload(
+            id='upload-data',
+            children=html.Div([
+                html.Img(
+                    id='upload-icon',
+                    src=icon_upload_default,
+                    style={
+                        'width': '96px',
+                        'height': '96px',
+                        'marginBottom': '15px',
+                        'opacity': '0.8'
+                    }
+                ),
+                html.H3(
+                    "Drop your CSV file here",
+                    style={
+                        'margin': '0',
+                        'fontSize': '1.2rem',
+                        'fontWeight': '600',
+                        'color': COLORS['text_primary'],
+                        'marginBottom': '5px'
+                    }
+                ),
+                html.P(
+                    "or click to browse",
+                    style={
+                        'margin': '0',
+                        'fontSize': '0.9rem',
+                        'color': COLORS['text_secondary'],
+                    }
+                ),
+            ], style={'textAlign': 'center', 'padding': '20px'}),
+            style={
+                'width': '70%',
+                'maxWidth': '600px',
+                'minHeight': '180px',
+                'borderRadius': '12px',
+                'textAlign': 'center',
+                'margin': '0 auto 30px auto',
+                'display': 'flex',
+                'alignItems': 'center',
+                'justifyContent': 'center',
+                'cursor': 'pointer',
+                'transition': 'all 0.3s ease',
+                'border': f'2px dashed {COLORS["border"]}',
+                'backgroundColor': COLORS['surface'],
+            },
+            multiple=False,
+            accept='.csv'
+        )
+    ])
 
-def create_interactive_setup_container_fixed():
-    """Creates the interactive‐setup container - initially hidden until file upload"""
+def create_interactive_setup_container():
+    """Interactive setup container - SIMPLIFIED"""
     return html.Div(
         id='interactive-setup-container',
         style={'display': 'none'},
         children=[
             # Step 1: CSV Header Mapping
-            create_mapping_section_with_fallback(),
+            create_mapping_section(),
 
-            # Step 2 & 3: Facility Setup + Door Classification
+            # Step 2: Facility Setup
+            create_facility_setup(),
+
+            # Step 3: Classification (conditional)
             create_classification_section(),
 
-            # Final "Generate" Button
+            # Generate Button
             html.Button(
-                'Confirm Selections & Generate Onion Model',
+                'Confirm Selections & Generate Analysis',
                 id='confirm-and-generate-button',
                 n_clicks=0,
                 style={
-                    'marginTop': '20px',
                     'width': '100%',
-                    'padding': '12px',
+                    'maxWidth': '400px',
+                    'margin': '30px auto',
+                    'display': 'block',
+                    'padding': '15px 25px',
                     'backgroundColor': COLORS['accent'],
                     'color': 'white',
                     'border': 'none',
-                    'borderRadius': '5px',
-                    'fontSize': '1rem',
-                    'fontWeight': 'bold',
+                    'borderRadius': '8px',
+                    'fontSize': '1.1rem',
+                    'fontWeight': '600',
+                    'cursor': 'pointer',
+                    'transition': 'all 0.3s ease'
+                }
+            )
+        ]
+    )
+
+def create_mapping_section():
+    """Step 1: Map CSV Headers (wrapped in mapping-ui-section for callback control)"""
+    return html.Div(
+        id='mapping-ui-section',  # ✅ Enables callback to toggle visibility
+        style={
+            'display': 'none',  # Hidden by default until needed
+            'backgroundColor': COLORS['surface'],
+            'padding': '25px',
+            'borderRadius': '8px',
+            'marginBottom': '20px',
+            'border': f'1px solid {COLORS["border"]}'
+        },
+        children=[
+            html.H4(
+                "Step 1: Map CSV Headers",
+                style={
+                    'color': COLORS['text_primary'],
+                    'fontSize': '1.3rem',
+                    'marginBottom': '15px',
+                    'textAlign': 'center'
+                }
+            ),
+            html.P(
+                "Map your CSV columns to the required fields below:",
+                style={
+                    'color': COLORS['text_secondary'],
+                    'fontSize': '0.9rem',
+                    'marginBottom': '20px',
+                    'textAlign': 'center'
+                }
+            ),
+
+            # Dropdown area
+            html.Div(id='dropdown-mapping-area'),
+
+            # Confirm button
+            html.Button(
+                'Confirm Header Mapping',
+                id='confirm-header-map-button',
+                n_clicks=0,
+                style={
+                    'display': 'none',  # Hidden until dropdowns are created
+                    'margin': '20px auto',
+                    'padding': '10px 20px',
+                    'backgroundColor': COLORS['success'],
+                    'color': 'white',
+                    'border': 'none',
+                    'borderRadius': '6px',
                     'cursor': 'pointer'
                 }
             )
         ]
     )
 
-
-def _create_fallback_upload_component(app_instance, icon_upload_default):
-    """Creates a simple CSV‐upload component if no custom upload UI is provided."""
-    class SimpleUploadComponent:
-        def __init__(self, default_icon, success_icon, fail_icon):
-            self.default_icon = default_icon
-            self.success_icon = success_icon
-            self.fail_icon = fail_icon
-
-        def create_upload_area(self):
-            return dcc.Upload(
-                id='upload-data',
-                children=html.Div([
-                    html.Img(
-                        id='upload-icon',
-                        src=self.default_icon,
-                        style={'width': '96px', 'height': '96px', 'marginBottom': '15px'}
-                    ),
-                    html.H3(
-                        "Drop your CSV file here",
-                        style={
-                            'margin': '0',
-                            'fontSize': '1.125rem',
-                            'fontWeight': '600',
-                            'color': COLORS['text_primary'],
-                            'marginBottom': '5px'
-                        }
-                    ),
-                    html.P(
-                        "or click to browse",
-                        style={
-                            'margin': '0',
-                            'fontSize': '0.875rem',
-                            'color': COLORS['text_secondary'],
-                        }
-                    ),
-                ], style={'textAlign': 'center', 'padding': '20px'}),
-                style={
-                    'width': '70%',
-                    'maxWidth': '600px',
-                    'minHeight': '180px',
-                    'borderRadius': '12px',
-                    'textAlign': 'center',
-                    'margin': '16px auto',
-                    'display': 'flex',
-                    'alignItems': 'center',
-                    'justifyContent': 'center',
-                    'cursor': 'pointer',
-                    'transition': 'all 0.3s',
-                    'border': f'2px dashed {COLORS["border"]}',
-                    'backgroundColor': COLORS['surface'],
-                },
-                multiple=False,
-                accept='.csv'
-            )
-
-        def get_upload_styles(self):
-            return {
-                'initial': {
-                    'border': f'2px dashed {COLORS["border"]}',
-                    'backgroundColor': COLORS['surface'],
-                },
-                'success': {
-                    'border': f'2px solid {COLORS["success"]}',
-                    'backgroundColor': f"{COLORS['success']}10",
-                },
-                'error': {
-                    'border': f'2px solid {COLORS["critical"]}',
-                    'backgroundColor': f"{COLORS['critical']}10",
-                }
+def create_facility_setup():
+    """Step 2: Facility Setup"""
+    return html.Div([
+        html.H4(
+            "Step 2: Facility Setup",
+            style={
+                'color': COLORS['text_primary'],
+                'fontSize': '1.3rem',
+                'marginBottom': '15px',
+                'textAlign': 'center'
             }
+        ),
+        
+        # Number of floors
+        html.Div([
+            html.Label(
+                "How many floors are in the facility?",
+                style={
+                    'color': COLORS['text_primary'],
+                    'fontWeight': '600',
+                    'fontSize': '1rem',
+                    'marginBottom': '10px',
+                    'display': 'block',
+                    'textAlign': 'center'
+                }
+            ),
+            dcc.Slider(
+                id="num-floors-input",
+                min=1,
+                max=20,
+                step=1,
+                value=4,
+                marks={i: str(i) for i in range(1, 21, 5)},
+                tooltip={"always_visible": False, "placement": "bottom"}
+            ),
+            html.Div(
+                id="num-floors-display",
+                children="4 floors",
+                style={
+                    "fontSize": "0.9rem",
+                    "color": COLORS['text_secondary'],
+                    "marginTop": "10px",
+                    "textAlign": "center",
+                    "fontWeight": "600"
+                }
+            ),
+        ], style={'marginBottom': '25px'}),
+        
+        # Manual classification toggle
+        html.Div([
+            html.Label(
+                "Enable Manual Door Classification?",
+                style={
+                    'color': COLORS['text_primary'],
+                    'fontWeight': '600',
+                    'fontSize': '1rem',
+                    'marginBottom': '15px',
+                    'display': 'block',
+                    'textAlign': 'center'
+                }
+            ),
+            dcc.RadioItems(
+                id='manual-map-toggle',
+                options=[
+                    {'label': ' No (Automatic)', 'value': 'no'},
+                    {'label': ' Yes (Manual)', 'value': 'yes'}
+                ],
+                value='no',
+                inline=True,
+                style={'textAlign': 'center'},
+                labelStyle={
+                    'display': 'inline-block',
+                    'marginRight': '20px',
+                    'padding': '10px 20px',
+                    'backgroundColor': COLORS['border'],
+                    'color': COLORS['text_secondary'],
+                    'borderRadius': '20px',
+                    'cursor': 'pointer',
+                    'transition': 'all 0.3s ease'
+                }
+            ),
+        ])
+    ], style={
+        'backgroundColor': COLORS['surface'],
+        'padding': '25px',
+        'borderRadius': '8px',
+        'marginBottom': '20px',
+        'border': f'1px solid {COLORS["border"]}'
+    })
 
-    return SimpleUploadComponent(
-        icon_upload_default,
-        app_instance.get_asset_url('upload_file_csv_icon_success.png'),
-        app_instance.get_asset_url('upload_file_csv_icon_fail.png')
+def create_classification_section():
+    """Step 3: Door Classification (conditional)"""
+    return html.Div(
+        id="door-classification-table-container",
+        style={'display': 'none'},
+        children=[
+            html.Div([
+                html.H4(
+                    "Step 3: Door Classification",
+                    style={
+                        'color': COLORS['text_primary'],
+                        'fontSize': '1.3rem',
+                        'marginBottom': '15px',
+                        'textAlign': 'center'
+                    }
+                ),
+                html.P(
+                    "Classify each door below:",
+                    style={
+                        'color': COLORS['text_secondary'],
+                        'marginBottom': '20px',
+                        'textAlign': 'center'
+                    }
+                ),
+                html.Div(id="door-classification-table")
+            ], style={
+                'backgroundColor': COLORS['surface'],
+                'padding': '25px',
+                'borderRadius': '8px',
+                'border': f'1px solid {COLORS["border"]}'
+            })
+        ]
     )
 
+def create_results_section():
+    """Results section - hidden until processing complete"""
+    return html.Div([
+        # Custom Header (hidden)
+        html.Div(
+            id='yosai-custom-header',
+            style={'display': 'none'},
+            children=[
+                html.Div([
+                    html.H2(
+                        "📊 Analysis Results",
+                        style={
+                            'color': COLORS['text_primary'],
+                            'textAlign': 'center',
+                            'margin': '0',
+                            'fontSize': '1.6rem'
+                        }
+                    )
+                ], style={
+                    'padding': '20px',
+                    'backgroundColor': COLORS['surface'],
+                    'borderRadius': '8px',
+                    'marginBottom': '20px',
+                    'border': f'1px solid {COLORS["border"]}'
+                })
+            ]
+        ),
 
-def create_main_header(main_logo_path):
-    """Creates the main header bar at the top of the app"""
+        # Statistics Panels (hidden)
+        create_stats_panels(),
+
+        # Graph Container (hidden)
+        create_graph_container(),
+
+        # Analytics Section (initially hidden)
+        html.Div(
+            id='analytics-section',
+            style={'display': 'none'},
+            children=[
+                html.H2("📈 Advanced Analytics", style={'textAlign': 'center'}),
+                html.Div(id='analytics-detailed-breakdown')
+            ]
+        )
+    ])
+
+
+def create_stats_panels():
+    """Statistics panels"""
+    panel_style = {
+        'flex': '1',
+        'padding': '20px',
+        'margin': '0 10px',
+        'backgroundColor': COLORS['surface'],
+        'borderRadius': '8px',
+        'textAlign': 'center',
+        'border': f'1px solid {COLORS["border"]}',
+        'minWidth': '200px'
+    }
+
     return html.Div(
-        style={
-            'display': 'flex',
-            'alignItems': 'center',
-            'padding': '15px 30px',
-            'backgroundColor': COLORS['background'],
-            'borderBottom': f'1px solid {COLORS["border"]}',
-            'marginBottom': '30px',
-            'position': 'relative',
-            'width': '100%',
-        },
+        id='stats-panels-container',
+        style={'display': 'none'},
         children=[
-            html.Img(src=main_logo_path, style={'height': '40px', 'marginRight': '15px'}),
-            html.H1(
-                "Analytics Dashboard",
+            # Access Events Panel
+            html.Div([
+                html.H3("Access Events", style={'color': COLORS['text_primary'], 'marginBottom': '10px'}),
+                html.H1(id="total-access-events-H1", style={'color': COLORS['accent'], 'margin': '10px 0'}),
+                html.P(id="event-date-range-P", style={'color': COLORS['text_secondary'], 'fontSize': '0.9rem'})
+            ], style=panel_style),
+
+            # Statistics Panel
+            html.Div([
+                html.H3("Summary", style={'color': COLORS['text_primary'], 'marginBottom': '10px'}),
+                html.P(id="stats-date-range-P", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
+                html.P(id="stats-days-with-data-P", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
+                html.P(id="stats-num-devices-P", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
+                html.P(id="stats-unique-tokens-P", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'})
+            ], style=panel_style),
+
+            # Active Devices Panel
+            html.Div([
+                html.H3("Top Devices", style={'color': COLORS['text_primary'], 'marginBottom': '10px'}),
+                html.Table([
+                    html.Thead(html.Tr([
+                        html.Th("Device", style={'color': COLORS['text_primary'], 'fontSize': '0.8rem'}),
+                        html.Th("Events", style={'color': COLORS['text_primary'], 'fontSize': '0.8rem'})
+                    ])),
+                    html.Tbody(id='most-active-devices-table-body')
+                ], style={'width': '100%', 'fontSize': '0.8rem'})
+            ], style=panel_style)
+        ]
+    )
+
+def create_graph_container():
+    """Graph visualization container"""
+    return html.Div(
+        id='graph-output-container',
+        style={'display': 'none'},
+        children=[
+            html.H2(
+                "🗺️ Facility Layout Model",
                 style={
-                    'fontSize': '1.8rem',
-                    'margin': '0',
+                    'textAlign': 'center',
                     'color': COLORS['text_primary'],
-                    'position': 'absolute',
-                    'left': '50%',
-                    'transform': 'translateX(-50%)'
+                    'marginBottom': '20px',
+                    'fontSize': '1.6rem'
+                }
+            ),
+            html.Div(
+                children=[
+                    cyto.Cytoscape(
+                        id='onion-graph',
+                        layout={'name': 'cose', 'fit': True},
+                        style={
+                            'width': '100%',
+                            'height': '500px',
+                            'backgroundColor': COLORS['background'],
+                            'borderRadius': '8px'
+                        },
+                        elements=[],
+                        stylesheet=[
+                            {
+                                'selector': 'node',
+                                'style': {
+                                    'background-color': COLORS['accent'],
+                                    'label': 'data(label)',
+                                    'color': 'white',
+                                    'text-valign': 'center',
+                                    'width': 40,
+                                    'height': 40
+                                }
+                            },
+                            {
+                                'selector': 'edge',
+                                'style': {
+                                    'line-color': COLORS['border'],
+                                    'width': 2
+                                }
+                            }
+                        ]
+                    )
+                ],
+                style={
+                    'backgroundColor': COLORS['surface'],
+                    'padding': '20px',
+                    'borderRadius': '8px',
+                    'border': f'1px solid {COLORS["border"]}'
+                }
+            ),
+            html.Pre(
+                id='tap-node-data-output',
+                children="Generate analysis to see the facility layout. Tap nodes for details.",
+                style={
+                    'backgroundColor': COLORS['surface'],
+                    'color': COLORS['text_secondary'],
+                    'padding': '15px',
+                    'borderRadius': '8px',
+                    'marginTop': '20px',
+                    'textAlign': 'center',
+                    'border': f'1px solid {COLORS["border"]}',
+                    'fontSize': '0.9rem'
                 }
             )
         ]
     )
 
-
-def create_upload_section(upload_component):
-    """Wraps the provided upload component in a container"""
-    return html.Div(
-        [upload_component.create_upload_area()],
-        style={'marginBottom': '20px'}
-    )
-
-
-def create_mapping_section_with_fallback():
-    """Step 1: Map CSV Headers - with fallback UI"""
-    try:
-        from ui.components.mapping import create_mapping_component
-        mapping_component = create_mapping_component()
-        return mapping_component.create_mapping_section()
-    except ImportError:
-        # Fallback UI
-        return html.Div(
-            id='mapping-ui-section',
-            style={'marginBottom': '40px'},
-            children=[
-                html.H4(
-                    "Step 1: Map CSV Headers",
-                    style={
-                        'color': COLORS['text_primary'],
-                        'fontSize': '1.3rem',
-                        'marginBottom': '1rem',
-                        'textAlign': 'center'
-                    }
-                ),
-                html.Div([
-                    html.P([
-                        "Map your CSV columns to the required fields. ",
-                        html.Strong("All four fields are required"),
-                        " for the analysis to work properly."
-                    ], style={
-                        'color': COLORS['text_secondary'],
-                        'fontSize': '0.85rem',
-                        'marginBottom': '8px'
-                    })
-                ], style={'marginBottom': '12px'}),
-
-                # Placeholder for dropdowns
-                html.Div(id='dropdown-mapping-area'),
-
-                # Hidden validation message div
-                html.Div(id='mapping-validation-message', style={'display': 'none'}),
-
-                # Confirm button
-                html.Button(
-                    'Confirm Header Mapping & Proceed',
-                    id='confirm-header-map-button',
-                    n_clicks=0,
-                    style={
-                        'padding': '8px 16px',
-                        'border': 'none',
-                        'borderRadius': '5px',
-                        'backgroundColor': COLORS['accent'],
-                        'color': 'white',
-                        'fontSize': '0.9rem',
-                        'fontWeight': 'bold',
-                        'cursor': 'pointer',
-                        'display': 'block',
-                        'margin': '15px auto 0',
-                        'transition': 'background-color 0.3s ease'
-                    }
-                )
-            ]
-        )
-
-
-def create_classification_section():
-    """Classification section with toggle and door table"""
-    return html.Div(
-        id='entrance-verification-ui-section',
-        style={'display': 'none'},
-        children=[
-                # === Step 2: Facility Setup Card ===
-                html.Div(
-                    [
-                        html.H4(
-                            "Step 2: Facility Setup",
-                            style={
-                                'color': COLORS['text_primary'],
-                                'textAlign': 'center',
-                                'marginBottom': '16px',
-                                'fontSize': '1.3rem'
-                            }
-                        ),
-
-                        # Modern Floors Slider
-                        html.Label(
-                            "How many floors are in the facility?",
-                            style={
-                                'color': COLORS['text_primary'],
-                                'fontWeight': 'bold',
-                                'fontSize': '1rem',
-                                'marginBottom': '8px',
-                                'textAlign': 'center',
-                                'display': 'block'
-                            }
-                        ),
-                        
-                        dcc.Slider(
-                            id="num-floors-input",
-                            min=1,
-                            max=20,
-                            step=1,
-                            value=1,
-                            marks={i: str(i) for i in range(1, 21, 5)},
-                            tooltip={"always_visible": False, "placement": "bottom"},
-                            updatemode="drag",
-                            className="ui-slider"
-                        ),
-                        html.Div(
-                            id="num-floors-display",
-                            style={
-                                "fontSize": "0.9rem",
-                                "color": COLORS['text_secondary'],
-                                "marginTop": "6px",
-                                "textAlign": "center",
-                                "fontWeight": "600"
-                            }
-                        ),
-                        html.Div(
-                            "Count floors above ground including mezzanines and secure zones",
-                            style={
-                                "fontSize": "0.8rem",
-                                "color": COLORS['text_tertiary'],
-                                "marginTop": "4px",
-                                "textAlign": "center",
-                                "marginBottom": "24px"
-                            }
-                        ),
-
-                        # Toggle Switch
-                        html.Label(
-                            "Enable Manual Door Classification?",
-                            style={
-                                'color': COLORS['text_primary'],
-                                'fontWeight': 'bold',
-                                'fontSize': '1rem',
-                                'marginBottom': '12px',
-                                'textAlign': 'center',
-                                'display': 'block'
-                            }
-                        ),
-                        
-                        html.Div([
-                            dcc.RadioItems(
-                                id='manual-map-toggle',
-                                options=[
-                                    {'label': 'No', 'value': 'no'}, 
-                                    {'label': 'Yes', 'value': 'yes'}
-                                ],
-                                value='no',
-                                inline=True
-                            ),
-                        ], style={
-                            'display': 'flex',
-                            'justifyContent': 'center',
-                            'alignItems': 'center'
-                        })
-                    ],
-                    style={
-                        'padding': '20px',
-                        'backgroundColor': COLORS['surface'],
-                        'borderRadius': '8px',
-                        'marginBottom': '20px',
-                        'border': f'1px solid {COLORS["border"]}',
-                        'maxWidth': '550px',
-                        'margin': '0 auto'
-                    }
-                ),
-
-                # === Step 3: Door Classification Table Container ===
-                html.Div(
-                    id="door-classification-table-container",
-                    style={'display': 'none'},
-                    children=[
-                        html.H4(
-                            "Step 3: Door Classification",
-                            style={
-                                'color': COLORS['text_primary'],
-                                'textAlign': 'center',
-                                'marginBottom': '12px',
-                                'fontSize': '1.3rem'
-                            }
-                        ),
-                        html.P(
-                            "Assign a security level to each door below:",
-                            style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '8px'}
-                        ),
-                        html.Div(id="door-classification-table")
-                    ]
-                )
-            ]
-        )
-
-
-def create_processing_status():
-    """Processing status indicator"""
-    return html.Div(
-        id='processing-status',
-        style={
-            'marginTop': '10px',
-            'color': COLORS['accent'],
-            'textAlign': 'center'
-        }
-    )
-
-
 def create_data_stores():
-    """Create all dcc.Store() components for state management"""
+    """Create all data store components"""
     return html.Div([
         dcc.Store(id='uploaded-file-store'),
-        dcc.Store(id='csv-headers-store', storage_type='session'),
+        dcc.Store(id='csv-headers-store'),
         dcc.Store(id='column-mapping-store', storage_type='local'),
-        dcc.Store(id='ranked-doors-store', storage_type='session'),
-        dcc.Store(id='current-entrance-offset-store', data=0, storage_type='session'),
+        dcc.Store(id='all-doors-from-csv-store'),
         dcc.Store(id='manual-door-classifications-store', storage_type='local'),
-        dcc.Store(id='num-floors-store', storage_type='session', data=1),
-        dcc.Store(id='all-doors-from-csv-store', storage_type='session'),
+        dcc.Store(id='num-floors-store', data=4),
     ])
-
-
-def get_main_container_style():
-    """Returns the style for the main container"""
-    return {
-        'backgroundColor': COLORS['background'],
-        'padding': '20px',
-        'minHeight': '100vh',
-        'fontFamily': 'Arial, sans-serif'
-    }
-
-
-# NO CALLBACK REGISTRATION FUNCTIONS
-# All callbacks are handled by handler classes in app.py

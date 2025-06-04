@@ -15,35 +15,53 @@ from utils.logging_config import get_logger
 logger = get_logger(__name__)
 
 
-class ClassificationHandlers:
-    """Handles all classification-related callbacks and business logic"""
-    
-    def __init__(self, app, classification_component=None):
-        self.app = app
-        self.classification_component = classification_component or create_classification_component()
-        
-    def register_callbacks(self):
-        """Register classification callbacks with duplicate handling"""
-        self._register_door_table_generation_handler()
-        self._register_door_type_mutual_exclusion_handler() 
-        self._register_floor_slider_display_handler()
-        self._register_classification_toggle_handler()
-        self._register_debug_toggle_handler()  # Add this line
+from dash import Input, Output, State, callback
+from dash.exceptions import PreventUpdate
 
-        
+from ui.components.classification import create_classification_component
+from services.classification_service import generate_door_classification_table
+
+
+class ClassificationHandlers:
+    def __init__(self, app):
+        self.app = app
+        self._register_callbacks()
+
+    def _register_callbacks(self):
+        self._register_confirm_header_mapping_handler()
+        self._register_classification_toggle_handler()
+
+    def _register_confirm_header_mapping_handler(self):
+        @callback(
+            Output("door-classification-table", "children"),
+            Input("confirm-header-map-button", "n_clicks"),
+            State("uploaded-file-store", "data"),
+            State("column-mapping-store", "data"),
+        )
+        def handle_confirm_header_mapping(n_clicks, uploaded_data, column_mapping):
+            if n_clicks == 0 or uploaded_data is None or column_mapping is None:
+                raise PreventUpdate
+
+            try:
+                # DIRECT: extract mapping from dict
+                headers = {item["field"]: item["column"] for item in column_mapping}
+                table = generate_door_classification_table(uploaded_data, headers)
+                return table
+            except Exception as e:
+                print("Error generating classification table:", str(e))
+                return "An error occurred during classification table generation."
+
     def _register_classification_toggle_handler(self):
-        """SINGLE callback - controls classification table visibility"""
+        """Controls classification table visibility"""
         @self.app.callback(
             Output('door-classification-table-container', 'style', allow_duplicate=True),
             Input('manual-map-toggle', 'value'),
-            prevent_initial_call='initial_duplicate'  # FIXED: Use 'initial_duplicate' with allow_duplicate
+            prevent_initial_call=True
         )
         def toggle_classification_tools(manual_map_choice):
-            """Control classification table visibility"""
             if manual_map_choice == 'yes':
                 return {'display': 'block'}
-            else:
-                return {'display': 'none'}
+            return {'display': 'none'}
 
     def _register_floor_slider_display_handler(self):
         """Update floor display when slider value changes - FIXED with allow_duplicate"""

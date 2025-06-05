@@ -997,7 +997,7 @@ def create_intelligent_mapping_dropdowns_v6(headers):
 # 3. Enhanced Mapping Confirmation Callback
 @app.callback(
     [
-        Output('entrance-verification-ui-section', 'style'),
+        #Output('entrance-verification-ui-section', 'style'),
         Output('mapping-ui-section', 'style', allow_duplicate=True),
         Output('processing-status', 'children', allow_duplicate=True)
     ],

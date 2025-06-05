@@ -795,10 +795,11 @@ input[type="file"] { display: none; }
 }
 
 #manual-map-toggle .form-check-input[value="no"]:checked + .form-check-label {
-  background-color: var(--color-critical) !important;
-  border-color: var(--color-critical) !important;
-  box-shadow: 0 2px 8px rgba(224, 32, 32, 0.3);
+    background-color: var(--color-border) !important;
+  border-color: var(--color-border) !important;
+  box-shadow: 0 2px 8px rgba(45, 55, 72, 0.3);
 }
+
 
 #manual-map-toggle .form-check-label:active {
   transform: translateY(0) scale(0.98);
@@ -1136,9 +1137,9 @@ input[type="file"] { display: none; }
 
 /* Step 6: "No" selection = RED */
 #manual-map-toggle input[value="no"]:checked + label {
-  background-color: #E02020 !important;
-  border-color: #E02020 !important;
-  box-shadow: 0 2px 8px rgba(224, 32, 32, 0.4) !important;
+  background-color: var(--color-border) !important;
+  border-color: var(--color-border) !important;
+  box-shadow: 0 2px 8px rgba(45, 55, 72, 0.4) !important;
 }
 
 /* Step 7: Active/click animation */

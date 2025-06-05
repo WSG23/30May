@@ -166,11 +166,8 @@ def create_interactive_setup_container():
             # Step 1: CSV Header Mapping
             create_mapping_section(),
 
-            # Step 2: Facility Setup
-            create_facility_setup(),
-
-            # Step 3: Classification (conditional)
-            create_classification_section(),
+            # Step 2 & 3: Entrance Verification Section (contains facility setup and classification)
+            create_entrance_verification_section(),
 
             # Generate Button
             html.Button(

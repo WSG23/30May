@@ -68,7 +68,7 @@ class EnhancedStatsComponent:
             ),
 
             self.create_export_section()
-        ], id='enhanced-stats-container', style=UI_VISIBILITY['show_flex_stats'])
+        ], id='stats-panels-container', style=UI_VISIBILITY['show_flex_stats'])
     
     def create_enhanced_stats_panels(self):
         """Enhanced version of original stats panels with additional metrics"""

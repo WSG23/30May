@@ -997,8 +997,8 @@ def create_intelligent_mapping_dropdowns_v6(headers):
 # 3. Enhanced Mapping Confirmation Callback
 @app.callback(
     [
-        #Output('entrance-verification-ui-section', 'style'),
-        Output('mapping-ui-section', 'style', allow_duplicate=True),
+        Output('entrance-verification-ui-section', 'style'),
+        Output('mapping-ui-section', 'style', allow_duplicate=True),  
         Output('processing-status', 'children', allow_duplicate=True)
     ],
     Input('confirm-header-map-button', 'n_clicks'),
@@ -1057,7 +1057,7 @@ def enhanced_mapping_confirmation_v6(n_clicks, values, ids):
     except Exception as e:
         print(f"❌ Error in Version 6.0 mapping confirmation: {e}")
         return {'display': 'none'}, {'display': 'block'}, f"❌ Error: {str(e)}"
-
+    
 # 4. Classification Toggle Callback
 @app.callback(
     Output('door-classification-table-container', 'style'),

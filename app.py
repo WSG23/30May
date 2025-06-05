@@ -209,51 +209,50 @@ def _integrate_enhanced_features_into_layout_v6(base_layout, main_logo_path):
         
         all_existing_ids = collect_existing_ids(base_children)
         print(f"🔍 Found existing IDs: {all_existing_ids}")
-        
-        # Process each child and enhance where needed
-        for child in base_children:
-            # Replace basic custom header with enhanced one
-            if hasattr(child, 'id') and child.id == 'yosai-custom-header':
-                enhanced_children.append(_create_enhanced_header_v6(main_logo_path))
-                print("✅ Replaced header with Version 6.0 enhanced version")
-            
-            # Enhance existing analytics section if found
-            elif hasattr(child, 'id') and child.id == 'analytics-section':
-                enhanced_children.append(_create_analytics_section_v6())
-                existing_sections.add('analytics-section')
-                print("✅ Enhanced existing analytics section")
-   
-            # Replace stats panels with enhanced version if present
-            elif hasattr(child, 'id') and child.id == 'stats-panels-container':
-                enhanced_children.append(_create_enhanced_stats_container_v6())
-                existing_sections.add('stats-panels-container')
-                print("✅ Replaced stats panels with enhanced version")
-                         
-            # Add charts and export sections after graph container if they don't exist
-            elif hasattr(child, 'id') and child.id == 'graph-output-container':
-                enhanced_children.append(child)
-                
-                # Only add sections that don't already exist
-                sections_to_add = []
-                if 'analytics-section' not in all_existing_ids:
-                    sections_to_add.append(_create_analytics_section_v6())
+        ######
+        def process_children(children):
+            """Recursively process children and replace sections where needed"""
+            new_children = []
+            for ch in children:
+                if hasattr(ch, 'id') and ch.id == 'yosai-custom-header':
+                    new_children.append(_create_enhanced_header_v6(main_logo_path))
+                    print("✅ Replaced header with Version 6.0 enhanced version")
+                elif hasattr(ch, 'id') and ch.id == 'analytics-section':
+                    new_children.append(_create_analytics_section_v6())
                     existing_sections.add('analytics-section')
-                if 'charts-section' not in all_existing_ids:
-                    sections_to_add.append(_create_charts_section_v6())
-                    existing_sections.add('charts-section')
-                if 'export-section' not in all_existing_ids:
-                    sections_to_add.append(_create_export_section_v6())
-                    existing_sections.add('export-section')
+
+                    print("✅ Enhanced existing analytics section")
+                elif hasattr(ch, 'id') and ch.id == 'stats-panels-container':
+                    new_children.append(_create_enhanced_stats_container_v6())
+                    existing_sections.add('stats-panels-container')
+                    print("✅ Replaced stats panels with enhanced version")
+                elif hasattr(ch, 'id') and ch.id == 'graph-output-container':
+                    new_children.append(ch)
+
+                    sections_to_add = []
+                    if 'analytics-section' not in all_existing_ids:
+                        sections_to_add.append(_create_analytics_section_v6())
+                        existing_sections.add('analytics-section')
+                    if 'charts-section' not in all_existing_ids:
+                        sections_to_add.append(_create_charts_section_v6())
+                        existing_sections.add('charts-section')
+                    if 'export-section' not in all_existing_ids:
+                        sections_to_add.append(_create_export_section_v6())
+                        existing_sections.add('export-section')
+
+                    if sections_to_add:
+                        new_children.extend(sections_to_add)
+                        print(f"✅ Added {len(sections_to_add)} new enhanced sections")
+                else:
+                    if hasattr(ch, 'children') and ch.children:
+                        child_list = ch.children if isinstance(ch.children, list) else [ch.children]
+                        ch.children = process_children(child_list)
+                    new_children.append(ch)
+            return new_children
+
+        enhanced_children = process_children(base_children)
                 
-                if sections_to_add:
-                    enhanced_children.extend(sections_to_add)
-                    print(f"✅ Added {len(sections_to_add)} new enhanced sections")
-                continue
-            
-            else:
-                enhanced_children.append(child)
-        
-        # Add enhanced data stores
+        # Add enhanced data stores    #####
         enhanced_children.append(_create_enhanced_data_stores_v6())
         
         print(f"✅ Layout integration complete. Enhanced sections: {existing_sections}")

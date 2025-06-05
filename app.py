@@ -222,7 +222,13 @@ def _integrate_enhanced_features_into_layout_v6(base_layout, main_logo_path):
                 enhanced_children.append(_create_analytics_section_v6())
                 existing_sections.add('analytics-section')
                 print("✅ Enhanced existing analytics section")
-            
+   
+            # Replace stats panels with enhanced version if present
+            elif hasattr(child, 'id') and child.id == 'stats-panels-container':
+                enhanced_children.append(_create_enhanced_stats_container_v6())
+                existing_sections.add('stats-panels-container')
+                print("✅ Replaced stats panels with enhanced version")
+                         
             # Add charts and export sections after graph container if they don't exist
             elif hasattr(child, 'id') and child.id == 'graph-output-container':
                 enhanced_children.append(child)

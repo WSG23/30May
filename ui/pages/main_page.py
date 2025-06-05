@@ -416,6 +416,24 @@ def create_results_section():
                 html.H2("📈 Advanced Analytics", style={'textAlign': 'center'}),
                 html.Div(id='analytics-detailed-breakdown')
             ]
+        ),
+
+        # Charts Section (hidden until data is ready)
+        html.Div(
+            id='charts-section',
+            style={'display': 'none'},
+            children=[
+                html.H2("📊 Data Visualization", style={'textAlign': 'center'})
+            ]
+        ),
+
+        # Export Section (hidden until data is ready)
+        html.Div(
+            id='export-section',
+            style={'display': 'none'},
+            children=[
+                html.H2("📤 Export & Reports", style={'textAlign': 'center'})
+            ]
         )
     ])
 

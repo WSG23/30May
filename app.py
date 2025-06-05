@@ -370,7 +370,7 @@ def _create_comprehensive_upload_section_v6(icon_path):
                     'width': '120px', 'height': '120px', 'marginBottom': '15px',
                     'opacity': '0.8', 'transition': 'all 0.3s ease'
                 }),
-                html.H3("Drop your CSV file here", style={
+                html.H3("Drop your CSV or JSON file here", style={
                     'color': '#F7FAFC', 'margin': '0', 'fontSize': '1.25rem',
                     'fontWeight': '600', 'marginBottom': '5px'
                 }),
@@ -390,7 +390,7 @@ def _create_comprehensive_upload_section_v6(icon_path):
                 'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)'
             },
             multiple=False,
-            accept='.csv'
+            accept='.csv,.json'
         )
     ])
 
@@ -436,7 +436,7 @@ def _create_comprehensive_setup_container_v6():
                     dcc.Slider(
                         id="num-floors-input",
                         min=1, max=50, step=1, value=4,
-                        marks={i: str(i) for i in range(1, 21, 2)},
+                        marks={i: str(i) for i in range(0, 101, 5)},
                         tooltip={"always_visible": False, "placement": "bottom"},
                         updatemode="drag"
                     ),

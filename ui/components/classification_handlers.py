@@ -30,6 +30,9 @@ class ClassificationHandlers:
     def _register_callbacks(self):
         self._register_confirm_header_mapping_handler()
         self._register_classification_toggle_handler()
+        self._register_floor_slider_display_handler()
+        self._register_door_table_generation_handler()
+        self._register_door_type_mutual_exclusion_handler()
 
     def _register_confirm_header_mapping_handler(self):
         @callback(

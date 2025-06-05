@@ -119,7 +119,7 @@ def create_upload_section(icon_upload_default):
                     }
                 ),
                 html.H3(
-                    "Drop your CSV file here",
+                    "Drop your CSV or JSON file here",
                     style={
                         'margin': '0',
                         'fontSize': '1.2rem',
@@ -153,7 +153,7 @@ def create_upload_section(icon_upload_default):
                 'backgroundColor': COLORS['surface'],
             },
             multiple=False,
-            accept='.csv'
+            accept='.csv,.json'
         )
     ])
 
@@ -279,7 +279,7 @@ def create_facility_setup():
                 max=20,
                 step=1,
                 value=4,
-                marks={i: str(i) for i in range(1, 21, 5)},
+                marks={i: str(i) for i in range(0, 101, 5)},
                 tooltip={"always_visible": False, "placement": "bottom"}
             ),
             html.Div(

@@ -53,8 +53,9 @@ class EnhancedStatsComponent:
             }
         }
     
-    
-    return html.Div(
+    def create_enhanced_stats_container(self):
+        """Creates the main enhanced statistics container"""
+        return html.Div(
             [
                 # Custom header (same as original)
                 self.create_custom_header(),
@@ -118,8 +119,6 @@ class EnhancedStatsComponent:
             ]
         )
 
-    
-   
     def create_custom_header(self):
         """Creates the enhanced custom header with controls"""
         return html.Div(
@@ -400,7 +399,6 @@ class EnhancedStatsComponent:
             style=panel_style,
         )
 
-    
     def create_peak_activity_panel(self):
         """New panel for peak activity analysis"""
         panel_style = self.panel_style_base.copy()
@@ -509,7 +507,6 @@ class EnhancedStatsComponent:
             style=panel_style,
         )
 
-    
     def create_user_patterns_panel(self):
         """New panel for user behavior patterns"""
         panel_style = self.panel_style_base.copy()
@@ -1009,17 +1006,20 @@ class EnhancedStatsComponent:
     def _create_empty_chart(self, message):
         """Creates an empty chart with a message"""
         fig = go.Figure()
-        fig.add_annotation(
-            text=message,
-            xref="paper",
-            yref="paper",
-            x=0.5,
-            y=0.5,
-            showarrow=False,
-            font_size=16,
-            font_color=COLORS["text_secondary"],
+        fig.update_layout(
+            annotations=[
+                dict(
+                    text=message,
+                    xref="paper",
+                    yref="paper",
+                    x=0.5,
+                    y=0.5,
+                    showarrow=False,
+                    font=dict(size=16, color=COLORS["text_secondary"]),
+                )
+            ],
+            **self.chart_theme["layout"]
         )
-        fig.update_layout(**self.chart_theme["layout"])
         return fig
     
     # Data processing methods

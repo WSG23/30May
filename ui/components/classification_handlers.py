@@ -4,27 +4,25 @@ Classification callback handlers - FIXED VERSION with allow_duplicate for confli
 """
 
 import json
+import base64
+import io
+import pandas as pd
 from dash import Input, Output, State, html, callback, no_update
 from dash.dependencies import ALL
+from dash.exceptions import PreventUpdate
 
 # Import UI components
 from ui.components.classification import create_classification_component
 from ui.themes.style_config import COLORS
 from utils.logging_config import get_logger
+from utils.constants import REQUIRED_INTERNAL_COLUMNS
 
 logger = get_logger(__name__)
 
-
-from dash import Input, Output, State, callback
-from dash.exceptions import PreventUpdate
-
-from ui.components.classification import create_classification_component
-from services.classification_service import generate_door_classification_table
-
-
 class ClassificationHandlers:
-    def __init__(self, app):
+    def __init__(self, app, classification_component=None):
         self.app = app
+        self.classification_component = classification_component or create_classification_component()
         self._register_callbacks()
 
     def _register_callbacks(self):
@@ -46,14 +44,33 @@ class ClassificationHandlers:
                 raise PreventUpdate
 
             try:
-                # DIRECT: extract mapping from dict
-                headers = {item["field"]: item["column"] for item in column_mapping}
-                table = generate_door_classification_table(uploaded_data, headers)
-                return table
-            except Exception as e:
-                print("Error generating classification table:", str(e))
-                return "An error occurred during classification table generation."
+                content_type, content_string = uploaded_data.split(',', 1)
+                decoded = base64.b64decode(content_string)
+                df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+                headers = df.columns.tolist()
 
+                mapping_store = json.loads(column_mapping) if isinstance(column_mapping, str) else column_mapping or {}
+                header_key = json.dumps(sorted(headers))
+                mapping = mapping_store.get(header_key, {})
+
+                rename_map = {}
+                for csv_header, internal_name in mapping.items():
+                    if internal_name in REQUIRED_INTERNAL_COLUMNS:
+                        rename_map[csv_header] = REQUIRED_INTERNAL_COLUMNS[internal_name]
+                    else:
+                        rename_map[csv_header] = internal_name
+
+                df.rename(columns=rename_map, inplace=True)
+                door_col = REQUIRED_INTERNAL_COLUMNS['DoorID']
+                if door_col not in df.columns:
+                    return html.P("DoorID column not found after mapping.", style={'color': COLORS['critical']})
+
+                doors = sorted(df[door_col].astype(str).unique().tolist())
+                return self._generate_classification_table(doors, {}, 4)
+            except Exception as e:
+                logger.info(f"Error generating classification table: {e}")
+                return html.P("An error occurred during classification table generation.", style={'color': COLORS['critical']})
+            
     def _register_classification_toggle_handler(self):
         """Controls classification table visibility"""
         @self.app.callback(

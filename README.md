@@ -5,6 +5,22 @@
 ## Overview
 This phase extracts the upload functionality into a centralized UI component system. The upload component and its handlers are now separated from the main layout and callback files.
 
+## Installation
+
+1. Create and activate a virtual environment:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+2. Install the required packages. Use the production requirements for normal use or the development list for contributing and running tests:
+
+```bash
+pip install -r requirements-prod.txt  # Production
+pip install -r requirements-dev.txt   # Development
+```
+
 ## Steps to Implement
 
 ### 1. Create New Directory Structure
@@ -136,3 +152,11 @@ Common issues and solutions:
 **Styling Issues**: Verify all style imports are preserved in new components
 
 **Missing Icons**: Check that asset paths are correctly passed to components
+**Missing Icons**: Check that asset paths are correctly passed to components
+
+## Additional Documentation
+- [Migration Guide](MIGRATION_GUIDE.md)
+- [API Overview](docs/api.md)
+- [Deployment Notes](docs/deployment.md)
+- [Security Practices](docs/security.md)
+- [Troubleshooting](docs/troubleshooting.md)

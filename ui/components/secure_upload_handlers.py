@@ -97,11 +97,12 @@ class SecureUploadHandlers:
                 content_type, content_string = contents.split(',')
                 decoded = base64.b64decode(content_string)
                 
-                if not filename.lower().endswith('.csv'):
-                    raise ValueError("Uploaded file is not a CSV.")
-                
-                # Load and validate CSV
-                df_full_for_doors = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+                if filename.lower().endswith('.csv'):
+                    df_full_for_doors = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+                elif filename.lower().endswith('.json'):
+                    df_full_for_doors = pd.read_json(io.StringIO(decoded.decode('utf-8')))
+                else:
+                    raise ValueError("Uploaded file must be a CSV or JSON file.")
                 headers = df_full_for_doors.columns.tolist()
                 
                 if not headers:

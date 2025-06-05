@@ -13,9 +13,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import json
-
 from ui.themes.style_config import COLORS, SPACING, BORDER_RADIUS, SHADOWS, TYPOGRAPHY
-from utils.constants import REQUIRED_INTERNAL_COLUMNS
+from utils.constants import REQUIRED_INTERNAL_COLUMNS, SECURITY_LEVELS
 
 
 class EnhancedStatsComponent:
@@ -586,9 +585,10 @@ class EnhancedStatsComponent:
         
         if 'SecurityLevel' not in device_attrs.columns:
             return self._create_empty_chart("Security level data not available")
-        
-        security_counts = device_attrs['SecurityLevel'].value_counts()
-        
+                
+        sec_series = self._normalize_security_column(device_attrs['SecurityLevel'])
+        security_counts = sec_series.value_counts()
+
         colors = {
             'green': COLORS['success'],
             'yellow': COLORS['warning'],
@@ -732,12 +732,26 @@ class EnhancedStatsComponent:
         today = datetime.now().date()
         today_data = df[df[timestamp_col].dt.date == today]
         return today_data[doorid_col].nunique() if not today_data.empty else 0
-    
+
+    def _normalize_security_column(self, series: pd.Series) -> pd.Series:
+        """Translate numeric security levels to their string color values."""
+        level_map = {lvl: info['value'] for lvl, info in SECURITY_LEVELS.items()}
+
+        def convert(val):
+            try:
+                return level_map[int(val)]
+            except (ValueError, TypeError, KeyError):
+                return str(val)
+
+        return series.map(convert)
+        
     def _analyze_security_distribution(self, device_attrs):
         """Analyzes security level distribution"""
         if 'SecurityLevel' not in device_attrs.columns:
             return {}
-        return device_attrs['SecurityLevel'].value_counts().to_dict()
+
+        sec_series = self._normalize_security_column(device_attrs['SecurityLevel'])
+        return sec_series.value_counts().to_dict()
     
     def _calculate_compliance_score(self, device_attrs):
         """Calculates security compliance score (0-100)"""
@@ -753,8 +767,9 @@ class EnhancedStatsComponent:
         high_security_devices = 0
         
         if 'SecurityLevel' in device_attrs.columns:
-            classified_devices = device_attrs['SecurityLevel'].notna().sum()
-            high_security_devices = (device_attrs['SecurityLevel'] == 'red').sum()
+            sec_series = self._normalize_security_column(device_attrs['SecurityLevel'])
+            classified_devices = sec_series.notna().sum()
+            high_security_devices = (sec_series == 'red').sum()
         
         classification_score = (classified_devices / total_devices) * 70  # 70% for classification
         security_balance_score = min(30, (high_security_devices / max(total_devices, 1)) * 100)  # 30% for security balance

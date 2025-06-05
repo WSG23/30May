@@ -7,6 +7,7 @@ All callbacks are handled by unified handler in app.py
 
 from dash import html, dcc
 import dash_cytoscape as cyto
+from ui.components.classification import create_classification_component
 
 # Fallback colors if theme not available
 COLORS = {
@@ -30,6 +31,8 @@ REQUIRED_INTERNAL_COLUMNS = {
     'DoorID': 'DoorID (Device Name)',
     'EventType': 'EventType (Access Result)'
 }
+# Instantiate the reusable classification component for entrance verification
+classification_component = create_classification_component()
 
 def create_main_layout(app_instance, main_logo_path, icon_upload_default):
     """
@@ -166,8 +169,8 @@ def create_interactive_setup_container():
             # Step 1: CSV Header Mapping
             create_mapping_section(),
 
-            # Step 2 & 3: Entrance Verification Section (contains facility setup and classification)
-            create_entrance_verification_section(),
+            # Step 2 & 3: Entrance Verification Section (facility setup and classification)
+            classification_component.create_entrance_verification_section(),
 
             # Generate Button
             html.Button(

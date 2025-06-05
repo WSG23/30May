@@ -87,21 +87,22 @@ class UploadHandlers:
             return self._create_error_response(error_result, upload_styles, filename)
     
     def _process_csv_file(self, contents, filename, saved_col_mappings_json):
-        """Process and validate CSV file"""
+        """Process and validate uploaded CSV or JSON file"""
         try:
             # Decode the file
             content_type, content_string = contents.split(',')
-            decoded = base64.b64decode(content_string)
-            
-            if not filename.lower().endswith('.csv'):
-                raise ValueError("Uploaded file is not a CSV.")
-            
-            # Load and validate CSV
-            df_full_for_doors = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+            decoded = base64.b64decode(content_string)# Determine file type and load accordingly
+            # Determine file type and load accordingly
+            if filename.lower().endswith('.csv'):
+                df_full_for_doors = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+            elif filename.lower().endswith('.json'):
+                df_full_for_doors = pd.read_json(io.StringIO(decoded.decode('utf-8')))
+            else:
+                raise ValueError("Uploaded file must be a CSV or JSON file.")
             headers = df_full_for_doors.columns.tolist()
             
             if not headers:
-                raise ValueError("CSV has no headers.")
+                raise ValueError("CSV or JSON has no headers.")
             
             # Process column mappings
             mapping_result = self._process_column_mappings(

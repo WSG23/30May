@@ -194,42 +194,95 @@ def _integrate_enhanced_features_into_layout_v6(base_layout, main_logo_path):
         base_children = list(base_layout.children) if hasattr(base_layout, 'children') else []
         enhanced_children = []
         
+        # Track which enhanced sections already exist
+        existing_sections = set()
+        
+        # First pass: collect existing section IDs
+        def collect_existing_ids(children):
+            ids = set()
+            for child in children:
+                if hasattr(child, 'id') and child.id:
+                    ids.add(child.id)
+                if hasattr(child, 'children') and child.children:
+                    ids.update(collect_existing_ids(child.children if isinstance(child.children, list) else [child.children]))
+            return ids
+        
+        all_existing_ids = collect_existing_ids(base_children)
+        print(f"🔍 Found existing IDs: {all_existing_ids}")
+        
         # Process each child and enhance where needed
         for child in base_children:
-            enhanced_children.append(child)
-            
             # Replace basic custom header with enhanced one
             if hasattr(child, 'id') and child.id == 'yosai-custom-header':
-                enhanced_children[-1] = _create_enhanced_header_v6(main_logo_path)
+                enhanced_children.append(_create_enhanced_header_v6(main_logo_path))
                 print("✅ Replaced header with Version 6.0 enhanced version")
             
-            # Add enhanced sections after graph container
+            # Enhance existing analytics section if found
+            elif hasattr(child, 'id') and child.id == 'analytics-section':
+                enhanced_children.append(_create_analytics_section_v6())
+                existing_sections.add('analytics-section')
+                print("✅ Enhanced existing analytics section")
+            
+            # Add charts and export sections after graph container if they don't exist
             elif hasattr(child, 'id') and child.id == 'graph-output-container':
-                # Always add these sections (required by callbacks)
-                enhanced_children.extend([
-                    _create_analytics_section_v6(),
-                    _create_charts_section_v6(),
-                    _create_export_section_v6()
-                ])
-                print("✅ Added Version 6.0 analytics sections")
+                enhanced_children.append(child)
+                
+                # Only add sections that don't already exist
+                sections_to_add = []
+                if 'analytics-section' not in all_existing_ids:
+                    sections_to_add.append(_create_analytics_section_v6())
+                    existing_sections.add('analytics-section')
+                if 'charts-section' not in all_existing_ids:
+                    sections_to_add.append(_create_charts_section_v6())
+                    existing_sections.add('charts-section')
+                if 'export-section' not in all_existing_ids:
+                    sections_to_add.append(_create_export_section_v6())
+                    existing_sections.add('export-section')
+                
+                if sections_to_add:
+                    enhanced_children.extend(sections_to_add)
+                    print(f"✅ Added {len(sections_to_add)} new enhanced sections")
+                continue
+            
+            else:
+                enhanced_children.append(child)
         
-        # Add additional data stores for enhanced features
+        # Add enhanced data stores
         enhanced_children.append(_create_enhanced_data_stores_v6())
         
-        # Return enhanced layout
+        print(f"✅ Layout integration complete. Enhanced sections: {existing_sections}")
         return html.Div(enhanced_children, style=base_layout.style if hasattr(base_layout, 'style') else {})
         
     except Exception as e:
         print(f"⚠️ Error integrating enhanced features: {e}")
         traceback.print_exc()
-        # Still need to add the required sections for callbacks
+        
+        # Fallback: ensure all required sections exist
         base_children = list(base_layout.children) if hasattr(base_layout, 'children') else []
-        base_children.extend([
-            _create_analytics_section_v6(),
-            _create_charts_section_v6(), 
-            _create_export_section_v6(),
-            _create_enhanced_data_stores_v6()
-        ])
+        
+        # Check what sections we need to add
+        existing_ids = set()
+        def get_ids(children):
+            for child in children:
+                if hasattr(child, 'id') and child.id:
+                    existing_ids.add(child.id)
+                if hasattr(child, 'children'):
+                    child_list = child.children if isinstance(child.children, list) else [child.children]
+                    get_ids(child_list)
+        
+        get_ids(base_children)
+        
+        # Add missing sections
+        if 'analytics-section' not in existing_ids:
+            base_children.append(_create_analytics_section_v6())
+        if 'charts-section' not in existing_ids:
+            base_children.append(_create_charts_section_v6())
+        if 'export-section' not in existing_ids:
+            base_children.append(_create_export_section_v6())
+        
+        base_children.append(_create_enhanced_data_stores_v6())
+        
+        print("✅ Fallback layout created with all required sections")
         return html.Div(base_children, style=base_layout.style if hasattr(base_layout, 'style') else {})
 
 def _create_comprehensive_integrated_layout_v6(app_instance, main_logo_path, icon_upload_default):
@@ -748,6 +801,8 @@ print(f"📊 Components status: {components_available}")
 # ============================================================================
 # VERSION 6.0 - COMPREHENSIVE CALLBACK SYSTEM WITH ENHANCED ANALYTICS
 # ============================================================================
+
+
 
 # 1. Enhanced Upload Callback with Full Data Processing
 @app.callback(

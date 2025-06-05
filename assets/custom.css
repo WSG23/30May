@@ -255,15 +255,15 @@ button:active {
 /* ═══════════════════════════════════════════════════════════════════════════════
    STATISTICS PANELS
    ═══════════════════════════════════════════════════════════════════════════════ */
-
-#stats-panels-container {
+/* display is controlled dynamically via Dash callbacks */
+/*#stats-panels-container {
   display: flex !important;
   flex-wrap: wrap !important;
   justify-content: space-around !important;
   gap: 20px !important;
   margin: 20px auto !important;
   max-width: 1200px !important;
-}
+} */
 
 #stats-panels-container > div {
   transition: all var(--transition-normal) !important;

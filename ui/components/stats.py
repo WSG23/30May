@@ -144,7 +144,7 @@ class EnhancedStatsComponent:
     def create_analytics_section(self):
         """NEW: Advanced analytics section with key insights"""
         return html.Div([
-            html.H4("Advanced Analytics", 
+            html.H4("Advanced Analytics",
                    style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '20px'}),
             
             html.Div([
@@ -163,7 +163,7 @@ class EnhancedStatsComponent:
             # Detailed breakdown
             html.Div(id="analytics-detailed-breakdown")
             
-        ], style={
+        ], id='analytics-section', style={            
             'padding': '20px',
             'backgroundColor': COLORS['surface'],
             'borderRadius': '8px',

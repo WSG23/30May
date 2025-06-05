@@ -173,9 +173,12 @@ class EnhancedStatsComponent:
     
     def create_charts_section(self):
         """NEW: Interactive charts section"""
-        return html.Div([
-            html.H4("Data Visualization", 
-                   style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '20px'}),
+        return html.Div(
+            id='charts-section',
+            className='charts-section',
+            children=[
+                html.H4("Data Visualization",
+                       style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '20px'}),
             
             # Chart controls
             html.Div([
@@ -225,9 +228,10 @@ class EnhancedStatsComponent:
     
     def create_export_section(self):
         """NEW: Export and download section"""
-        return html.Div([
-            html.H4("Export & Reports", 
-                   style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '20px'}),
+        return html.Div(
+            id='export-section',
+            children=[
+            html.H4("Export & Reports",                   style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '20px'}),
             
             html.Div([
                 html.Button(

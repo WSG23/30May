@@ -4,6 +4,7 @@ Enhanced statistics component with advanced metrics, charts, and export features
 """
 
 from dash import html, dcc
+from ui.components.graph import create_graph_container ###
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -14,7 +15,7 @@ import io
 from datetime import datetime
 from typing import Optional
 from ui.themes.style_config import COLORS, UI_VISIBILITY, SPACING, BORDER_RADIUS, SHADOWS
-
+from utils.constants import SECURITY_LEVELS
 
 class EnhancedStatsComponent:
     """Enhanced statistics component with advanced analytics and visualizations"""
@@ -37,18 +38,35 @@ class EnhancedStatsComponent:
         ]
     
     def create_enhanced_stats_container(self):
-        """Creates the complete enhanced statistics container with charts and export"""
+        """Creates the complete enhanced statistics container with organized rows"""
         return html.Div([
-            # Original stats panels (enhanced)
-            self.create_enhanced_stats_panels(),
-            
-            # New analytics section
-            self.create_analytics_section(),
-            
-            # Charts section
-            self.create_charts_section(),
-            
-            # Export section
+        html.Div(
+                id='stats-row-1',
+                style=UI_VISIBILITY['show_flex_stats'],
+                children=[
+                    self.create_enhanced_access_events_panel(),
+                    self.create_enhanced_statistics_panel(),
+                    self.create_enhanced_active_devices_panel(),
+                ]
+            ),
+
+            html.Div(
+                id='stats-row-2',
+                style=UI_VISIBILITY['show_flex_stats'],
+                children=[
+                    self.create_peak_activity_panel(),
+                    self.create_security_overview_panel(),
+                    self.create_analytics_section(),
+                ]
+            ),
+
+            html.Div(
+                id='stats-row-3',
+                children=[
+                    self.create_charts_section(),
+                ]
+            ),
+
             self.create_export_section()
         ], id='enhanced-stats-container', style=UI_VISIBILITY['show_flex_stats'])
     
@@ -212,7 +230,8 @@ class EnhancedStatsComponent:
                 html.Div([
                     dcc.Graph(id='security-pie-chart', style={'height': '300px'})
                 ], style={'flex': '1', 'margin': '0 10px'}),
-                
+                html.Div([
+                    create_graph_container()], style={'flex': '1', 'margin': '0 10px'}),
                 html.Div([
                     dcc.Graph(id='heatmap-chart', style={'height': '300px'})
                 ], style={'flex': '1', 'margin': '0 10px'})
@@ -389,6 +408,18 @@ class EnhancedStatsComponent:
         )
         
         return fig
+    
+    def _normalize_security_column(self, series: pd.Series) -> pd.Series:
+        """Translate numeric security levels to their string color values."""
+        level_map = {lvl: info['value'] for lvl, info in SECURITY_LEVELS.items()}
+
+        def convert(val):
+            try:
+                return level_map[int(val)]
+            except (ValueError, TypeError, KeyError):
+                return str(val)
+
+        return series.map(convert)
 
     # Chart generation methods - FIXED
     def create_hourly_activity_chart(self, df) -> Figure:
@@ -413,6 +444,7 @@ class EnhancedStatsComponent:
             )
             
             fig.update_layout(
+                title="Security Level Distribution",
                 plot_bgcolor=COLORS['background'],
                 paper_bgcolor=COLORS['surface'],
                 font_color=COLORS['text_primary'],
@@ -429,14 +461,23 @@ class EnhancedStatsComponent:
             return self._create_empty_figure("No security data")
         
         if 'SecurityLevel' in device_attrs.columns:
-            security_counts = device_attrs['SecurityLevel'].value_counts()
+            sec_series = self._normalize_security_column(device_attrs['SecurityLevel'])
+            security_counts = sec_series.value_counts()
             
-            fig = px.pie(
+            colors = {
+                'green': COLORS['success'],
+                'yellow': COLORS['warning'],
+                'red': COLORS['critical'],
+                'unclassified': COLORS['border']
+            }
+
+            fig = go.Figure(data=[go.Pie(
+                labels=security_counts.index,
                 values=security_counts.values,
-                names=security_counts.index,
-                title="Security Level Distribution",
-                color_discrete_sequence=self.chart_colors
-            )
+                marker_colors=[colors.get(level, COLORS['accent']) for level in security_counts.index],
+                textinfo='label+percent',
+                textfont_size=12
+            )])
             
             fig.update_layout(
                 plot_bgcolor=COLORS['background'],
@@ -559,10 +600,11 @@ class EnhancedStatsComponent:
             high_security_devices = 0
             
             if 'SecurityLevel' in device_attrs.columns:
-                high_security_devices = len(device_attrs[device_attrs['SecurityLevel'].isin(['red', 'critical'])])
-                
+                sec_series = self._normalize_security_column(device_attrs['SecurityLevel'])
+                high_security_devices = len(sec_series[sec_series.isin(['red', 'critical'])])
+    
                 # Security distribution
-                security_dist = device_attrs['SecurityLevel'].value_counts()
+                security_dist = sec_series.value_counts()
                 metrics['security_breakdown'] = security_dist.to_dict()
             
             metrics['total_devices_count'] = f"Total: {total_devices} devices"
@@ -615,7 +657,8 @@ class EnhancedStatsComponent:
         # Security score calculation
         security_score = 85  # Base score
         if device_attrs is not None and 'SecurityLevel' in device_attrs.columns:
-            high_security_ratio = len(device_attrs[device_attrs['SecurityLevel'] == 'red']) / len(device_attrs)
+            sec_series = self._normalize_security_column(device_attrs['SecurityLevel'])
+            high_security_ratio = len(sec_series[sec_series == 'red']) / len(device_attrs)
             security_score = min(100, 70 + (high_security_ratio * 30))
         
         insights['security_score'] = f"{security_score:.0f}%"

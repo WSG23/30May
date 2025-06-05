@@ -7,6 +7,7 @@ All callbacks are handled by unified handler in app.py
 
 from dash import html, dcc
 import dash_cytoscape as cyto
+from ui.components.classification import create_classification_component
 
 # Fallback colors if theme not available
 COLORS = {
@@ -30,6 +31,8 @@ REQUIRED_INTERNAL_COLUMNS = {
     'DoorID': 'DoorID (Device Name)',
     'EventType': 'EventType (Access Result)'
 }
+# Instantiate the reusable classification component for entrance verification
+classification_component = create_classification_component()
 
 def create_main_layout(app_instance, main_logo_path, icon_upload_default):
     """
@@ -119,7 +122,7 @@ def create_upload_section(icon_upload_default):
                     }
                 ),
                 html.H3(
-                    "Drop your CSV file here",
+                    "Drop your CSV or JSON file here",
                     style={
                         'margin': '0',
                         'fontSize': '1.2rem',
@@ -153,7 +156,7 @@ def create_upload_section(icon_upload_default):
                 'backgroundColor': COLORS['surface'],
             },
             multiple=False,
-            accept='.csv'
+            accept='.csv,.json'
         )
     ])
 
@@ -166,8 +169,8 @@ def create_interactive_setup_container():
             # Step 1: CSV Header Mapping
             create_mapping_section(),
 
-            # Step 2 & 3: Entrance Verification Section (contains facility setup and classification)
-            create_entrance_verification_section(),
+            # Step 2 & 3: Entrance Verification Section (facility setup and classification)
+            classification_component.create_entrance_verification_section(),
 
             # Generate Button
             html.Button(
@@ -279,7 +282,7 @@ def create_facility_setup():
                 max=20,
                 step=1,
                 value=4,
-                marks={i: str(i) for i in range(1, 21, 5)},
+                marks={i: str(i) for i in range(0, 101, 5)},
                 tooltip={"always_visible": False, "placement": "bottom"}
             ),
             html.Div(
@@ -412,6 +415,24 @@ def create_results_section():
             children=[
                 html.H2("📈 Advanced Analytics", style={'textAlign': 'center'}),
                 html.Div(id='analytics-detailed-breakdown')
+            ]
+        ),
+
+        # Charts Section (hidden until data is ready)
+        html.Div(
+            id='charts-section',
+            style={'display': 'none'},
+            children=[
+                html.H2("📊 Data Visualization", style={'textAlign': 'center'})
+            ]
+        ),
+
+        # Export Section (hidden until data is ready)
+        html.Div(
+            id='export-section',
+            style={'display': 'none'},
+            children=[
+                html.H2("📤 Export & Reports", style={'textAlign': 'center'})
             ]
         )
     ])

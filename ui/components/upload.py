@@ -28,7 +28,7 @@ class EnhancedUploadComponent:
             children=self.create_upload_content(),
             style=self.get_upload_style("initial"),
             multiple=False,
-            accept='.csv',
+            accept='.csv,.json',
             className="upload-area hover-lift"
         )
     
@@ -49,7 +49,7 @@ class EnhancedUploadComponent:
                 )
             ], style={'textAlign': 'center'}),
             
-            html.H3("Drop your CSV file here", style={
+            html.H3("Drop your CSV or JSON file here", style={
                 'margin': '0',
                 'fontSize': TYPOGRAPHY['text_lg'],
                 'fontWeight': TYPOGRAPHY['font_semibold'],

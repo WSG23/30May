@@ -209,7 +209,7 @@ def _integrate_enhanced_features_into_layout_v6(base_layout, main_logo_path):
         
         all_existing_ids = collect_existing_ids(base_children)
         print(f"🔍 Found existing IDs: {all_existing_ids}")
-        
+        ######
         # Process each child and enhance where needed
         for child in base_children:
             # Replace basic custom header with enhanced one
@@ -222,7 +222,13 @@ def _integrate_enhanced_features_into_layout_v6(base_layout, main_logo_path):
                 enhanced_children.append(_create_analytics_section_v6())
                 existing_sections.add('analytics-section')
                 print("✅ Enhanced existing analytics section")
-            
+   
+            # Replace stats panels with enhanced version if present
+            elif hasattr(child, 'id') and child.id == 'stats-panels-container':
+                enhanced_children.append(_create_enhanced_stats_container_v6())
+                existing_sections.add('stats-panels-container')
+                print("✅ Replaced stats panels with enhanced version")
+
             # Add charts and export sections after graph container if they don't exist
             elif hasattr(child, 'id') and child.id == 'graph-output-container':
                 enhanced_children.append(child)
@@ -247,7 +253,7 @@ def _integrate_enhanced_features_into_layout_v6(base_layout, main_logo_path):
             else:
                 enhanced_children.append(child)
         
-        # Add enhanced data stores
+        # Add enhanced data stores    #####
         enhanced_children.append(_create_enhanced_data_stores_v6())
         
         print(f"✅ Layout integration complete. Enhanced sections: {existing_sections}")
@@ -370,7 +376,7 @@ def _create_comprehensive_upload_section_v6(icon_path):
                     'width': '120px', 'height': '120px', 'marginBottom': '15px',
                     'opacity': '0.8', 'transition': 'all 0.3s ease'
                 }),
-                html.H3("Drop your CSV file here", style={
+                html.H3("Drop your CSV or JSON file here", style={
                     'color': '#F7FAFC', 'margin': '0', 'fontSize': '1.25rem',
                     'fontWeight': '600', 'marginBottom': '5px'
                 }),
@@ -390,7 +396,7 @@ def _create_comprehensive_upload_section_v6(icon_path):
                 'boxShadow': '0 4px 6px rgba(0, 0, 0, 0.1)'
             },
             multiple=False,
-            accept='.csv'
+            accept='.csv,.json'
         )
     ])
 
@@ -436,7 +442,7 @@ def _create_comprehensive_setup_container_v6():
                     dcc.Slider(
                         id="num-floors-input",
                         min=1, max=50, step=1, value=4,
-                        marks={i: str(i) for i in range(1, 21, 2)},
+                        marks={i: str(i) for i in range(0, 101, 5)},
                         tooltip={"always_visible": False, "placement": "bottom"},
                         updatemode="drag"
                     ),

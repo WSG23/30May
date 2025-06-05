@@ -20,11 +20,10 @@ from ui.components.mapping import create_mapping_component
 from ui.components.classification import create_classification_component
 from ui.components.upload_handlers import create_upload_handlers
 from ui.components.mapping_handlers import create_mapping_handlers
-from ui.components.classification_handlers import create_classification_handlers, register_sliders_callbacks
-from ui.components.graph_handlers import create_graph_handlers
+from ui.components.classification_handlers import create_classification_handlers
 
 # Import layout
-from ui.pages.main_page import create_main_layout, register_page_callbacks
+from ui.pages.main_page import create_main_layout
 
 # Logging setup
 from utils.logging_config import setup_application_logging, get_logger
@@ -59,9 +58,7 @@ def create_production_app():
         icon_upload_default=ICON_UPLOAD_DEFAULT
     )
     
-    # Register callbacks
-    register_page_callbacks(app)
-    
+    # Placeholder for registering callbacks using handler factories
     logger.info("✅ Production app created successfully")
     return app
 

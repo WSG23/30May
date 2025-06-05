@@ -78,14 +78,14 @@ class ClassificationComponent:
                 }
             ),
             
-            # Modern Slider (1-20 floors)
+            # Modern Slider (0-100 floors)
             dcc.Slider(
                 id="num-floors-input",
-                min=1,
-                max=50,
-                step=1,
+                min=0,
+                max=100,
+                step=5,
                 value=4,
-                marks={i: str(i) for i in range(1, 21, 2)},
+                marks={i: str(i) for i in range(0, 101, 5)},
                 tooltip={"always_visible": False, "placement": "bottom"},
                 updatemode="drag",
                 className="modern-floor-slider"

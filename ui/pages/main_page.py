@@ -25,6 +25,7 @@ REQUIRED_INTERNAL_COLUMNS = {
     'EventType': 'EventType (Access Result)'
 }
 
+
 # Instantiate the reusable classification component for entrance verification
 classification_component = create_classification_component()
 

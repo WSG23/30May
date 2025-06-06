@@ -7,6 +7,7 @@ from dash import Input, Output, State, callback, no_update
 import pandas as pd
 import json
 from .enhanced_stats import create_enhanced_stats_component
+from ui.themes.style_config import COLORS, TYPOGRAPHY
 
 
 class EnhancedStatsHandlers:
@@ -53,7 +54,11 @@ class EnhancedStatsHandlers:
                     
                     # Calculate trend (mock for now)
                     trend_value = "+12%"
-                    trend_style = {'color': '#2DBE6C', 'fontSize': '1.2rem', 'fontWeight': 'bold'}
+                    trend_style = {
+                        'color': COLORS['success'],
+                        'fontSize': '1.2rem',
+                        'fontWeight': TYPOGRAPHY['font_bold']
+                    }
                     
                     return (
                         f"{total_events:,}",

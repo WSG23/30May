@@ -33,8 +33,8 @@ class EnhancedStatsComponent:
         
         # Chart color palette matching theme
         self.chart_colors = [
-            COLORS['accent'], COLORS['success'], COLORS['warning'], 
-            COLORS['critical'], '#42A5F5', '#66BB6A', '#FFA726', '#EF5350'
+            COLORS['accent'], COLORS['success'], COLORS['warning'],
+            COLORS['critical'], COLORS['accent_light'], '#66BB6A', '#FFA726', '#EF5350'
         ]
     
     def create_enhanced_stats_container(self):
@@ -349,7 +349,7 @@ class EnhancedStatsComponent:
                         style={
                             'fontSize': '18px',
                             'fontWeight': '400',
-                            'color': '#ffffff',
+                            'color': COLORS['text_on_accent'],
                             'fontFamily': 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                             'verticalAlign': 'middle'
                         }
@@ -363,7 +363,7 @@ class EnhancedStatsComponent:
                                 'marginLeft': '20px',
                                 'padding': '5px 10px',
                                 'backgroundColor': COLORS['accent'],
-                                'color': 'white',
+                                'color': COLORS['text_on_accent'],
                                 'border': 'none',
                                 'borderRadius': '4px',
                                 'fontSize': '0.8rem',

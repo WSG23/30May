@@ -8,8 +8,18 @@ All callbacks are handled by unified handler in app.py
 from dash import html, dcc
 import dash_cytoscape as cyto
 from ui.components.classification import create_classification_component
-from ui.themes.style_config import COLORS
-from config.settings import REQUIRED_INTERNAL_COLUMNS
+
+from ui.themes.style_config import COLORS, TYPOGRAPHY
+from ui.themes.helpers import get_button_style, get_card_style
+
+# Fallback constants
+REQUIRED_INTERNAL_COLUMNS = {
+    'Timestamp': 'Timestamp (Event Time)',
+    'UserID': 'UserID (Person Identifier)',
+    'DoorID': 'DoorID (Device Name)',
+    'EventType': 'EventType (Access Result)'
+}
+
 # Instantiate the reusable classification component for entrance verification
 classification_component = create_classification_component()
 
@@ -59,17 +69,16 @@ def create_main_layout(app_instance, main_logo_path, icon_upload_default):
 
 def create_main_header(main_logo_path):
     """Creates the main header bar"""
+    header_style = get_card_style()
+    header_style.update({
+        'display': 'flex',
+        'alignItems': 'center',
+        'justifyContent': 'center',
+        'padding': '20px 30px',
+        'marginBottom': '30px',
+    })
     return html.Div(
-        style={
-            'display': 'flex',
-            'alignItems': 'center',
-            'justifyContent': 'center',
-            'padding': '20px 30px',
-            'backgroundColor': COLORS['surface'],
-            'borderBottom': f'1px solid {COLORS["border"]}',
-            'marginBottom': '30px',
-            'borderRadius': '8px',
-        },
+        style=header_style,
         children=[
             html.Img(src=main_logo_path, style={'height': '40px', 'marginRight': '15px'}),
             html.H1(
@@ -78,7 +87,7 @@ def create_main_header(main_logo_path):
                     'fontSize': '1.8rem',
                     'margin': '0',
                     'color': COLORS['text_primary'],
-                    'fontWeight': '600'
+                    'fontWeight': TYPOGRAPHY['font_semibold']
                 }
             )
         ]
@@ -105,7 +114,7 @@ def create_upload_section(icon_upload_default):
                     style={
                         'margin': '0',
                         'fontSize': '1.2rem',
-                        'fontWeight': '600',
+                        'fontWeight': TYPOGRAPHY['font_semibold'],
                         'color': COLORS['text_primary'],
                         'marginBottom': '5px'
                     }
@@ -163,11 +172,11 @@ def create_interactive_setup_container():
                     'display': 'block',
                     'padding': '15px 25px',
                     'backgroundColor': COLORS['accent'],
-                    'color': 'white',
+                    'color': COLORS['text_on_accent'],
                     'border': 'none',
                     'borderRadius': '8px',
                     'fontSize': '1.1rem',
-                    'fontWeight': '600',
+                    'fontWeight': TYPOGRAPHY['font_semibold'],
                     'cursor': 'pointer',
                     'transition': 'all 0.3s ease'
                 }
@@ -179,14 +188,7 @@ def create_mapping_section():
     """Step 1: Map CSV Headers (wrapped in mapping-ui-section for callback control)"""
     return html.Div(
         id='mapping-ui-section',  # ✅ Enables callback to toggle visibility
-        style={
-            'display': 'none',  # Hidden by default until needed
-            'backgroundColor': COLORS['surface'],
-            'padding': '25px',
-            'borderRadius': '8px',
-            'marginBottom': '20px',
-            'border': f'1px solid {COLORS["border"]}'
-        },
+        style={**get_card_style(), 'display': 'none', 'padding': '25px', 'marginBottom': '20px'},
         children=[
             html.H4(
                 "Step 1: Map CSV Headers",
@@ -220,7 +222,7 @@ def create_mapping_section():
                     'margin': '20px auto',
                     'padding': '10px 20px',
                     'backgroundColor': COLORS['success'],
-                    'color': 'white',
+                    'color': COLORS['text_on_accent'],
                     'border': 'none',
                     'borderRadius': '6px',
                     'cursor': 'pointer'
@@ -248,7 +250,7 @@ def create_facility_setup():
                 "How many floors are in the facility?",
                 style={
                     'color': COLORS['text_primary'],
-                    'fontWeight': '600',
+                    'fontWeight': TYPOGRAPHY['font_semibold'],
                     'fontSize': '1rem',
                     'marginBottom': '10px',
                     'display': 'block',
@@ -272,7 +274,7 @@ def create_facility_setup():
                     "color": COLORS['text_secondary'],
                     "marginTop": "10px",
                     "textAlign": "center",
-                    "fontWeight": "600"
+                    "fontWeight": TYPOGRAPHY['font_semibold']
                 }
             ),
         ], style={'marginBottom': '25px'}),
@@ -283,7 +285,7 @@ def create_facility_setup():
                 "Enable Manual Door Classification?",
                 style={
                     'color': COLORS['text_primary'],
-                    'fontWeight': '600',
+                    'fontWeight': TYPOGRAPHY['font_semibold'],
                     'fontSize': '1rem',
                     'marginBottom': '15px',
                     'display': 'block',
@@ -311,13 +313,7 @@ def create_facility_setup():
                 }
             ),
         ])
-    ], style={
-        'backgroundColor': COLORS['surface'],
-        'padding': '25px',
-        'borderRadius': '8px',
-        'marginBottom': '20px',
-        'border': f'1px solid {COLORS["border"]}'
-    })
+    ], style={**get_card_style(), 'padding': '25px', 'marginBottom': '20px'})
 
 def create_classification_section():
     """Step 3: Door Classification (conditional)"""
@@ -344,12 +340,7 @@ def create_classification_section():
                     }
                 ),
                 html.Div(id="door-classification-table")
-            ], style={
-                'backgroundColor': COLORS['surface'],
-                'padding': '25px',
-                'borderRadius': '8px',
-                'border': f'1px solid {COLORS["border"]}'
-            })
+            ], style={**get_card_style(), 'padding': '25px'})
         ]
     )
 
@@ -371,13 +362,7 @@ def create_results_section():
                             'fontSize': '1.6rem'
                         }
                     )
-                ], style={
-                    'padding': '20px',
-                    'backgroundColor': COLORS['surface'],
-                    'borderRadius': '8px',
-                    'marginBottom': '20px',
-                    'border': f'1px solid {COLORS["border"]}'
-                })
+                ], style={**get_card_style(), 'padding': '20px', 'marginBottom': '20px'})
             ]
         ),
 
@@ -419,16 +404,14 @@ def create_results_section():
 
 def create_stats_panels():
     """Statistics panels"""
-    panel_style = {
+    panel_style = get_card_style()
+    panel_style.update({
         'flex': '1',
         'padding': '20px',
         'margin': '0 10px',
-        'backgroundColor': COLORS['surface'],
-        'borderRadius': '8px',
         'textAlign': 'center',
-        'border': f'1px solid {COLORS["border"]}',
         'minWidth': '200px'
-    }
+    })
 
     return html.Div(
         id='stats-panels-container',
@@ -497,7 +480,7 @@ def create_graph_container():
                                 'style': {
                                     'background-color': COLORS['accent'],
                                     'label': 'data(label)',
-                                    'color': 'white',
+                                    'color': COLORS['text_on_accent'],
                                     'text-valign': 'center',
                                     'width': 40,
                                     'height': 40
@@ -513,26 +496,17 @@ def create_graph_container():
                         ]
                     )
                 ],
-                style={
-                    'backgroundColor': COLORS['surface'],
-                    'padding': '20px',
-                    'borderRadius': '8px',
-                    'border': f'1px solid {COLORS["border"]}'
-                }
+                style={**get_card_style(), 'padding': '20px'}
             ),
             html.Pre(
                 id='tap-node-data-output',
                 children="Generate analysis to see the facility layout. Tap nodes for details.",
-                style={
-                    'backgroundColor': COLORS['surface'],
-                    'color': COLORS['text_secondary'],
-                    'padding': '15px',
-                    'borderRadius': '8px',
-                    'marginTop': '20px',
-                    'textAlign': 'center',
-                    'border': f'1px solid {COLORS["border"]}',
-                    'fontSize': '0.9rem'
-                }
+                style={**get_card_style(),
+                       'color': COLORS['text_secondary'],
+                       'padding': '15px',
+                       'marginTop': '20px',
+                       'textAlign': 'center',
+                       'fontSize': '0.9rem'}
             )
         ]
     )

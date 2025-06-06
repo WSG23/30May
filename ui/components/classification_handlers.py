@@ -126,8 +126,10 @@ class ClassificationHandlers:
                 
             if not all_doors_from_store_data:
                 logger.info("DEBUG: No doors available for classification table yet.")
-                return [html.P("Upload and map CSV headers first to see door classification options.", 
-                              style={'textAlign': 'center', 'color': '#A0AEC0', 'padding': '20px'})]
+                return [html.P(
+                    "Upload and map CSV headers first to see door classification options.",
+                    style={'textAlign': 'center', 'color': COLORS['text_tertiary'], 'padding': '20px'}
+                )]
                 
             # Handle slider value (ensure it's an integer)
             num_floors_int = int(num_floors) if num_floors is not None else 4

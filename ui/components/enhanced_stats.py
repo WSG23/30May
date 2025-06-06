@@ -45,7 +45,7 @@ class EnhancedStatsComponent:
                     COLORS["success"],
                     COLORS["warning"],
                     COLORS["critical"],
-                    "#42A5F5",
+                    COLORS['accent_light'],
                     "#66BB6A",
                     "#FFA726",
                     "#EF5350",
@@ -151,7 +151,7 @@ class EnhancedStatsComponent:
                             style={
                                 "fontSize": "18px",
                                 "fontWeight": "400",
-                                "color": "#ffffff",
+                                "color": COLORS['text_on_accent'],
                                 "fontFamily": "system-ui, -apple-system, sans-serif",
                                 "verticalAlign": "middle",
                             },

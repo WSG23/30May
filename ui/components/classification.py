@@ -69,7 +69,7 @@ class ClassificationComponent:
                 "How many floors are in the facility?", 
                 style={
                     'color': COLORS['text_primary'],
-                    'fontWeight': 'bold',
+                    'fontWeight': TYPOGRAPHY['font_bold'],
                     'fontSize': '1rem',
                     'marginBottom': '8px',
                     'textAlign': 'center',
@@ -128,7 +128,7 @@ class ClassificationComponent:
                     'marginBottom': '12px',
                     'textAlign': 'center',
                     'display': 'block',
-                    'fontWeight': 'bold'
+                    'fontWeight': TYPOGRAPHY['font_bold']
                 }
             ),
             

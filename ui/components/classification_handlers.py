@@ -15,7 +15,7 @@ from dash.exceptions import PreventUpdate
 from ui.components.classification import create_classification_component
 from ui.themes.style_config import COLORS
 from utils.logging_config import get_logger
-from utils.constants import REQUIRED_INTERNAL_COLUMNS
+from config.settings import REQUIRED_INTERNAL_COLUMNS
 
 logger = get_logger(__name__)
 

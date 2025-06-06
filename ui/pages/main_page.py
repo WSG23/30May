@@ -9,9 +9,22 @@ from dash import html, dcc
 import dash_cytoscape as cyto
 from ui.components.classification import create_classification_component
 
-from ui.themes.style_config import COLORS, TYPOGRAPHY
-from ui.themes.helpers import get_button_style, get_card_style
-from config.settings import DEFAULT_ICONS, REQUIRED_INTERNAL_COLUMNS
+from ui.themes.style_config import COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS
+from ui.themes.helpers import (
+    get_button_style,
+    get_card_style,
+    get_card_container_style,
+    get_section_header_style,
+)
+
+# Fallback constants
+REQUIRED_INTERNAL_COLUMNS = {
+    'Timestamp': 'Timestamp (Event Time)',
+    'UserID': 'UserID (Person Identifier)',
+    'DoorID': 'DoorID (Device Name)',
+    'EventType': 'EventType (Access Result)'
+}
+
 
 # Instantiate the reusable classification component for entrance verification
 classification_component = create_classification_component()
@@ -36,11 +49,11 @@ def create_main_layout(app_instance, main_logo_path, icon_upload_default):
             html.Div(
                 id='processing-status',
                 style={
-                    'marginTop': '20px',
+                    'marginTop': SPACING['md'],
                     'color': COLORS['accent'],
                     'textAlign': 'center',
-                    'fontSize': '1rem',
-                    'fontWeight': '500'
+                    'fontSize': TYPOGRAPHY['text_base'],
+                    'fontWeight': TYPOGRAPHY['font_medium']
                 }
             ),
 
@@ -52,7 +65,7 @@ def create_main_layout(app_instance, main_logo_path, icon_upload_default):
         ],
         style={
             'backgroundColor': COLORS['background'],
-            'padding': '20px',
+            'padding': SPACING['md'],
             'minHeight': '100vh',
             'fontFamily': 'Inter, system-ui, sans-serif'
         }
@@ -67,17 +80,17 @@ def create_main_header(main_logo_path):
         'display': 'flex',
         'alignItems': 'center',
         'justifyContent': 'center',
-        'padding': '20px 30px',
-        'marginBottom': '30px',
+        'padding': f"{SPACING['md']} {SPACING['xl']}",
+        'marginBottom': SPACING['xl'],
     })
     return html.Div(
         style=header_style,
         children=[
-            html.Img(src=main_logo_path, style={'height': '40px', 'marginRight': '15px'}),
+            html.Img(src=main_logo_path, style={'height': '40px', 'marginRight': SPACING['base']}),
             html.H1(
                 "Enhanced Analytics Dashboard",
                 style={
-                    'fontSize': '1.8rem',
+                    'fontSize': TYPOGRAPHY['text_3xl'],
                     'margin': '0',
                     'color': COLORS['text_primary'],
                     'fontWeight': TYPOGRAPHY['font_semibold']
@@ -98,7 +111,7 @@ def create_upload_section(icon_upload_default):
                     style={
                         'width': '96px',
                         'height': '96px',
-                        'marginBottom': '15px',
+                        'marginBottom': SPACING['base'],
                         'opacity': '0.8'
                     }
                 ),
@@ -109,7 +122,7 @@ def create_upload_section(icon_upload_default):
                         'fontSize': '1.2rem',
                         'fontWeight': TYPOGRAPHY['font_semibold'],
                         'color': COLORS['text_primary'],
-                        'marginBottom': '5px'
+                        'marginBottom': SPACING['xs']
                     }
                 ),
                 html.P(
@@ -120,14 +133,14 @@ def create_upload_section(icon_upload_default):
                         'color': COLORS['text_secondary'],
                     }
                 ),
-            ], style={'textAlign': 'center', 'padding': '20px'}),
+            ], style={'textAlign': 'center', 'padding': SPACING['md']}),
             style={
                 'width': '70%',
                 'maxWidth': '600px',
                 'minHeight': '180px',
-                'borderRadius': '12px',
+                'borderRadius': BORDER_RADIUS['xl'],
                 'textAlign': 'center',
-                'margin': '0 auto 30px auto',
+                'margin': f"0 auto {SPACING['xl']} auto",
                 'display': 'flex',
                 'alignItems': 'center',
                 'justifyContent': 'center',
@@ -159,19 +172,12 @@ def create_interactive_setup_container():
                 id='confirm-and-generate-button',
                 n_clicks=0,
                 style={
+                    **get_button_style(),
                     'width': '100%',
                     'maxWidth': '400px',
-                    'margin': '30px auto',
+                    'margin': f"{SPACING['xl']} auto",
                     'display': 'block',
-                    'padding': '15px 25px',
-                    'backgroundColor': COLORS['accent'],
-                    'color': COLORS['text_on_accent'],
-                    'border': 'none',
-                    'borderRadius': '8px',
-                    'fontSize': '1.1rem',
-                    'fontWeight': TYPOGRAPHY['font_semibold'],
-                    'cursor': 'pointer',
-                    'transition': 'all 0.3s ease'
+                    'fontSize': TYPOGRAPHY['text_lg']
                 }
             )
         ]
@@ -181,23 +187,18 @@ def create_mapping_section():
     """Step 1: Map CSV Headers (wrapped in mapping-ui-section for callback control)"""
     return html.Div(
         id='mapping-ui-section',  # ✅ Enables callback to toggle visibility
-        style={**get_card_style(), 'display': 'none', 'padding': '25px', 'marginBottom': '20px'},
+        style={**get_card_container_style(padding=SPACING['lg'], margin_bottom=SPACING['md']), 'display': 'none'},
         children=[
             html.H4(
                 "Step 1: Map CSV Headers",
-                style={
-                    'color': COLORS['text_primary'],
-                    'fontSize': '1.3rem',
-                    'marginBottom': '15px',
-                    'textAlign': 'center'
-                }
+                style=get_section_header_style()
             ),
             html.P(
                 "Map your CSV columns to the required fields below:",
                 style={
                     'color': COLORS['text_secondary'],
                     'fontSize': '0.9rem',
-                    'marginBottom': '20px',
+                    'marginBottom': SPACING['md'],
                     'textAlign': 'center'
                 }
             ),
@@ -211,14 +212,9 @@ def create_mapping_section():
                 id='confirm-header-map-button',
                 n_clicks=0,
                 style={
+                    **get_button_style('success'),
                     'display': 'none',  # Hidden until dropdowns are created
-                    'margin': '20px auto',
-                    'padding': '10px 20px',
-                    'backgroundColor': COLORS['success'],
-                    'color': COLORS['text_on_accent'],
-                    'border': 'none',
-                    'borderRadius': '6px',
-                    'cursor': 'pointer'
+                    'margin': f"{SPACING['md']} auto"
                 }
             )
         ]
@@ -229,12 +225,7 @@ def create_facility_setup():
     return html.Div([
         html.H4(
             "Step 2: Facility Setup",
-            style={
-                'color': COLORS['text_primary'],
-                'fontSize': '1.3rem',
-                'marginBottom': '15px',
-                'textAlign': 'center'
-            }
+            style=get_section_header_style()
         ),
         
         # Number of floors
@@ -245,7 +236,7 @@ def create_facility_setup():
                     'color': COLORS['text_primary'],
                     'fontWeight': TYPOGRAPHY['font_semibold'],
                     'fontSize': '1rem',
-                    'marginBottom': '10px',
+                    'marginBottom': SPACING['sm'],
                     'display': 'block',
                     'textAlign': 'center'
                 }
@@ -265,12 +256,12 @@ def create_facility_setup():
                 style={
                     "fontSize": "0.9rem",
                     "color": COLORS['text_secondary'],
-                    "marginTop": "10px",
+                    "marginTop": SPACING['sm'],
                     "textAlign": "center",
                     "fontWeight": TYPOGRAPHY['font_semibold']
                 }
             ),
-        ], style={'marginBottom': '25px'}),
+        ], style={'marginBottom': SPACING['md']}),
         
         # Manual classification toggle
         html.Div([
@@ -280,7 +271,7 @@ def create_facility_setup():
                     'color': COLORS['text_primary'],
                     'fontWeight': TYPOGRAPHY['font_semibold'],
                     'fontSize': '1rem',
-                    'marginBottom': '15px',
+                    'marginBottom': SPACING['base'],
                     'display': 'block',
                     'textAlign': 'center'
                 }
@@ -296,17 +287,17 @@ def create_facility_setup():
                 style={'textAlign': 'center'},
                 labelStyle={
                     'display': 'inline-block',
-                    'marginRight': '20px',
-                    'padding': '10px 20px',
+                    'marginRight': SPACING['md'],
+                    'padding': f"{SPACING['sm']} {SPACING['lg']}",
                     'backgroundColor': COLORS['border'],
                     'color': COLORS['text_secondary'],
-                    'borderRadius': '20px',
+                    'borderRadius': BORDER_RADIUS['full'],
                     'cursor': 'pointer',
                     'transition': 'all 0.3s ease'
                 }
             ),
         ])
-    ], style={**get_card_style(), 'padding': '25px', 'marginBottom': '20px'})
+    ], style=get_card_container_style(padding=SPACING['lg'], margin_bottom=SPACING['md']))
 
 def create_classification_section():
     """Step 3: Door Classification (conditional)"""
@@ -317,23 +308,18 @@ def create_classification_section():
             html.Div([
                 html.H4(
                     "Step 3: Door Classification",
-                    style={
-                        'color': COLORS['text_primary'],
-                        'fontSize': '1.3rem',
-                        'marginBottom': '15px',
-                        'textAlign': 'center'
-                    }
+                    style=get_section_header_style()
                 ),
                 html.P(
                     "Classify each door below:",
                     style={
                         'color': COLORS['text_secondary'],
-                        'marginBottom': '20px',
+                        'marginBottom': SPACING['md'],
                         'textAlign': 'center'
                     }
                 ),
                 html.Div(id="door-classification-table")
-            ], style={**get_card_style(), 'padding': '25px'})
+            ], style=get_card_container_style(padding=SPACING['lg'], margin_bottom=0))
         ]
     )
 
@@ -352,10 +338,10 @@ def create_results_section():
                             'color': COLORS['text_primary'],
                             'textAlign': 'center',
                             'margin': '0',
-                            'fontSize': '1.6rem'
+                            'fontSize': TYPOGRAPHY['text_2xl']
                         }
                     )
-                ], style={**get_card_style(), 'padding': '20px', 'marginBottom': '20px'})
+                ], style=get_card_container_style(padding=SPACING['lg'], margin_bottom=SPACING['md']))
             ]
         ),
 
@@ -397,11 +383,10 @@ def create_results_section():
 
 def create_stats_panels():
     """Statistics panels"""
-    panel_style = get_card_style()
+    panel_style = get_card_container_style(padding=SPACING['lg'], margin_bottom=0)
     panel_style.update({
         'flex': '1',
-        'padding': '20px',
-        'margin': '0 10px',
+        'margin': f"0 {SPACING['sm']}",
         'textAlign': 'center',
         'minWidth': '200px'
     })
@@ -412,14 +397,14 @@ def create_stats_panels():
         children=[
             # Access Events Panel
             html.Div([
-                html.H3("Access Events", style={'color': COLORS['text_primary'], 'marginBottom': '10px'}),
-                html.H1(id="total-access-events-H1", style={'color': COLORS['accent'], 'margin': '10px 0'}),
+                html.H3("Access Events", style={'color': COLORS['text_primary'], 'marginBottom': SPACING['sm']}),
+                html.H1(id="total-access-events-H1", style={'color': COLORS['accent'], 'margin': f"{SPACING['sm']} 0"}),
                 html.P(id="event-date-range-P", style={'color': COLORS['text_secondary'], 'fontSize': '0.9rem'})
             ], style=panel_style),
 
             # Statistics Panel
             html.Div([
-                html.H3("Summary", style={'color': COLORS['text_primary'], 'marginBottom': '10px'}),
+                html.H3("Summary", style={'color': COLORS['text_primary'], 'marginBottom': SPACING['sm']}),
                 html.P(id="stats-date-range-P", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
                 html.P(id="stats-days-with-data-P", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
                 html.P(id="stats-num-devices-P", style={'color': COLORS['text_secondary'], 'fontSize': '0.8rem'}),
@@ -428,7 +413,7 @@ def create_stats_panels():
 
             # Active Devices Panel
             html.Div([
-                html.H3("Top Devices", style={'color': COLORS['text_primary'], 'marginBottom': '10px'}),
+                html.H3("Top Devices", style={'color': COLORS['text_primary'], 'marginBottom': SPACING['sm']}),
                 html.Table([
                     html.Thead(html.Tr([
                         html.Th("Device", style={'color': COLORS['text_primary'], 'fontSize': '0.8rem'}),
@@ -451,8 +436,8 @@ def create_graph_container():
                 style={
                     'textAlign': 'center',
                     'color': COLORS['text_primary'],
-                    'marginBottom': '20px',
-                    'fontSize': '1.6rem'
+                    'marginBottom': SPACING['md'],
+                    'fontSize': TYPOGRAPHY['text_2xl']
                 }
             ),
             html.Div(
@@ -464,7 +449,7 @@ def create_graph_container():
                             'width': '100%',
                             'height': '500px',
                             'backgroundColor': COLORS['background'],
-                            'borderRadius': '8px'
+                            'borderRadius': BORDER_RADIUS['lg']
                         },
                         elements=[],
                         stylesheet=[
@@ -489,15 +474,14 @@ def create_graph_container():
                         ]
                     )
                 ],
-                style={**get_card_style(), 'padding': '20px'}
+                style=get_card_container_style(padding=SPACING['lg'], margin_bottom=0)
             ),
             html.Pre(
                 id='tap-node-data-output',
                 children="Generate analysis to see the facility layout. Tap nodes for details.",
-                style={**get_card_style(),
+                style={**get_card_container_style(padding=SPACING['base'], margin_bottom=0),
                        'color': COLORS['text_secondary'],
-                       'padding': '15px',
-                       'marginTop': '20px',
+                       'marginTop': SPACING['md'],
                        'textAlign': 'center',
                        'fontSize': '0.9rem'}
             )

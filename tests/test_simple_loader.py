@@ -6,7 +6,7 @@ Simple test to debug the enhanced CSV loader
 import io
 import pandas as pd
 from data_io.enhanced_csv_loader import EnhancedCSVLoader
-from constants import REQUIRED_INTERNAL_COLUMNS
+from config.settings import REQUIRED_INTERNAL_COLUMNS
 
 def test_loader_debug():
     """Debug the enhanced CSV loader"""

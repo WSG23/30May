@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional
 
 # Import from actual structure
 
-from utils.constants import DEFAULT_ICONS
+from config.settings import DEFAULT_ICONS
 from ui.themes.style_config import (
     COLORS,
     SPACING,

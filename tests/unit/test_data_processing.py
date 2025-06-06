@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch
 from data_io.enhanced_csv_loader import EnhancedCSVLoader
 from data_io.secure_file_handler import SecureFileHandler
 from utils.error_handler import ValidationError, DataProcessingError, FileProcessingError
-from constants import REQUIRED_INTERNAL_COLUMNS
+from config.settings import REQUIRED_INTERNAL_COLUMNS
 
 
 def is_success_result(result) -> bool:

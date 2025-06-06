@@ -119,6 +119,18 @@ ui/
 - [ ] Status messages display correctly
 - [ ] All subsequent steps work normally
 
+## Running Tests
+
+Install the development requirements before running the test suite:
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+The tests rely on packages such as `pandas` which are included in
+`requirements-dev.txt`.
+
 ## Next Phase Preview
 
 **Phase 2** will extract:

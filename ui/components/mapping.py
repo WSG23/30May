@@ -6,8 +6,10 @@ Extracted from core_layout.py and mapping_callbacks.py with consistent reduced w
 
 from dash import html, dcc
 import dash_bootstrap_components as dbc
+
 from ui.themes.style_config import COLORS, MAPPING_STYLES, get_validation_message_style
 from utils.constants import REQUIRED_INTERNAL_COLUMNS
+
 
 
 class MappingComponent:

@@ -11,7 +11,7 @@ import traceback
 from typing import Dict, Any, Optional, Tuple
 from dash import Input, Output, State, html, no_update
 
-from utils.constants import REQUIRED_INTERNAL_COLUMNS
+from config.settings import REQUIRED_INTERNAL_COLUMNS
 from utils.logging_config import get_logger
 from ui.themes.style_config import UPLOAD_STYLES, get_interactive_setup_style
 

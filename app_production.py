@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dash_bootstrap_components as dbc
 
 # Import configuration
-from config.unified_settings import get_settings
+from config.settings import get_settings
 from config.app_config import get_config
 
 # Import UI components and handlers

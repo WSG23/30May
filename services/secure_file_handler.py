@@ -14,7 +14,7 @@ from core.exceptions import FileProcessingError, ValidationError
 from utils.validators import CSVValidator
 from utils.error_handler import error_boundary
 from utils.input_sanitizer import InputSanitizer
-from utils.constants import FILE_LIMITS
+from config.settings import FILE_LIMITS
 
 logger = logging.getLogger(__name__)
 

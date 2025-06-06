@@ -11,7 +11,7 @@ from typing import Dict, List, Optional, Any
 import re
 import logging
 
-from utils.constants import FILE_LIMITS
+from config.settings import FILE_LIMITS
 
 # Initialize logger at module level
 logger = logging.getLogger(__name__)

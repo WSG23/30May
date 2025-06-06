@@ -11,14 +11,7 @@ from ui.components.classification import create_classification_component
 
 from ui.themes.style_config import COLORS, TYPOGRAPHY
 from ui.themes.helpers import get_button_style, get_card_style
-
-# Fallback constants
-REQUIRED_INTERNAL_COLUMNS = {
-    'Timestamp': 'Timestamp (Event Time)',
-    'UserID': 'UserID (Person Identifier)',
-    'DoorID': 'DoorID (Device Name)',
-    'EventType': 'EventType (Access Result)'
-}
+from config.settings import DEFAULT_ICONS, REQUIRED_INTERNAL_COLUMNS
 
 # Instantiate the reusable classification component for entrance verification
 classification_component = create_classification_component()

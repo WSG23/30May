@@ -8,29 +8,8 @@ All callbacks are handled by unified handler in app.py
 from dash import html, dcc
 import dash_cytoscape as cyto
 from ui.components.classification import create_classification_component
-
-# Fallback colors if theme not available
-COLORS = {
-    'primary': '#1B2A47',
-    'accent': '#2196F3',
-    'success': '#2DBE6C',
-    'warning': '#FFB020',
-    'critical': '#E02020',
-    'background': '#0F1419',
-    'surface': '#1A2332',
-    'border': '#2D3748',
-    'text_primary': '#F7FAFC',
-    'text_secondary': '#E2E8F0',
-    'text_tertiary': '#A0AEC0',
-}
-
-# Fallback constants
-REQUIRED_INTERNAL_COLUMNS = {
-    'Timestamp': 'Timestamp (Event Time)',
-    'UserID': 'UserID (Person Identifier)',
-    'DoorID': 'DoorID (Device Name)',
-    'EventType': 'EventType (Access Result)'
-}
+from ui.themes.style_config import COLORS
+from config.settings import REQUIRED_INTERNAL_COLUMNS
 # Instantiate the reusable classification component for entrance verification
 classification_component = create_classification_component()
 

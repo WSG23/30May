@@ -64,8 +64,9 @@ TYPOGRAPHY = {
 # Spacing
 SPACING = {
     'xs': '0.25rem',
-    'sm': '0.5rem', 
+    'sm': '0.5rem',
     'base': '1rem',
+    'md': '1.25rem',  # New: 20px spacing step
     'lg': '1.5rem',
     'xl': '2rem',
     '2xl': '3rem',
@@ -128,6 +129,17 @@ COMPONENT_STYLES = {
         'font-weight': TYPOGRAPHY['font_medium'],
         'cursor': 'pointer',
         'transition': f'all {ANIMATIONS["fast"]}'
+    },
+    'button_success': {
+        'background-color': COLORS['success'],
+        'color': COLORS['text_on_accent'],
+        'border': 'none',
+        'padding': f"{SPACING['sm']} {SPACING['lg']}",
+        'border-radius': BORDER_RADIUS['lg'],
+        'font-weight': TYPOGRAPHY['font_semibold'],
+        'cursor': 'pointer',
+        'transition': f'all {ANIMATIONS["fast"]}',
+        'box-shadow': SHADOWS['md']
     },
     'input': {
         'background-color': COLORS['surface'],

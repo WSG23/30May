@@ -34,3 +34,20 @@ def get_button_style(variant='primary'):
 def get_input_style():
     """Return standardized input style."""
     return get_component_style('input')
+
+
+def get_card_container_style(padding=SPACING['lg'], margin_bottom=SPACING['md'], elevated=False):
+    """Return card style with common padding and margin."""
+    style = get_card_style(elevated)
+    style.update({'padding': padding, 'marginBottom': margin_bottom})
+    return style
+
+
+def get_section_header_style(font_size=TYPOGRAPHY['text_xl'], margin_bottom=SPACING['base']):
+    """Standard style for section headers."""
+    return {
+        'color': COLORS['text_primary'],
+        'fontSize': font_size,
+        'marginBottom': margin_bottom,
+        'textAlign': 'center'
+    }

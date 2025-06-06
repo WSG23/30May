@@ -38,6 +38,13 @@ import base64
 import io
 import dash_cytoscape as cyto
 from datetime import datetime
+from ui.themes.style_config import (
+    UI_VISIBILITY,
+    COMPONENT_STYLES,
+    COLORS,
+    TYPOGRAPHY,
+    SPACING,
+)
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -344,28 +351,41 @@ def _create_enhanced_header_v6(main_logo_path):
         return enhanced_stats.create_custom_header(main_logo_path)
     else:
         return html.Div(
-            id='yosai-custom-header',
-            style={'display': 'none'},
+            id="yosai-custom-header",
+            style=UI_VISIBILITY["show_header"],
             children=[
-                html.Div([
-                    html.Img(src=main_logo_path, style={'height': '24px', 'marginRight': '10px'}),
-                    html.Span("Enhanced Analytics Dashboard v6.0", style={
-                        'fontSize': '18px', 'color': '#ffffff', 'fontWeight': '400'
-                    }),
-                    # Add toggle button required by callbacks
-                    html.Button(
-                        "📊 Advanced View",
-                        id='toggle-advanced-analytics',
-                        style={
-                            'marginLeft': '20px', 'padding': '5px 10px',
-                            'backgroundColor': '#2196F3', 'color': 'white',
-                            'border': 'none', 'borderRadius': '4px',
-                            'fontSize': '0.8rem', 'cursor': 'pointer',
-                            'display': 'none'  # Hidden in fallback mode
-                        }
-                    )
-                ], style={'display': 'flex', 'alignItems': 'center', 'justifyContent': 'center', 'padding': '16px'})
-            ]
+                html.Div(
+                    [
+                        html.Img(
+                            src=main_logo_path,
+                            style={"height": "24px", "marginRight": SPACING["sm"]},
+                        ),
+                        html.Span(
+                            "Enhanced Analytics Dashboard v6.0",
+                            style={
+                                "fontSize": TYPOGRAPHY["text_lg"],
+                                "color": COLORS["text_primary"],
+                                "fontWeight": TYPOGRAPHY["font_normal"],
+                            },
+                        ),
+                        html.Button(
+                            "📊 Advanced View",
+                            id="toggle-advanced-analytics",
+                            style={
+                                **COMPONENT_STYLES["button_primary"],
+                                "marginLeft": SPACING["lg"],
+                                "display": "none",
+                            },
+                        ),
+                    ],
+                    style={
+                        "display": "flex",
+                        "alignItems": "center",
+                        "justifyContent": "center",
+                        "width": "100%",
+                    },
+                )
+            ],
         )
 
 def _create_comprehensive_upload_section_v6(icon_path):

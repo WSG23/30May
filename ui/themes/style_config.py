@@ -253,6 +253,159 @@ LAYOUT_CONFIG = {
     }
 }
 
+# Centralized style definitions for UI components
+UPLOAD_STYLES = {
+    'icon': {
+        'width': '120px',
+        'height': '120px',
+        'marginBottom': SPACING['base'],
+        'opacity': '0.8',
+        'transition': f'all {ANIMATIONS["normal"]}'
+    },
+    'content': {
+        'display': 'flex',
+        'flexDirection': 'column',
+        'alignItems': 'center',
+        'justifyContent': 'center',
+        'height': '100%',
+        'padding': SPACING['base']
+    },
+    'base': {
+        'width': UI_COMPONENTS['upload']['container_width'],
+        'maxWidth': '600px',
+        'minHeight': '180px',
+        'borderRadius': BORDER_RADIUS['lg'],
+        'textAlign': 'center',
+        'margin': f"{SPACING['base']} auto",
+        'display': 'flex',
+        'alignItems': 'center',
+        'justifyContent': 'center',
+        'cursor': 'pointer',
+        'transition': 'all 0.3s ease'
+    },
+    'states': {
+        'initial': {
+            'border': f'2px dashed {COLORS["border"]}',
+            'backgroundColor': COLORS['surface']
+        },
+        'success': {
+            'border': f'2px solid {COLORS["success"]}',
+            'backgroundColor': f"{COLORS['success']}10"
+        },
+        'error': {
+            'border': f'2px solid {COLORS["critical"]}',
+            'backgroundColor': f"{COLORS['critical']}10"
+        }
+    },
+    'interactive_container': {
+        'padding': SPACING['lg'],
+        'backgroundColor': COLORS['surface'],
+        'borderRadius': BORDER_RADIUS['lg'],
+        'margin': f"{SPACING['lg']} auto",
+        'width': '85%',
+        'maxWidth': '1000px',
+        'border': f"1px solid {COLORS['border']}"
+    },
+    'generate_button': {
+        'marginTop': SPACING['lg']
+    }
+}
+
+MAPPING_STYLES = {
+    'section': {
+        'display': 'block',
+        'width': '70%',
+        'maxWidth': '600px',
+        'margin': '0 auto',
+        'padding': '1.2rem',
+        'backgroundColor': COLORS['surface'],
+        'borderRadius': BORDER_RADIUS['md'],
+        'boxShadow': SHADOWS['sm'],
+        'border': f"1px solid {COLORS['border']}"
+    },
+    'confirm_button': {
+        'marginTop': '15px',
+        'padding': '8px 16px',
+        'border': 'none',
+        'borderRadius': BORDER_RADIUS['sm'],
+        'backgroundColor': COLORS['accent'],
+        'color': 'white',
+        'fontSize': '0.9rem',
+        'fontWeight': 'bold',
+        'cursor': 'pointer',
+        'marginLeft': 'auto',
+        'marginRight': 'auto',
+        'display': 'block',
+        'transition': 'background-color 0.3s ease'
+    },
+    'dropdown': {
+        'width': '100%',
+        'marginBottom': '4px',
+        'backgroundColor': COLORS['background'],
+        'color': COLORS['text_primary'],
+        'borderColor': COLORS['border'],
+        'fontSize': '0.9rem'
+    },
+    'label': {
+        'marginBottom': '4px',
+        'fontWeight': 'bold',
+        'color': COLORS['text_primary'],
+        'display': 'block',
+        'fontSize': '0.9rem'
+    }
+}
+
+CLASSIFICATION_STYLES = {
+    'setup_card': {
+        'padding': '20px',
+        'backgroundColor': COLORS['surface'],
+        'borderRadius': BORDER_RADIUS['lg'],
+        'marginBottom': '20px',
+        'border': f"1px solid {COLORS['border']}",
+        'maxWidth': '550px',
+        'margin': '0 auto 20px auto'
+    },
+    'classification_card': {
+        'padding': '20px',
+        'backgroundColor': COLORS['surface'],
+        'borderRadius': BORDER_RADIUS['lg'],
+        'border': f"1px solid {COLORS['border']}",
+        'maxWidth': '900px',
+        'margin': '0 auto'
+    }
+}
+
+def get_upload_style(state="initial"):
+    """Return upload container style for a given state."""
+    return {**UPLOAD_STYLES['base'], **UPLOAD_STYLES['states'].get(state, {})}
+
+
+def get_interactive_setup_style(visible=False):
+    """Style for the interactive setup container."""
+    style = UPLOAD_STYLES['interactive_container'].copy()
+    style['display'] = 'block' if visible else 'none'
+    return style
+
+
+def get_validation_message_style(status="info"):
+    """Return mapping validation message style."""
+    color_map = {
+        'info': COLORS['text_secondary'],
+        'warning': COLORS['warning'],
+        'error': COLORS['critical'],
+        'success': COLORS['success']
+    }
+    return {
+        'marginTop': '8px',
+        'padding': '8px',
+        'borderRadius': '4px',
+        'backgroundColor': f"{color_map[status]}20",
+        'border': f"1px solid {color_map[status]}",
+        'color': color_map[status],
+        'fontSize': '0.85rem',
+        'textAlign': 'center'
+    }
+
 # CSS Animations (can be added to CSS file)
 CSS_ANIMATIONS = """
 @keyframes fadeIn {
@@ -339,11 +492,17 @@ __all__ = [
     'BORDER_RADIUS',
     'SHADOWS',
     'COMPONENT_STYLES',
+    'UPLOAD_STYLES',
+    'MAPPING_STYLES',
+    'CLASSIFICATION_STYLES',
     'UI_VISIBILITY',
     'UI_COMPONENTS',
     'LAYOUT_CONFIG',
     'CSS_ANIMATIONS',
+    'get_upload_style',
+    'get_interactive_setup_style',
+    'get_validation_message_style',
     'get_hover_style',
-    'get_focus_style', 
+    'get_focus_style',
     'get_disabled_style'
 ]

@@ -14,7 +14,11 @@ from dash import Input, Output, State, html, dcc
 # Import UI components
 from ui.components.upload import create_upload_component
 from ui.themes.graph_styles import upload_icon_img_style
-from config.settings import REQUIRED_INTERNAL_COLUMNS
+
+from ui.themes.style_config import UPLOAD_STYLES, get_interactive_setup_style
+from utils.constants import REQUIRED_INTERNAL_COLUMNS
+
+
 from utils.logging_config import get_logger
 logger = get_logger(__name__)                 
 
@@ -181,8 +185,8 @@ class UploadHandlers:
     def _get_initial_state_values(self, upload_styles):
         """Get initial state values for all outputs"""
         hide_style = {'display': 'none'}
-        show_interactive_setup_style = self.upload_component._get_interactive_setup_style(visible=True)
-        confirm_button_style_hidden = self.upload_component._get_button_style('primary')
+        show_interactive_setup_style = get_interactive_setup_style(True)
+        confirm_button_style_hidden = UPLOAD_STYLES['generate_button'].copy()
         confirm_button_style_hidden['display'] = 'none'
         
         return (
@@ -202,8 +206,8 @@ class UploadHandlers:
     def _create_success_response(self, result, upload_styles, filename):
         """Create response for successful upload"""
         hide_style = {'display': 'none'}
-        show_interactive_setup_style = self.upload_component._get_interactive_setup_style(visible=True)
-        confirm_button_style_visible = self.upload_component._get_button_style('primary')
+        show_interactive_setup_style = get_interactive_setup_style(True)
+        confirm_button_style_visible = UPLOAD_STYLES['generate_button']
         
         processing_status_msg = f"Step 1: Confirm Header Mapping for '{filename}'."
         
@@ -226,8 +230,8 @@ class UploadHandlers:
     def _create_error_response(self, result, upload_styles, filename):
         """Create response for failed upload"""
         hide_style = {'display': 'none'}
-        show_interactive_setup_style = self.upload_component._get_interactive_setup_style(visible=True)
-        confirm_button_style_hidden = self.upload_component._get_button_style('primary')
+        show_interactive_setup_style = get_interactive_setup_style(True)
+        confirm_button_style_hidden = UPLOAD_STYLES['generate_button'].copy()
         confirm_button_style_hidden['display'] = 'none'
         
         error_message = result.get('error', 'Unknown error')

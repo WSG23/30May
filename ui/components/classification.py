@@ -5,7 +5,14 @@ Door classification component with simplified toggle switch - FIXED
 
 from dash import html, dcc, callback, Input, Output
 import dash_bootstrap_components as dbc
-from ui.themes.style_config import COLORS, SPACING, BORDER_RADIUS, SHADOWS, TYPOGRAPHY
+from ui.themes.style_config import (
+    COLORS,
+    SPACING,
+    BORDER_RADIUS,
+    SHADOWS,
+    TYPOGRAPHY,
+    CLASSIFICATION_STYLES,
+)
 
 
 class ClassificationComponent:
@@ -53,15 +60,7 @@ class ClassificationComponent:
             # Simplified Toggle Row (no Bootstrap switch)
             self.create_simplified_toggle_row()
             
-        ], style={
-            'padding': '20px',
-            'backgroundColor': COLORS['surface'],
-            'borderRadius': '8px',
-            'marginBottom': '20px',
-            'border': f'1px solid {COLORS["border"]}',
-            'maxWidth': '550px',
-            'margin': '0 auto 20px auto'
-        })
+        ], style=CLASSIFICATION_STYLES['setup_card'])
     
     def create_floors_slider_row(self):
         """Creates the modern floors slider"""
@@ -172,14 +171,7 @@ class ClassificationComponent:
                         style={'color': COLORS['text_primary'], 'textAlign': 'center', 'marginBottom': '8px'}
                     ),
                     html.Div(id="door-classification-table")
-                ], style={
-                    'padding': '20px',
-                    'backgroundColor': COLORS['surface'],
-                    'borderRadius': '8px',
-                    'border': f'1px solid {COLORS["border"]}',
-                    'maxWidth': '900px',
-                    'margin': '0 auto'
-                })
+                ], style=CLASSIFICATION_STYLES['classification_card'])
             ]
         )
     

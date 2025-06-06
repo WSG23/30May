@@ -13,6 +13,7 @@ from dash import Input, Output, State, html, no_update
 
 from utils.constants import REQUIRED_INTERNAL_COLUMNS
 from utils.logging_config import get_logger
+from ui.themes.style_config import UPLOAD_STYLES, get_interactive_setup_style
 
 logger = get_logger(__name__)
 
@@ -59,21 +60,10 @@ class SecureUploadHandlers:
             
             # Initial state values
             hide_style = {'display': 'none'}
-            show_interactive_setup_style = {'display': 'block', 'width': '85%', 'maxWidth': '1000px', 'margin': '16px auto'}
-            confirm_button_style_hidden = {
-                'padding': '8px 16px',
-                'border': 'none',
-                'borderRadius': '5px',
-                'backgroundColor': '#2196F3',
-                'color': 'white',
-                'fontSize': '0.9rem',
-                'fontWeight': 'bold',
-                'cursor': 'pointer',
-                'display': 'none',
-                'margin': '15px auto 0',
-                'transition': 'background-color 0.3s ease'
-            }
-            upload_icon_style = {'width': '120px', 'height': '120px', 'marginBottom': '15px'}
+            show_interactive_setup_style = get_interactive_setup_style(True)
+            confirm_button_style_hidden = UPLOAD_STYLES['generate_button'].copy()
+            confirm_button_style_hidden['display'] = 'none'
+            upload_icon_style = UPLOAD_STYLES['icon']
 
             if contents is None:
                 return (

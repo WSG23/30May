@@ -6,7 +6,7 @@ Extracted from core_layout.py and mapping_callbacks.py with consistent reduced w
 
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from ui.themes.style_config import COLORS
+from ui.themes.style_config import COLORS, MAPPING_STYLES, get_validation_message_style
 from utils.constants import REQUIRED_INTERNAL_COLUMNS
 
 
@@ -20,7 +20,7 @@ class MappingComponent:
         """Creates the Step 1: Map CSV Headers section with reduced width"""
         return html.Div(
             id='mapping-ui-section',
-            style=self._get_mapping_section_style(),
+            style=MAPPING_STYLES['section'],
             children=[
                 self.create_mapping_header(),
                 self.create_mapping_help_text(),
@@ -48,7 +48,7 @@ class MappingComponent:
             'Confirm Header Mapping & Proceed',
             id='confirm-header-map-button',
             n_clicks=0,
-            style=self._get_confirm_button_style()
+            style=MAPPING_STYLES['confirm_button']
         )
     
     def create_mapping_dropdowns(self, headers, loaded_col_map_prefs=None):
@@ -103,7 +103,7 @@ class MappingComponent:
         return html.Div(
             id='mapping-validation-message',
             children=message,
-            style=self._get_validation_message_style(status)
+            style=get_validation_message_style(status)
         )
     
     def create_mapping_help_text(self):
@@ -133,11 +133,11 @@ class MappingComponent:
     def get_mapping_styles(self):
         """Returns all mapping-related styles"""
         return {
-            'section': self._get_mapping_section_style(),
-            'button_hidden': self._get_confirm_button_style(visible=False),
-            'button_visible': self._get_confirm_button_style(visible=True),
-            'dropdown': self._get_dropdown_style(),
-            'label': self._get_label_style()
+            'section': MAPPING_STYLES['section'],
+            'button_hidden': {**MAPPING_STYLES['confirm_button'], 'display': 'none'},
+            'button_visible': MAPPING_STYLES['confirm_button'],
+            'dropdown': MAPPING_STYLES['dropdown'],
+            'label': MAPPING_STYLES['label']
         }
     
     def _find_preselected_value(self, internal_name, headers, loaded_col_map_prefs):
@@ -157,7 +157,7 @@ class MappingComponent:
             options=[{'label': h, 'value': h} for h in headers],
             value=pre_sel,
             placeholder="Select column...",
-            style=self._get_dropdown_style(),
+            style=MAPPING_STYLES['dropdown'],
             className="mapping-dropdown"
         )
     
@@ -166,84 +166,33 @@ class MappingComponent:
         return html.Div([
             html.Label(
                 f"{display_text}:",
-                style=self._get_label_style()
+                style=MAPPING_STYLES['label']
             ),
             dropdown
         ], className="mapping-row", style={'marginBottom': '12px'})  # Reduced margin
     
     def _get_mapping_section_style(self):
-        """Returns style for the mapping section with reduced width"""
-        return {
-            'display': 'block',
-            'width': '70%',  # REDUCED from 60% to 70% to match other components better
-            'maxWidth': '600px',  # NEW: Added max-width constraint
-            'margin': '0 auto',
-            'padding': '1.2rem',  # Reduced from 20px
-            'backgroundColor': COLORS['surface'],
-            'borderRadius': '8px',
-            'boxShadow': '0 2px 4px rgba(0,0,0,0.1)',
-            'border': f'1px solid {COLORS["border"]}'
-        }
+        """Backward-compatible wrapper for section style"""
+        return MAPPING_STYLES['section']
     
     def _get_confirm_button_style(self, visible=True):
-        """Returns style for the confirm button with reduced size"""
-        base_style = {
-            'marginTop': '15px',  # Reduced from 20px
-            'padding': '8px 16px',  # Reduced padding
-            'border': 'none',
-            'borderRadius': '5px',
-            'backgroundColor': COLORS['accent'],
-            'color': 'white',
-            'fontSize': '0.9rem',  # Reduced from 1rem
-            'fontWeight': 'bold',
-            'cursor': 'pointer',
-            'marginLeft': 'auto',
-            'marginRight': 'auto',
-            'display': 'block' if visible else 'none',
-            'transition': 'background-color 0.3s ease'
-        }
-        return base_style
+        """Backward-compatible wrapper for button style"""
+        style = MAPPING_STYLES['confirm_button'].copy()
+        if not visible:
+            style['display'] = 'none'
+        return style
     
     def _get_dropdown_style(self):
-        """Returns style for dropdowns with improved sizing"""
-        return {
-            'width': '100%',
-            'marginBottom': '4px',  # Reduced from 5px
-            'backgroundColor': COLORS['background'],
-            'color': COLORS['text_primary'],
-            'borderColor': COLORS['border'],
-            'fontSize': '0.9rem'  # Added smaller font size
-        }
+        """Backward-compatible wrapper for dropdown style"""
+        return MAPPING_STYLES['dropdown']
     
     def _get_label_style(self):
-        """Returns style for labels with improved sizing"""
-        return {
-            'marginBottom': '4px',  # Reduced from 5px
-            'fontWeight': 'bold',
-            'color': COLORS['text_primary'],
-            'display': 'block',
-            'fontSize': '0.9rem'  # Reduced font size
-        }
+        """Backward-compatible wrapper for label style"""
+        return MAPPING_STYLES['label']
     
     def _get_validation_message_style(self, status="info"):
-        """Returns style for validation messages with reduced size"""
-        color_map = {
-            'info': COLORS['text_secondary'],
-            'warning': COLORS['warning'],
-            'error': COLORS['critical'],
-            'success': COLORS['success']
-        }
-        
-        return {
-            'marginTop': '8px',  # Reduced from 10px
-            'padding': '8px',  # Reduced from 10px
-            'borderRadius': '4px',
-            'backgroundColor': f"{color_map[status]}20",  # 20% opacity
-            'border': f'1px solid {color_map[status]}',
-            'color': color_map[status],
-            'fontSize': '0.85rem',  # Reduced from 0.9em
-            'textAlign': 'center'
-        }
+        """Backward-compatible wrapper for validation message style"""
+        return get_validation_message_style(status)
 
 
 class MappingValidator:

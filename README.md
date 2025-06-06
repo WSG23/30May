@@ -150,6 +150,7 @@ Common issues and solutions:
 **Callback Conflicts**: Ensure old upload callbacks are removed/commented out
 
 **Styling Issues**: Verify all style imports are preserved in new components
+**Centralized Styles**: Use constants from `ui/themes/style_config.py` like `UPLOAD_STYLES` and `MAPPING_STYLES` instead of inline dicts
 
 **Missing Icons**: Check that asset paths are correctly passed to components
 **Missing Icons**: Check that asset paths are correctly passed to components

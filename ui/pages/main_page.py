@@ -8,6 +8,7 @@ All callbacks are handled by unified handler in app.py
 from dash import html, dcc
 import dash_cytoscape as cyto
 from ui.components.classification import create_classification_component
+
 from ui.themes.style_config import COLORS, TYPOGRAPHY
 from ui.themes.helpers import get_button_style, get_card_style
 
@@ -18,6 +19,7 @@ REQUIRED_INTERNAL_COLUMNS = {
     'DoorID': 'DoorID (Device Name)',
     'EventType': 'EventType (Access Result)'
 }
+
 # Instantiate the reusable classification component for entrance verification
 classification_component = create_classification_component()
 

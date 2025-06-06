@@ -45,6 +45,7 @@ from ui.themes.style_config import (
     TYPOGRAPHY,
     SPACING,
 )
+from config.settings import DEFAULT_ICONS, REQUIRED_INTERNAL_COLUMNS
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -56,20 +57,7 @@ print("📊 Initializing comprehensive integrated system...")
 # VERSION 6.0 - ENHANCED IMPORTS WITH COMPLETE FALLBACK SUPPORT
 # ============================================================================
 
-# Core constants (always needed)
-DEFAULT_ICONS = {
-    'upload_default': '/assets/upload_file_csv_icon.png',
-    'upload_success': '/assets/upload_file_csv_icon_success.png',
-    'upload_fail': '/assets/upload_file_csv_icon_fail.png',
-    'main_logo': '/assets/logo_white.png'
-}
-
-REQUIRED_INTERNAL_COLUMNS = {
-    'Timestamp': 'Timestamp (Event Time)',
-    'UserID': 'UserID (Person Identifier)',
-    'DoorID': 'DoorID (Device Name)',
-    'EventType': 'EventType (Access Result)'
-}
+# Core constants imported from unified settings
 
 # Enhanced component availability tracking
 components_available = {

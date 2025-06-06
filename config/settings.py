@@ -7,6 +7,9 @@ Replaces all other config files
 from dataclasses import dataclass, field
 from typing import Dict, List, Any, Optional
 import os
+from utils.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 # ============================================================================
 # CONSTANTS - SINGLE SOURCE OF TRUTH
@@ -214,4 +217,7 @@ __all__ = [
     'settings'
 ]
 
-print(f"🔧 Unified settings loaded: {len(REQUIRED_INTERNAL_COLUMNS)} required columns")
+logger.info(
+    "🔧 Unified settings loaded: %d required columns",
+    len(REQUIRED_INTERNAL_COLUMNS),
+)
